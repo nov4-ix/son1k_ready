@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  api:
+    build: ./backend
+    container_name: son1k_api
+    ports: ["8000:8000"]
+    depends_on: [redis, db]
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - POSTGRES_DSN=postgresql+psycopg2://postgres:postgres@db:5432/postgres
+  worker:
+    build: ./backend
+    container_name: son1k_worker
+    command: celery -A app.queue.celery_app worker -Q default -l INFO --concurrency=1
+    depends_on: [redis]
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+  redis:
+    image: redis:7-alpine
+    container_name: son1k_redis
+    ports: ["6379:6379"]
+  db:
+    image: postgres:15-alpine
+    container_name: son1k_db
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    ports: ["5432:5432"]

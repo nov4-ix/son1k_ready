@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+
+# Virtual environments  
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Audio files (opcional - podrían ser grandes)
+*.wav
+*.mp3
+*.flac
