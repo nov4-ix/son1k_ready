@@ -1,7 +1,10 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
+import os
 from .settings import settings
 from .queue import enqueue_generation
 from .db import init_db, SessionLocal
@@ -25,6 +28,7 @@ class CreateSong(BaseModel):
     style: Optional[str] = None
     length_sec: int = 60
     mode: str = "original"  # original | promptless
+    postprocessing: Optional[dict] = None
 
 class WebhookResult(BaseModel):
     src: str
@@ -53,3 +57,24 @@ def suno_results(r: WebhookResult):
     # TODO: persist in DB, create Song/Asset rows, trigger process_audio
     print("SUNO RESULT:", r.dict())
     return {"ok": True}
+
+# Verificar si el directorio frontend existe
+frontend_path = "../frontend"
+if os.path.exists(frontend_path):
+    # Servir archivos estáticos del frontend
+    app.mount("/frontend", StaticFiles(directory=frontend_path, html=True), name="frontend")
+    
+    # Servir index.html en la raíz
+    @app.get("/")
+    def serve_frontend():
+        return FileResponse(f"{frontend_path}/index.html")
+else:
+    # Fallback si no existe el directorio frontend
+    @app.get("/")
+    def root():
+        return {
+            "mensaje": "Son1kVers3 Suno Bridge - Backend funcionando",
+            "estado": "ok",
+            "ruta_frontend": "/frontend",
+            "existencia_frontend": "falso"
+        }

@@ -1,0 +1,945 @@
+// Ghost Studio - Upload y procesamiento de archivos reales
+    function setupGhostStudioEventListeners() {
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('audioUpload');
+      const procesarBtn = document.getElementById('procesarGhostStudio');
+      const previewBtn = document.getElementById('previewOriginal');
+      
+      // Drag & Drop functionality
+      dropzone.addEventListener('click', () => fileInput.click());
+      
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+      
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('dragover');
+      });
+      
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFileUpload(files[0]);
+        }
+      });
+      
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFileUpload(e.target.files[0]);
+        }
+      });
+      
+      procesarBtn.addEventListener('click', procesarGhostStudio);
+      previewBtn.addEventListener('click', previewOriginalAudio);
+      
+      // Remove file button
+      document.addEventListener('click', (e) => {
+        if (e.target.id === 'removeFile') {
+          removeUploadedFile();
+        }
+      });
+    }
+    
+    let uploadedFile = null;
+    let uploadedFileUrl = null;
+    
+    async function handleFileUpload(file) {
+      // Validar archivo
+      const validTypes = ['audio/mpeg', 'audio/wav', 'audio/mp4', 'audio/flac', 'audio/m4a'];
+      const maxSize = 50 * 1024 * 1024; // 50MB
+      
+      if (!validTypes.some(type => file.type.includes(type.split('/')[1]))) {
+        showToast('Formato de archivo no soportado. Usa MP3, WAV, M4A o FLAC', 'error');
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        showToast('Archivo muy grande. Máximo 50MB', 'error');
+        return;
+      }
+      
+      uploadedFile = file;
+      
+      // Mostrar progreso de upload
+      showUploadProgress(true);
+      
+      try {
+        // Simular upload - En producción subirías a tu backend/S3
+        await simulateFileUpload(file);
+        
+        // Crear URL temporal para preview
+        uploadedFileUrl = URL.createObjectURL(file);
+        
+        // Mostrar info del archivo
+        showUploadedFileInfo(file);
+        
+        // Realizar análisis de audio
+        analyzeAudio(file);
+        
+        // Habilitar botones
+        document.getElementById('procesarGhostStudio').disabled = false;
+        document.getElementById('previewOriginal').disabled = false;
+        
+        showToast('Archivo subido correctamente', 'success');
+        
+      } catch (error) {
+        showToast('Error al subir archivo: ' + error.message, 'error');
+      } finally {
+        showUploadProgress(false);
+      }
+    }
+    
+    async function simulateFileUpload(file) {
+      // Simular progreso de upload
+      for (let i = 0; i <= 100; i += 10) {
+        updateUploadProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
+    function showUploadProgress(show) {
+      const progressDiv = document.getElementById('uploadProgress');
+      if (show) {
+        progressDiv.classList.remove('hidden');
+      } else {
+        progressDiv.classList.add('hidden');
+      }
+    }
+    
+    function updateUploadProgress(percent) {
+      const progressBar = document.getElementById('uploadProgressBar');
+      const progressText = document.getElementById('uploadProgressText');
+      
+      progressBar.style.setProperty('--progress', percent + '%');
+      progressText.textContent = percent + '%';
+    }
+    
+    function showUploadedFileInfo(file) {
+      const infoDiv = document.getElementById('uploadedFileInfo');
+      const fileName = document.getElementById('fileName');
+      const fileSize = document.getElementById('fileSize');
+      
+      fileName.textContent = file.name;
+      fileSize.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+      
+      infoDiv.classList.remove('hidden');
+    }
+    
+    function removeUploadedFile() {
+      uploadedFile = null;
+      if (uploadedFileUrl) {
+        URL.revokeObjectURL(uploadedFileUrl);
+        uploadedFileUrl = null;
+      }
+      
+      document.getElementById('uploadedFileInfo').classList.add('hidden');
+      document.getElementById('audioUpload').value = '';
+      document.getElementById('procesarGhostStudio').disabled = true;
+      document.getElementById('previewOriginal').disabled = true;
+      
+      showToast('Archivo removido', 'info');
+    }
+    
+    function previewOriginalAudio() {
+      if (uploadedFileUrl) {
+        const player = document.getElementById('player');
+        player.src = uploadedFileUrl;
+        player.classList.remove('sr-only');
+        player.play().catch(() => {
+          showToast('No se pudo reproducir el archivo', 'error');
+        });
+      }
+    }
+    
+    async function procesarGhostStudio() {
+      if (!uploadedFile) {
+        showToast('No hay archivo para procesar', 'warning');
+        return;
+      }
+      
+      const instrucciones = document.getElementById('instruccionesProduccion').value;
+      const estilo = document.getElementById('estiloProduccion').value;
+      const intensidad = document.getElementById('intensidadGhost').value;
+      
+      const btn = document.getElementById('procesarGhostStudio');
+      btn.disabled = true;
+      btn.textContent = 'Procesando en Ghost Studio...';
+      
+      // Mostrar progreso
+      showGhostProgress(true);
+      
+      try {
+        // En tu implementación real, aquí subirías el archivo a tu backend
+        // y usarías Suno para el cover/remix
+        const formData = new FormData();
+        formData.append('audio', uploadedFile);
+        formData.append('instructions', instrucciones);
+        formData.append('style', estilo);
+        formData.append('intensity', intensidad);
+        
+        // Simular el procesamiento por ahora
+        await simulateGhostProcessing();
+        
+        // Para conectar con tu backend real:
+        const response = await fetch(`${API_BASE_URL}/api/songs/create`, {
+          method: 'POST',
+          headers: { 
+            'X-User-Id': currentUserId
+          },
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.job_id) {
+          // Conectar WebSocket para updates
+          connectWebSocket(data.job_id);
+          showToast('Archivo enviado a Ghost Studio', 'success');
+        }
+        */
+        
+        showToast('Procesamiento completado en Ghost Studio', 'success');
+        
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('Error en Ghost Studio: ' + error.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Procesar en Ghost Studio';
+        showGhostProgress(false);
+      }
+    }
+    
+    async function simulateGhostProcessing() {
+      const steps = [
+        { status: 'Analizando audio...', progress: 20 },
+        { status: 'Extrayendo elementos...', progress: 40 },
+        { status: 'Aplicando estilo Suno...', progress: 60 },
+        { status: 'Procesando con IA...', progress: 80 },
+        { status: 'Finalizando producción...', progress: 100 }
+      ];
+      
+      for (const step of steps) {
+        updateGhostProgress(step.status, step.progress);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    }
+    
+    function showGhostProgress(show) {
+      const progressDiv = document.getElementById('ghostProgress');
+      if (show) {
+        progressDiv.classList.remove('hidden');
+      } else {
+        progressDiv.classList.add('hidden');
+      }
+    }
+    
+    function updateGhostProgress(statusText, progress) {
+      const statusElement = document.getElementById('ghostStatusText');
+      const progressBar = document.getElementById('ghostProgressBar');
+      
+      statusElement.textContent = statusText;
+      progressBar.style.setProperty('--progress', progress + '%');
+    }
+    
+    // Función para guardar en archivo
+    async function saveToArchive(musicData) {
+      try {
+        // En tu implementación real, esto se conectaría con tu backend
+        const response = await fetch(`${API_BASE_URL}/api/archive/save`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-User-Id': currentUserId
+          },
+          body: JSON.stringify({
+            title: musicData.title,
+            audio_url: musicData.audio_url,
+            job_id: musicData.job_id,
+            timestamp: Date.now()
+          })
+        });
+        
+        if (response.ok) {
+          showToast('Guardado en el Archivo', 'success');
+        } else {
+          throw new Error('Error al guardar');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('Error al guardar en archivo', 'error');
+      }
+    }<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Son1kVers3 — La Resistencia</title>
+  
+  <!-- SEO / Share / PWA -->
+  <meta name="description" content="Son1kVers3: Genera música, Ghost Studio y Archivo central. Lo imperfecto también es sagrado.">
+  <meta property="og:title" content="Son1kVers3 — Resistencia sonora">
+  <meta property="og:description" content="Texto→Música, Ghost Studio, Archivo.">
+  <meta name="theme-color" content="#0b0b0d">
+  
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Esperar a que Tailwind se cargue antes de configurar
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof tailwind !== 'undefined') {
+        tailwind.config = {
+          theme: {
+            extend: {
+              fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+              colors: { 
+                neon: '#00FFE7', 
+                coal: '#0B0B0F', 
+                haze: '#0f111a',
+                'neon-purple': '#8b5cf6',
+                'neon-blue': '#06b6d4' 
+              },
+              boxShadow: { glow: '0 0 40px rgba(0,255,231,.25)' }
+            }
+          }
+        };
+      }
+    });
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    html { background: #0f111a !important; }
+    body { background: #0f111a !important; color: #e4e4e7 !important; font-family: Inter, ui-sans-serif, system-ui !important; }
+    
+    .glitch { position: relative; }
+    .glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; }
+    .glitch::before { left: 2px; text-shadow: -2px 0 #f0f; clip-path: inset(10% 0 30% 0); }
+    .glitch::after { left: -2px; text-shadow: -2px 0 #0ff; clip-path: inset(60% 0 5% 0); }
+    
+    .knob { 
+      width: 80px; height: 80px; border-radius: 50%; position: relative; 
+      background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+      cursor: pointer; transition: all 0.2s ease;
+      border: 3px solid #333;
+      margin: 0 auto;
+      user-select: none;
+    }
+    .knob:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0,255,231,.3); }
+    .knob:focus-visible { 
+      outline: 2px solid #00FFE7; 
+      outline-offset: 2px; 
+    }
+    .knob::after { 
+      content: ''; position: absolute; left: 50%; top: 10px; 
+      width: 4px; height: 20px; background: #00FFE7; border-radius: 2px; 
+      transform: translateX(-50%) rotate(var(--rotation, 0deg)); 
+      box-shadow: 0 0 8px rgba(0,255,231,.8); 
+      transition: transform 0.1s ease;
+    }
+    
+    .knob-small { 
+      width: 60px; height: 60px; 
+    }
+    .knob-small::after { 
+      top: 8px; 
+      width: 3px; height: 16px; 
+    }
+    
+    .slider-container {
+      position: relative;
+      margin: 20px 0;
+    }
+    
+    .custom-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #333 0%, #00FFE7 var(--value, 50%), #333 var(--value, 50%));
+      outline: none;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .custom-slider:hover {
+      opacity: 1;
+    }
+    
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #00FFE7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,255,231,.5);
+    }
+    
+    .custom-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #00FFE7;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 10px rgba(0,255,231,.5);
+    }
+    
+    .text-neon { color: #00FFE7 !important; }
+    .bg-neon { background-color: #00FFE7 !important; }
+    .border-neon { border-color: #00FFE7 !important; }
+    .shadow-glow { box-shadow: 0 0 40px rgba(0,255,231,.25) !important; }
+    .bg-haze { background-color: #0f111a !important; }
+    
+    .tab-active { 
+      background: linear-gradient(45deg, #00FFE7, #8b5cf6);
+      color: #000;
+    }
+    
+    .section-hidden { display: none; }
+    
+    @keyframes pulse-neon {
+      0%, 100% { box-shadow: 0 0 5px rgba(0,255,231,.5); }
+      50% { box-shadow: 0 0 20px rgba(0,255,231,.8); }
+    }
+    
+    .pulse-neon { animation: pulse-neon 2s infinite; }
+    
+    /* Botones con focus visible */
+    .btn:focus-visible {
+      outline: 2px solid #00FFE7;
+      outline-offset: 2px;
+    }
+    
+    /* Drag & Drop styles */
+    .dropzone {
+      border: 2px dashed #333;
+      transition: all 0.3s ease;
+    }
+    
+    .dropzone.dragover {
+      border-color: #00FFE7;
+      background: rgba(0,255,231,0.1);
+    }
+    
+    /* Progress bar */
+    .progress-bar {
+      background: linear-gradient(90deg, #00FFE7 var(--progress, 0%), #333 var(--progress, 0%));
+      height: 4px;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    
+    /* Optimización móvil - reducir blur en pantallas pequeñas */
+    @media (max-width: 768px) {
+      .blur-3xl { filter: blur(16px); }
+      .backdrop-blur-xl { backdrop-filter: blur(8px); }
+      
+      /* Knobs más grandes en móvil */
+      .knob {
+        width: 90px;
+        height: 90px;
+        touch-action: none;
+      }
+      
+      .knob-small {
+        width: 70px;
+        height: 70px;
+      }
+      
+      /* Mejor espaciado en móvil */
+      .grid.grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      
+      /* Texto más grande para controles */
+      .knob + p {
+        font-size: 0.75rem;
+      }
+    }
+    
+    /* Mejor respuesta táctil */
+    @media (pointer: coarse) {
+      .knob {
+        transform-origin: center;
+        transition: transform 0.1s ease;
+      }
+      
+      .knob:active {
+        transform: scale(1.1);
+      }
+      
+      /* Botones más grandes en dispositivos táctiles */
+      .btn {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
+    
+    /* Respeto a preferencias de movimiento reducido */
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-neon { animation: none; }
+      .transition { transition: none; }
+      .knob::after { transition: none; }
+    }
+  </style>
+</head>
+
+<body class="antialiased overflow-x-hidden bg-haze">
+  <!-- Audio player global para reproducción -->
+  <audio id="player" class="sr-only" aria-hidden="true" controls></audio>
+  
+  <!-- Contenedor de toasts accesible -->
+  <div id="toast-area" class="toasts" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- NAVEGACIÓN -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/10" role="navigation">
+    <div class="mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-neon to-neon-purple flex items-center justify-center">
+          <span class="text-xs font-bold text-black">S3</span>
+        </div>
+        <span class="text-xl font-bold text-neon">SON1KVERS3</span>
+        <div id="apiStatus" class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-red-500 rounded-full" id="statusDot"></div>
+          <span class="text-xs text-zinc-400" id="statusText">Conectando...</span>
+        </div>
+      </div>
+      
+      <div class="flex space-x-6" role="tablist">
+        <button class="nav-tab tab-active px-4 py-2 rounded-lg transition btn" 
+                data-section="home" 
+                role="tab" 
+                aria-selected="true">Historia</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+                data-section="ghost-studio" 
+                role="tab" 
+                aria-selected="false">Ghost Studio</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+                data-section="generacion" 
+                role="tab" 
+                aria-selected="false">Generación</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+                data-section="archivo" 
+                role="tab" 
+                aria-selected="false">Archivo</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+                data-section="santuario" 
+                role="tab" 
+                aria-selected="false">Santuario</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+                data-section="planes" 
+                role="tab" 
+                aria-selected="false">Planes</button>
+      </div>
+      
+      <button id="entrarEstudio" class="bg-neon text-black px-6 py-2 rounded-lg font-semibold hover:bg-neon/90 transition btn">
+        Entrar al Estudio
+      </button>
+    </div>
+  </nav>
+
+  <!-- SECCIÓN HOME -->
+  <section id="home" class="content-section min-h-screen pt-20 pb-10" aria-hidden="false">
+    <div class="mx-auto max-w-7xl px-4 grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+      <div class="space-y-8">
+        <div class="space-y-2">
+          <p class="text-sm font-medium text-zinc-400 tracking-widest uppercase">LA RESISTENCIA</p>
+          <h1 class="text-4xl md:text-6xl font-bold leading-tight">
+            Lo imperfecto también<br>
+            <span class="text-neon">es sagrado</span>
+          </h1>
+          <h2 class="text-2xl md:text-3xl text-zinc-300 mt-4">
+            Componer con alma<br>
+            en un mundo de<br>
+            <span class="text-neon-purple">máquinas.</span>
+          </h2>
+        </div>
+        
+        <div class="flex space-x-4">
+          <button id="entrarEstudioMain" class="bg-neon text-black px-8 py-3 rounded-lg font-semibold hover:bg-neon/90 transition shadow-glow btn">
+            Entrar al Estudio
+          </button>
+          <button id="conocerUniverso" class="border border-white/20 px-8 py-3 rounded-lg hover:bg-white/5 transition btn">
+            Conocer el Universo
+          </button>
+        </div>
+        
+        <p class="text-zinc-400 max-w-lg">
+          Genera música, clona voces cantadas, mezcla con calidad de estudio y guarda tu proceso en un archivo vivo. Bienvenido al Estudio Fantasma.
+        </p>
+      </div>
+      
+      <div class="relative">
+        <div class="absolute -inset-10 -z-10 blur-3xl opacity-30" style="background: conic-gradient(from 45deg, rgba(0,255,231,.2), transparent, rgba(99,102,241,.2))"></div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl">
+          <div class="text-center mb-6">
+            <h3 class="text-xl font-semibold mb-2">Controles de Expresividad</h3>
+            <p class="text-sm text-zinc-400">Ajusta los parámetros para crear tu sonido único</p>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="text-center">
+              <div class="knob" 
+                   data-knob="expresividad" 
+                   data-value="75"
+                   role="slider"
+                   tabindex="0"
+                   aria-valuemin="0"
+                   aria-valuemax="100"
+                   aria-valuenow="75"
+                   aria-label="Expresividad"></div>
+              <p class="text-sm mt-2 text-zinc-400">Expresividad</p>
+              <p class="text-xs text-neon font-mono" id="expresividadDisplay">75%</p>
+            </div>
+            <div class="text-center">
+              <div class="knob" 
+                   data-knob="creatividad" 
+                   data-value="60"
+                   role="slider"
+                   tabindex="0"
+                   aria-valuemin="0"
+                   aria-valuemax="100"
+                   aria-valuenow="60"
+                   aria-label="Creatividad"></div>
+              <p class="text-sm mt-2 text-zinc-400">Creatividad</p>
+              <p class="text-xs text-neon font-mono" id="creatividadDisplay">60%</p>
+            </div>
+            <div class="text-center">
+              <div class="knob" 
+                   data-knob="precision" 
+                   data-value="85"
+                   role="slider"
+                   tabindex="0"
+                   aria-valuemin="0"
+                   aria-valuemax="100"
+                   aria-valuenow="85"
+                   aria-label="Precisión"></div>
+              <p class="text-sm mt-2 text-zinc-400">Precisión</p>
+              <p class="text-xs text-neon font-mono" id="precisionDisplay">85%</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <button id="testRapido" class="rounded-lg border border-neon/30 text-neon px-4 py-3 hover:bg-neon/10 transition font-medium btn">
+              Test Rápido
+            </button>
+            <button id="generarPreview" class="rounded-lg bg-neon/10 border border-neon text-neon px-4 py-3 hover:bg-neon/20 transition font-medium btn">
+              Generar Preview
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN GENERACIÓN -->
+  <section id="generacion" class="content-section section-hidden min-h-screen pt-20 pb-10" aria-hidden="true">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Generación Musical</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Beats, letras, voces cantadas clonadas y mezcla con calidad de estudio. Todo en un flujo.</p>
+        <div class="flex justify-center space-x-4 mt-6">
+          <button class="bg-neon/10 text-neon px-4 py-2 rounded-lg border border-neon btn">Suno v4.5</button>
+          <button id="checkSunoStatus" class="bg-white/5 text-white px-4 py-2 rounded-lg border border-white/20 btn">Estado API</button>
+        </div>
+      </div>
+      
+      <!-- Generación Musical Simple -->
+      <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 mb-8">
+        <h3 class="text-2xl font-semibold mb-6 text-center">Generación Musical con IA</h3>
+        <div class="grid lg:grid-cols-2 gap-8">
+          <div class="space-y-6">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-zinc-300">Letra de la canción</label>
+                <div class="flex space-x-2">
+                  <button id="historialLetras" class="text-xs bg-zinc-800/50 text-zinc-300 px-3 py-1 rounded-full hover:bg-zinc-700/50 transition btn">
+                    📝 Historial
+                  </button>
+                  <button id="generarLetraIA" class="text-xs bg-neon/20 text-neon px-3 py-1 rounded-full hover:bg-neon/30 transition btn">
+                    ✨ Mejorar con IA
+                  </button>
+                </div>
+              </div>
+              <textarea 
+                class="w-full h-32 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                placeholder="Escribe aquí la letra de tu canción o algunas ideas..."
+                id="letraCancion"
+              ></textarea>
+              <p class="text-xs text-zinc-500 mt-1">Tip: Escribe algunas palabras clave y usa "Mejorar con IA" para crear una letra completa</p>
+            </div>
+            
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-zinc-300">Prompt de estilo musical</label>
+                <div class="flex space-x-2">
+                  <button id="historialEstilos" class="text-xs bg-zinc-800/50 text-zinc-300 px-3 py-1 rounded-full hover:bg-zinc-700/50 transition btn">
+                    🎵 Historial
+                  </button>
+                  <button id="generarEstiloIA" class="text-xs bg-neon/20 text-neon px-3 py-1 rounded-full hover:bg-neon/30 transition btn">
+                    🎵 Sugerir estilo
+                  </button>
+                </div>
+              </div>
+              <input 
+                type="text" 
+                class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
+                placeholder="Ej: una balada emotiva con piano y cuerdas, estilo neo-soul, tempo 70 BPM"
+                id="promptEstilo"
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Preset de generación</label>
+              <select class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white" id="presetGeneracion">
+                <option value="professional">Profesional</option>
+                <option value="experimental">Experimental</option>
+                <option value="vintage">Vintage</option>
+                <option value="modern">Moderno</option>
+                <option value="cinematic">Cinematográfico</option>
+              </select>
+            </div>
+            
+            <label class="inline-flex items-center gap-2">
+              <input id="modoInstrumental" type="checkbox">
+              <span class="text-sm text-zinc-300">Generar instrumental (sin voz)</span>
+            </label>
+          </div>
+          
+          <div class="space-y-6">
+            <div>
+              <h4 class="text-lg font-medium mb-4">Controles de Expresividad</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="text-center">
+                  <div class="knob knob-small" 
+                       data-knob="expresividad-gen" 
+                       data-value="75"
+                       role="slider"
+                       tabindex="0"
+                       aria-valuemin="0"
+                       aria-valuemax="100"
+                       aria-valuenow="75"
+                       aria-label="Expresividad"></div>
+                  <p class="text-xs mt-1 text-zinc-400">Expresividad</p>
+                  <p class="text-xs text-neon" id="expresividadGenDisplay">75%</p>
+                </div>
+                <div class="text-center">
+                  <div class="knob knob-small" 
+                       data-knob="creatividad-gen" 
+                       data-value="60"
+                       role="slider"
+                       tabindex="0"
+                       aria-valuemin="0"
+                       aria-valuemax="100"
+                       aria-valuenow="60"
+                       aria-label="Creatividad"></div>
+                  <p class="text-xs mt-1 text-zinc-400">Creatividad</p>
+                  <p class="text-xs text-neon" id="creatividadGenDisplay">60%</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Progress indicator -->
+            <div id="generationProgress" class="hidden">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-zinc-400">Generando música...</span>
+                <span class="text-sm text-neon" id="progressText">0%</span>
+              </div>
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <button id="generarMusica" class="w-full bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition shadow-glow btn">
+              Generar Música
+            </button>
+            
+            <!-- Result display -->
+            <div id="musicResult" class="hidden mt-6 p-4 bg-zinc-900/50 rounded-lg">
+              <h4 class="text-lg font-medium mb-3">Música Generada</h4>
+              <div id="audioPlayer" class="space-y-3">
+                <!-- Audio player will be inserted here -->
+              </div>
+              <div class="flex space-x-2 mt-4">
+                <button id="downloadMusic" class="bg-neon/20 text-neon px-4 py-2 rounded-lg hover:bg-neon/30 transition btn">
+                  Descargar
+                </button>
+                <button id="saveToArchive" class="bg-white/10 text-white px-4 py-2 rounded-lg hover:bg-white/20 transition btn">
+                  Guardar en Archivo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN GHOST STUDIO -->
+  <section id="ghost-studio" class="content-section section-hidden min-h-screen pt-20 pb-10" aria-hidden="true">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Ghost Studio</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Sube tu demo y el Estudio Fantasma devuelve una producción profesional usando Suno AI.</p>
+        <div class="inline-flex items-center space-x-2 mt-4">
+          <div class="w-3 h-3 bg-neon rounded-full pulse-neon"></div>
+          <span class="text-sm text-neon">online</span>
+        </div>
+      </div>
+      
+      <div class="max-w-4xl mx-auto">
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
+          
+          <!-- File Upload Section -->
+          <div class="mb-8">
+            <label class="block text-lg font-medium text-zinc-300 mb-4">Subir Demo/Maqueta</label>
+            <div id="dropzone" class="dropzone rounded-lg p-8 text-center cursor-pointer">
+              <div class="flex flex-col items-center space-y-3">
+                <div class="w-16 h-16 rounded-full bg-neon/10 flex items-center justify-center">
+                  <span class="text-2xl">🎵</span>
+                </div>
+                <div>
+                  <p class="text-lg text-zinc-300">Arrastra tu archivo aquí o haz clic para seleccionar</p>
+                  <p class="text-sm text-zinc-400">MP3, WAV, M4A, FLAC (máx. 50MB)</p>
+                </div>
+              </div>
+              <input type="file" id="audioUpload" class="hidden" accept="audio/*">
+            </div>
+            
+            <!-- Upload progress -->
+            <div id="uploadProgress" class="hidden mt-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-zinc-400">Subiendo archivo...</span>
+                <span class="text-sm text-neon" id="uploadProgressText">0%</span>
+              </div>
+              <div class="progress-bar" id="uploadProgressBar"></div>
+            </div>
+            
+            <!-- Uploaded file info with spectral analysis -->
+            <div id="uploadedFileInfo" class="hidden mt-4 space-y-4">
+              <div class="p-4 bg-zinc-900/50 rounded-lg">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-sm font-medium" id="fileName"></p>
+                    <p class="text-xs text-zinc-400" id="fileSize"></p>
+                  </div>
+                  <button id="removeFile" class="text-red-400 hover:text-red-300 transition">Remover</button>
+                </div>
+                
+                <!-- Audio Analysis -->
+                <div class="bg-zinc-800/30 rounded-lg p-3 mt-3">
+                  <p class="text-xs text-zinc-400 mb-2">Análisis del Audio</p>
+                  <div class="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <p class="text-xs text-zinc-500">BPM</p>
+                      <p class="text-sm text-neon" id="detectedBPM">--</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-zinc-500">Key</p>
+                      <p class="text-sm text-neon" id="detectedKey">--</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-zinc-500">Loudness</p>
+                      <p class="text-sm text-neon" id="detectedLoudness">--</p>
+                    </div>
+                  </div>
+                  
+                  <!-- Simplified spectrum visualization -->
+                  <div class="mt-3">
+                    <p class="text-xs text-zinc-400 mb-1">Espectro de Frecuencias</p>
+                    <div class="flex items-end space-x-1 h-8">
+                      <div class="flex-1 bg-zinc-700 rounded-sm spectrum-bar" style="height: 20%"></div>
+                      <div class="flex-1 bg-zinc-600 rounded-sm spectrum-bar" style="height: 40%"></div>
+                      <div class="flex-1 bg-zinc-500 rounded-sm spectrum-bar" style="height: 60%"></div>
+                      <div class="flex-1 bg-neon rounded-sm spectrum-bar" style="height: 80%"></div>
+                      <div class="flex-1 bg-neon rounded-sm spectrum-bar" style="height: 70%"></div>
+                      <div class="flex-1 bg-zinc-500 rounded-sm spectrum-bar" style="height: 50%"></div>
+                      <div class="flex-1 bg-zinc-600 rounded-sm spectrum-bar" style="height: 30%"></div>
+                      <div class="flex-1 bg-zinc-700 rounded-sm spectrum-bar" style="height: 15%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-zinc-500 mt-1">
+                      <span>60Hz</span>
+                      <span>250Hz</span>
+                      <span>1kHz</span>
+                      <span>4kHz</span>
+                      <span>16kHz</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+              <label class="block text-lg font-medium text-zinc-300">Instrucciones de Producción</label>
+              <button id="generarInstruccionesIA" class="text-xs bg-neon/20 text-neon px-3 py-1 rounded-full hover:bg-neon/30 transition btn">
+                🎛️ Sugerir producción
+              </button>
+            </div>
+            <textarea 
+              class="w-full h-24 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+              placeholder="Ej: Quiero una producción más moderna con sintetizadores, aumentar el groove del bajo, agregar harmonías vocales..."
+              id="instruccionesProduccion"
+            ></textarea>
+          </div>
+          
+          <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <div>
+              <label class="block text-lg font-medium text-zinc-300 mb-4">Estilo de Producción</label>
+              <select class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white" id="estiloProduccion">
+                <option value="modern">Moderno/Contemporáneo</option>
+                <option value="vintage">Vintage/Retro</option>
+                <option value="cinematic">Cinematográfico</option>
+                <option value="minimal">Minimalista</option>
+                <option value="orchestral">Orquestal</option>
+                <option value="electronic">Electrónico</option>
+                <option value="acoustic">Acústico</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-lg font-medium text-zinc-300 mb-4">Intensidad de Procesamiento</label>
+              <div class="slider-container">
+                <input type="range" class="custom-slider w-full" value="70" min="10" max="100" id="intensidadGhost">
+                <div class="flex justify-between text-xs text-zinc-400 mt-1">
+                  <span>Sutil</span>
+                  <span>Moderado</span>
+                  <span>Intenso</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Processing progress -->
+          <div id="ghostProgress" class="hidden mb-8">
+            <div class="text-center mb-4">
+              <h4 class="text-lg font-medium text-neon">Ghost Studio Procesando...</h4>
+              <p class="text-sm text-zinc-400" id="ghostStatusText">Analizando audio...</p>
+            </div>
+            <div class="progress-bar" id="ghostProgressBar"></div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <button id="procesarGhostStudio" class="bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition btn" disabled>
+              Procesar en Ghost Studio
+            </button>
+            <button id="previewOriginal" class="border border-white/20 rounded-lg py-4 font-semibold hover:bg-white/5 transition btn" disabled>
+              Preview Original
+            </button>
+          </div>
+          
+          <!-- Result display -->
+          <div id="ghostResult" class="hidden mt-8 p-6
