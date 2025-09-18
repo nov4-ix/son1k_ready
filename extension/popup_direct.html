@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { 
+      font: 14px Arial; 
+      padding: 20px; 
+      width: 300px; 
+      background: #1a1a1a; 
+      color: #fff; 
+      margin: 0; 
+    }
+    h3 { 
+      color: #00FFE7; 
+      text-align: center; 
+      margin-bottom: 20px; 
+    }
+    button { 
+      width: 100%; 
+      padding: 15px; 
+      margin: 10px 0; 
+      border: none; 
+      border-radius: 5px; 
+      background: #00FFE7; 
+      color: #000; 
+      font-size: 16px; 
+      font-weight: bold; 
+      cursor: pointer; 
+    }
+    button:hover { 
+      background: #00d4c4; 
+    }
+    #status { 
+      padding: 10px; 
+      margin: 10px 0; 
+      border-radius: 5px; 
+      text-align: center; 
+      background: #333; 
+      color: #fff; 
+      min-height: 20px; 
+    }
+    .success { 
+      background: #22c55e !important; 
+      color: #000 !important; 
+    }
+    .error { 
+      background: #ef4444 !important; 
+    }
+  </style>
+</head>
+<body>
+  <h3>Son1k Extension</h3>
+  <button id="btn1">TEST BACKEND</button>
+  <button id="btn2">CONECTAR</button>
+  <div id="status">Click TEST BACKEND</div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const btn1 = document.getElementById('btn1');
+      const btn2 = document.getElementById('btn2');
+      const status = document.getElementById('status');
+      
+      btn1.addEventListener('click', function() {
+        status.textContent = 'Probando backend...';
+        status.className = '';
+        
+        fetch('https://2a73bb633652.ngrok-free.app/api/health', {
+          headers: { 'ngrok-skip-browser-warning': 'any' }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            status.textContent = '✅ Backend OK!';
+            status.className = 'success';
+          } else {
+            status.textContent = '❌ Backend failed';
+            status.className = 'error';
+          }
+        })
+        .catch(error => {
+          status.textContent = '❌ Error: ' + error.message;
+          status.className = 'error';
+        });
+      });
+      
+      btn2.addEventListener('click', function() {
+        status.textContent = 'Conectando...';
+        status.className = '';
+        
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+          chrome.storage.sync.set({
+            apiUrl: 'https://2a73bb633652.ngrok-free.app'
+          }, function() {
+            status.textContent = '✅ Conectado!';
+            status.className = 'success';
+          });
+        } else {
+          status.textContent = '❌ Chrome APIs no disponibles';
+          status.className = 'error';
+        }
+      });
+      
+      status.textContent = 'Listo - Click TEST BACKEND';
+    });
+  </script>
+</body>
+</html>

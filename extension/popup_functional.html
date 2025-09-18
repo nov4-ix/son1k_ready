@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            width: 320px;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+        }
+        h3 {
+            color: #00FFE7;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+        .button {
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 6px;
+            background: #00FFE7;
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+        }
+        .button:hover {
+            background: #00d4c4;
+        }
+        .button:active {
+            background: #00b8a9;
+        }
+        #status {
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 6px;
+            text-align: center;
+            background: #333;
+            color: #fff;
+            min-height: 20px;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #22c55e !important;
+            color: #000 !important;
+        }
+        .error {
+            background: #ef4444 !important;
+            color: #fff !important;
+        }
+        .testing {
+            background: #f59e0b !important;
+            color: #000 !important;
+        }
+        .indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #ef4444;
+        }
+        .indicator.connected {
+            background: #22c55e;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+        }
+        .url-info {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h3>
+        <span class="indicator" id="indicator"></span>
+        Son1k Extension
+    </h3>
+    
+    <div class="url-info">Backend: 2a73bb633652.ngrok-free.app</div>
+    
+    <button class="button" id="testButton">🧪 Test Backend</button>
+    <button class="button" id="connectButton">🔗 Connect Extension</button>
+    
+    <div id="status">Ready to test</div>
+
+    <script>
+        (function() {
+            'use strict';
+            
+            const API_BASE = 'https://2a73bb633652.ngrok-free.app';
+            
+            // Get DOM elements
+            const testButton = document.getElementById('testButton');
+            const connectButton = document.getElementById('connectButton');
+            const statusDiv = document.getElementById('status');
+            const indicator = document.getElementById('indicator');
+            
+            let backendWorking = false;
+            
+            // Update status function
+            function setStatus(message, type) {
+                statusDiv.textContent = message;
+                statusDiv.className = type || '';
+                
+                if (type === 'success') {
+                    indicator.className = 'indicator connected';
+                } else if (type === 'error') {
+                    indicator.className = 'indicator';
+                }
+                
+                console.log('[Son1k Extension]', message);
+            }
+            
+            // Test backend connectivity
+            function testBackend() {
+                setStatus('Testing backend...', 'testing');
+                testButton.textContent = '⏳ Testing...';
+                testButton.disabled = true;
+                
+                fetch(API_BASE + '/api/health', {
+                    method: 'GET',
+                    headers: {
+                        'ngrok-skip-browser-warning': 'any',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.ok === true) {
+                        backendWorking = true;
+                        setStatus('✅ Backend is working!', 'success');
+                    } else {
+                        throw new Error('Backend returned invalid response');
+                    }
+                })
+                .catch(function(error) {
+                    backendWorking = false;
+                    setStatus('❌ Backend error: ' + error.message, 'error');
+                })
+                .finally(function() {
+                    testButton.textContent = '🧪 Test Backend';
+                    testButton.disabled = false;
+                });
+            }
+            
+            // Connect extension
+            function connectExtension() {
+                if (!backendWorking) {
+                    setStatus('❌ Test backend first!', 'error');
+                    return;
+                }
+                
+                setStatus('Connecting extension...', 'testing');
+                connectButton.textContent = '⏳ Connecting...';
+                connectButton.disabled = true;
+                
+                try {
+                    // Check Chrome APIs
+                    if (typeof chrome === 'undefined') {
+                        throw new Error('Chrome APIs not available');
+                    }
+                    
+                    if (!chrome.storage || !chrome.storage.sync) {
+                        throw new Error('Chrome storage API not available');
+                    }
+                    
+                    // Save configuration
+                    chrome.storage.sync.set({
+                        apiUrl: API_BASE,
+                        connected: true,
+                        timestamp: Date.now()
+                    }, function() {
+                        if (chrome.runtime.lastError) {
+                            setStatus('❌ Storage error: ' + chrome.runtime.lastError.message, 'error');
+                            return;
+                        }
+                        
+                        // Try to notify background script
+                        if (chrome.runtime && chrome.runtime.sendMessage) {
+                            chrome.runtime.sendMessage({
+                                type: 'UPDATE_API_URL',
+                                apiUrl: API_BASE
+                            }, function(response) {
+                                if (chrome.runtime.lastError) {
+                                    console.warn('Background script communication failed:', chrome.runtime.lastError.message);
+                                }
+                                
+                                setStatus('✅ Extension connected!', 'success');
+                            });
+                        } else {
+                            setStatus('✅ Extension connected!', 'success');
+                        }
+                    });
+                    
+                } catch (error) {
+                    setStatus('❌ Connection error: ' + error.message, 'error');
+                } finally {
+                    connectButton.textContent = '🔗 Connect Extension';
+                    connectButton.disabled = false;
+                }
+            }
+            
+            // Event listeners
+            testButton.addEventListener('click', testBackend);
+            connectButton.addEventListener('click', connectExtension);
+            
+            // Initialize
+            setStatus('Ready to test', '');
+            
+            // Auto-test after short delay
+            setTimeout(function() {
+                if (document.visibilityState === 'visible') {
+                    testBackend();
+                }
+            }, 300);
+            
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Son1kVers3 Premium Test Accounts
+# ===============================
+# Password for ALL: Premium123!
+# 
+premium.tester1@son1k.com | ENTERPRISE
+premium.tester2@son1k.com | ENTERPRISE
+pro.tester1@son1k.com | PRO
+pro.tester2@son1k.com | PRO
+pro.tester3@son1k.com | PRO

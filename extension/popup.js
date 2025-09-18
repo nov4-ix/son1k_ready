@@ -7,7 +7,7 @@ let workerSection, startWorkerBtn, stopWorkerBtn, workerIndicator, workerStats;
 
 // Estado del popup
 let currentConfig = {
-  apiUrl: 'http://localhost:8000',
+  apiUrl: 'https://2a73bb633652.ngrok-free.app', // Configurado para ngrok actual
   connected: false,
   lastTest: null
 };

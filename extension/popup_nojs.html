@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            width: 320px;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+        }
+        h3 {
+            color: #00FFE7;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            text-align: center;
+            background: #22c55e;
+            color: #000;
+            font-weight: bold;
+        }
+        .url-box {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-size: 12px;
+        }
+        .instructions {
+            background: #444;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .step {
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+        .highlight {
+            color: #00FFE7;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h3>Son1k Extension</h3>
+    
+    <div class="status">
+        ✅ EXTENSION CONFIGURED
+    </div>
+    
+    <div class="url-box">
+        Backend: https://2a73bb633652.ngrok-free.app
+    </div>
+    
+    <div class="instructions">
+        <div class="step">
+            <span class="highlight">1.</span> Extension is automatically configured
+        </div>
+        <div class="step">
+            <span class="highlight">2.</span> Login: nov4@son1k.com
+        </div>
+        <div class="step">
+            <span class="highlight">3.</span> Password: admin123
+        </div>
+        <div class="step">
+            <span class="highlight">4.</span> Plan: ENTERPRISE (unlimited)
+        </div>
+        <div class="step">
+            <span class="highlight">5.</span> Ready for testing!
+        </div>
+    </div>
+
+    <script>
+        // Auto-configure on load
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+            chrome.storage.sync.set({
+                apiUrl: 'https://2a73bb633652.ngrok-free.app',
+                connected: true,
+                configured: true,
+                timestamp: Date.now()
+            });
+            
+            if (chrome.runtime && chrome.runtime.sendMessage) {
+                chrome.runtime.sendMessage({
+                    type: 'UPDATE_API_URL',
+                    apiUrl: 'https://2a73bb633652.ngrok-free.app'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

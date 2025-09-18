@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font: 14px Arial;
+      padding: 20px;
+      width: 300px;
+      background: #1a1a1a;
+      color: #fff;
+      margin: 0;
+    }
+    
+    h3 {
+      color: #00FFE7;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background: #00FFE7;
+      color: #000;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #00d4c4;
+    }
+    
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+    
+    #status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      text-align: center;
+      background: #333;
+      color: #fff;
+      min-height: 20px;
+      word-wrap: break-word;
+    }
+    
+    .success {
+      background: #22c55e !important;
+      color: #000 !important;
+    }
+    
+    .error {
+      background: #ef4444 !important;
+    }
+    
+    .testing {
+      background: #f59e0b !important;
+      color: #000 !important;
+    }
+    
+    .url-display {
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+      margin: 8px 0;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h3>Son1k Extension</h3>
+  
+  <div class="url-display">https://2a73bb633652.ngrok-free.app</div>
+  
+  <button id="testBtn">TEST BACKEND</button>
+  <button id="connectBtn" disabled>CONECTAR</button>
+  
+  <div id="status">Cargando...</div>
+  
+  <script>
+    console.log('🚀 Son1k Extension Popup Starting...');
+    
+    const API_URL = 'https://2a73bb633652.ngrok-free.app';
+    const status = document.getElementById('status');
+    const testBtn = document.getElementById('testBtn');
+    const connectBtn = document.getElementById('connectBtn');
+    
+    let isBackendOK = false;
+    
+    function updateStatus(message, type = 'normal') {
+      status.textContent = message;
+      status.className = type === 'success' ? 'success' : 
+                        type === 'error' ? 'error' : 
+                        type === 'testing' ? 'testing' : '';
+      console.log('[Son1k]', message);
+    }
+    
+    function enableConnectButton() {
+      connectBtn.disabled = false;
+      connectBtn.textContent = 'CONECTAR';
+    }
+    
+    function disableConnectButton() {
+      connectBtn.disabled = true;
+      connectBtn.textContent = 'CONECTAR (Test primero)';
+    }
+    
+    async function testBackend() {
+      updateStatus('Probando backend...', 'testing');
+      testBtn.disabled = true;
+      testBtn.textContent = 'Probando...';
+      
+      try {
+        console.log('Testing health endpoint:', API_URL + '/api/health');
+        
+        const response = await fetch(API_URL + '/api/health', {
+          method: 'GET',
+          headers: {
+            'ngrok-skip-browser-warning': 'any',
+            'Content-Type': 'application/json'
+          },
+          mode: 'cors'
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.ok === true) {
+          isBackendOK = true;
+          updateStatus('✅ Backend funcionando!', 'success');
+          enableConnectButton();
+        } else {
+          throw new Error('Backend no retornó ok:true');
+        }
+        
+      } catch (error) {
+        console.error('Test failed:', error);
+        isBackendOK = false;
+        updateStatus(`❌ Error: ${error.message}`, 'error');
+        disableConnectButton();
+      } finally {
+        testBtn.disabled = false;
+        testBtn.textContent = 'TEST BACKEND';
+      }
+    }
+    
+    async function connectExtension() {
+      if (!isBackendOK) {
+        updateStatus('❌ Primero haz el test', 'error');
+        return;
+      }
+      
+      updateStatus('Conectando extensión...', 'testing');
+      connectBtn.disabled = true;
+      connectBtn.textContent = 'Conectando...';
+      
+      try {
+        // Verificar Chrome APIs
+        if (typeof chrome === 'undefined') {
+          throw new Error('Chrome APIs no disponibles');
+        }
+        
+        // Guardar URL en storage
+        if (chrome.storage && chrome.storage.sync) {
+          await new Promise((resolve, reject) => {
+            chrome.storage.sync.set({ apiUrl: API_URL }, () => {
+              if (chrome.runtime.lastError) {
+                reject(new Error(chrome.runtime.lastError.message));
+              } else {
+                resolve();
+              }
+            });
+          });
+          console.log('URL guardada en storage');
+        }
+        
+        // Notificar background script
+        if (chrome.runtime && chrome.runtime.sendMessage) {
+          const bgResponse = await new Promise((resolve) => {
+            chrome.runtime.sendMessage({
+              type: 'UPDATE_API_URL',
+              apiUrl: API_URL
+            }, resolve);
+          });
+          console.log('Background notificado:', bgResponse);
+        }
+        
+        updateStatus('✅ Extensión conectada!', 'success');
+        
+      } catch (error) {
+        console.error('Connect failed:', error);
+        updateStatus(`❌ Error: ${error.message}`, 'error');
+      } finally {
+        connectBtn.disabled = false;
+        connectBtn.textContent = 'CONECTAR';
+      }
+    }
+    
+    // Event listeners
+    testBtn.onclick = testBackend;
+    connectBtn.onclick = connectExtension;
+    
+    // Auto-start
+    updateStatus('Listo para probar', 'normal');
+    console.log('✅ Popup ready');
+  </script>
+</body>
+</html>

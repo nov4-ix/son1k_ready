@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            width: 350px;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+        }
+        h3 {
+            color: #00FFE7;
+            text-align: center;
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+        .user-info {
+            background: #333;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #ef4444;
+        }
+        .status-indicator.connected {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        }
+        .status-box {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            text-align: center;
+            background: #333;
+            color: #fff;
+        }
+        .status-success {
+            background: #22c55e;
+            color: #000;
+        }
+        .status-error {
+            background: #ef4444;
+            color: #fff;
+        }
+        .button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 6px;
+            background: #00FFE7;
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .button:hover {
+            background: #00d4c4;
+        }
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .url-info {
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .instructions {
+            background: #444;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+    </style>
+</head>
+<body>
+    <h3>
+        <span class="status-indicator" id="statusIndicator"></span>
+        Son1k ↔ Suno Bridge
+    </h3>
+    
+    <div class="user-info">
+        Suno Account: soypepejaimes@gmail.com
+    </div>
+    
+    <div class="url-info">
+        Backend: 2a73bb633652.ngrok-free.app
+    </div>
+    
+    <div class="status-box" id="statusBox">
+        Checking connection...
+    </div>
+    
+    <div class="instructions">
+        <strong>How to use:</strong><br>
+        1. Go to suno.com<br>
+        2. Create/edit a song<br>
+        3. Click "🎵 Send to Son1k" button<br>
+        4. Song will be sent to your Son1k account
+    </div>
+
+    <script>
+        const API_URL = 'https://2a73bb633652.ngrok-free.app';
+        const USER_EMAIL = 'soypepejaimes@gmail.com';
+        
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusBox = document.getElementById('statusBox');
+        
+        function updateStatus(message, isConnected) {
+            statusBox.textContent = message;
+            statusBox.className = 'status-box ' + (isConnected ? 'status-success' : 'status-error');
+            statusIndicator.className = 'status-indicator ' + (isConnected ? 'connected' : '');
+            console.log('[Son1k Extension]', message);
+        }
+        
+        function testConnection() {
+            updateStatus('Testing connection...', false);
+            
+            fetch(API_URL + '/api/health', {
+                headers: { 'ngrok-skip-browser-warning': 'any' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    // Connection successful - configure extension
+                    configureExtension();
+                } else {
+                    updateStatus('❌ Backend not responding', false);
+                }
+            })
+            .catch(error => {
+                updateStatus('❌ Connection failed: ' + error.message, false);
+            });
+        }
+        
+        function configureExtension() {
+            // Save configuration
+            const config = {
+                apiUrl: API_URL,
+                userEmail: USER_EMAIL,
+                connected: true,
+                timestamp: Date.now()
+            };
+            
+            if (typeof chrome !== 'undefined' && chrome.storage) {
+                chrome.storage.sync.set(config, () => {
+                    // Notify background script
+                    if (chrome.runtime && chrome.runtime.sendMessage) {
+                        chrome.runtime.sendMessage({
+                            type: 'EXTENSION_CONFIGURED',
+                            config: config
+                        }, (response) => {
+                            if (response && response.success) {
+                                updateStatus('✅ Extension connected & ready!', true);
+                                notifyContentScripts(config);
+                            } else {
+                                updateStatus('⚠️ Partially connected', true);
+                            }
+                        });
+                    } else {
+                        updateStatus('✅ Extension configured!', true);
+                    }
+                });
+            } else {
+                updateStatus('❌ Chrome APIs not available', false);
+            }
+        }
+        
+        function notifyContentScripts(config) {
+            // Notify all Suno tabs about the new configuration
+            if (chrome.tabs && chrome.tabs.query) {
+                chrome.tabs.query({url: "*://suno.com/*"}, (tabs) => {
+                    tabs.forEach(tab => {
+                        chrome.tabs.sendMessage(tab.id, {
+                            type: 'UPDATE_CONFIG',
+                            config: config
+                        });
+                    });
+                });
+            }
+        }
+        
+        // Start connection test
+        setTimeout(testConnection, 500);
+        
+        // Listen for background messages
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+                if (message.type === 'STATUS_UPDATE') {
+                    updateStatus(message.status, message.connected);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

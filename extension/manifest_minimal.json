@@ -2,10 +2,10 @@
   "manifest_version": 3,
   "name": "Son1k Extension",
   "version": "3.0.0",
-  "description": "Son1k Music Bridge - Working Version",
+  "description": "Son1k Music Bridge - Minimal Version",
   "action": {
     "default_title": "Son1k Extension",
-    "default_popup": "popup_nojs.html"
+    "default_popup": "popup_final.html"
   },
   "permissions": [
     "storage",

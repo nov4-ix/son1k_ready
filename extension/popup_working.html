@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font: 14px Arial; padding: 20px; width: 300px; background: #1a1a1a; color: #fff; margin: 0; }
+    h3 { color: #00FFE7; text-align: center; margin-bottom: 20px; }
+    button { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 5px; background: #00FFE7; color: #000; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button:hover { background: #00d4c4; }
+    button:disabled { background: #666; cursor: not-allowed; }
+    #status { padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center; background: #333; color: #fff; min-height: 20px; }
+    .success { background: #22c55e !important; color: #000 !important; }
+    .error { background: #ef4444 !important; }
+    .indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; background: #ef4444; }
+    .indicator.connected { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.6); }
+  </style>
+</head>
+<body>
+  <h3><span class="indicator" id="indicator"></span>Son1k Extension</h3>
+  <button onclick="testNow()">🧪 TEST BACKEND</button>
+  <button onclick="connectNow()">🔗 CONECTAR</button>
+  <div id="status">Listo</div>
+  
+  <script>
+    const API = 'https://2a73bb633652.ngrok-free.app';
+    const status = document.getElementById('status');
+    const indicator = document.getElementById('indicator');
+    
+    function updateStatus(msg, success) {
+      status.textContent = msg;
+      status.className = success ? 'success' : (msg.includes('Error') ? 'error' : '');
+      indicator.className = 'indicator' + (success ? ' connected' : '');
+      console.log(msg);
+    }
+    
+    function testNow() {
+      updateStatus('Probando...', false);
+      fetch(API + '/api/health', { headers: { 'ngrok-skip-browser-warning': 'any' } })
+        .then(r => r.json())
+        .then(d => updateStatus(d.ok ? '✅ Backend OK!' : '❌ Backend failed', d.ok))
+        .catch(e => updateStatus('❌ Error: ' + e.message, false));
+    }
+    
+    function connectNow() {
+      updateStatus('Conectando...', false);
+      chrome.storage.sync.set({apiUrl: API}, () => {
+        chrome.runtime.sendMessage({type: 'UPDATE_API_URL', apiUrl: API}, (response) => {
+          updateStatus(response?.success ? '✅ Conectado!' : '❌ Error conectando', response?.success);
+        });
+      });
+    }
+    
+    // Auto test
+    setTimeout(testNow, 100);
+  </script>
+</body>
+</html>

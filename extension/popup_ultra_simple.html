@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font: 14px Arial;
+      padding: 20px;
+      width: 300px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    
+    h3 {
+      color: #00FFE7;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background: #00FFE7;
+      color: #000;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #00d4c4;
+    }
+    
+    #status {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      text-align: center;
+      background: #333;
+      color: #fff;
+    }
+    
+    .success {
+      background: #22c55e !important;
+      color: #000 !important;
+    }
+    
+    .error {
+      background: #ef4444 !important;
+    }
+  </style>
+</head>
+<body>
+  <h3>Son1k Extension</h3>
+  
+  <button onclick="testConnection()">TEST CONEXIÓN</button>
+  <button onclick="forceConnect()">FORZAR CONEXIÓN</button>
+  
+  <div id="status">Listo para conectar</div>
+  
+  <script>
+    const API_URL = 'https://2a73bb633652.ngrok-free.app';
+    
+    function updateStatus(message, isSuccess = false) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = isSuccess ? 'success' : (message.includes('Error') ? 'error' : '');
+      console.log('Status:', message);
+    }
+    
+    function testConnection() {
+      console.log('🧪 Iniciando test de conexión...');
+      updateStatus('Probando conexión...');
+      
+      fetch(API_URL + '/api/health', {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'any'
+        }
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('HTTP ' + response.status);
+      })
+      .then(data => {
+        console.log('Health data:', data);
+        if (data.ok) {
+          updateStatus('✅ CONEXIÓN OK!', true);
+        } else {
+          updateStatus('❌ Backend no healthy');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        updateStatus('❌ Error: ' + error.message);
+      });
+    }
+    
+    function forceConnect() {
+      console.log('🚀 Forzando conexión...');
+      updateStatus('Forzando conexión...');
+      
+      // 1. Guardar URL
+      chrome.storage.sync.set({ apiUrl: API_URL }, () => {
+        console.log('URL guardada en storage');
+        
+        // 2. Notificar al background
+        chrome.runtime.sendMessage({
+          type: 'UPDATE_API_URL',
+          apiUrl: API_URL
+        }, (response) => {
+          console.log('Background response:', response);
+          
+          // 3. Test final
+          testConnection();
+        });
+      });
+    }
+    
+    // Test automático al cargar
+    console.log('Popup cargado, iniciando test...');
+    testConnection();
+  </script>
+</body>
+</html>

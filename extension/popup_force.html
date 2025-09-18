@@ -1,0 +1,196 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font: 14px system-ui;
+      padding: 16px;
+      min-width: 320px;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    
+    h3 {
+      margin: 0 0 16px 0;
+      color: #00FFE7;
+      font-size: 16px;
+      text-align: center;
+    }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #00FFE7;
+      border-radius: 4px;
+      background: #00FFE7;
+      color: #000;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #00d4c4;
+    }
+    
+    #status {
+      margin: 12px 0;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background: #ef4444;
+    }
+    
+    .indicator.connected {
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    }
+    
+    .url-display {
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+      margin: 8px 0;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h3>
+    <span class="indicator" id="indicator"></span>
+    Son1k Extension
+  </h3>
+
+  <div class="url-display">https://2a73bb633652.ngrok-free.app</div>
+  
+  <button id="connect-btn">🔄 FORZAR CONEXIÓN</button>
+  <button id="test-btn">🧪 TEST MANUAL</button>
+
+  <div id="status">Desconectado - Click FORZAR CONEXIÓN</div>
+
+  <script>
+    const API_URL = 'https://2a73bb633652.ngrok-free.app';
+    let connected = false;
+
+    const indicator = document.getElementById('indicator');
+    const statusEl = document.getElementById('status');
+    const connectBtn = document.getElementById('connect-btn');
+    const testBtn = document.getElementById('test-btn');
+
+    function updateStatus(message, isSuccess = false) {
+      statusEl.textContent = message;
+      statusEl.className = isSuccess ? 'status-success' : '';
+      indicator.className = `indicator ${isSuccess ? 'connected' : ''}`;
+      connected = isSuccess;
+    }
+
+    async function forceConnection() {
+      try {
+        updateStatus('Conectando...', false);
+        
+        // 1. Test health endpoint
+        console.log('Testing health...');
+        const healthResponse = await fetch(`${API_URL}/api/health`, {
+          method: 'GET',
+          headers: { 'ngrok-skip-browser-warning': 'any' }
+        });
+        
+        if (!healthResponse.ok) {
+          throw new Error(`Health check failed: ${healthResponse.status}`);
+        }
+        
+        const healthData = await healthResponse.json();
+        if (!healthData.ok) {
+          throw new Error('Backend not healthy');
+        }
+        
+        console.log('Health OK:', healthData);
+        
+        // 2. Force save URL to storage
+        console.log('Saving URL to storage...');
+        await chrome.storage.sync.set({ apiUrl: API_URL });
+        
+        // 3. Force update background script
+        console.log('Updating background script...');
+        const bgResponse = await new Promise((resolve) => {
+          chrome.runtime.sendMessage({
+            type: 'UPDATE_API_URL',
+            apiUrl: API_URL
+          }, resolve);
+        });
+        
+        console.log('Background response:', bgResponse);
+        
+        // 4. Test connection again
+        console.log('Final connection test...');
+        const finalTest = await fetch(`${API_URL}/api/health`, {
+          headers: { 'ngrok-skip-browser-warning': 'any' }
+        });
+        
+        if (finalTest.ok) {
+          updateStatus('✅ CONECTADO EXITOSAMENTE!', true);
+          console.log('✅ CONEXIÓN FORZADA EXITOSA');
+        } else {
+          throw new Error('Final test failed');
+        }
+        
+      } catch (error) {
+        console.error('❌ Error en conexión forzada:', error);
+        updateStatus(`❌ Error: ${error.message}`, false);
+      }
+    }
+
+    async function manualTest() {
+      try {
+        updateStatus('Probando manualmente...', false);
+        
+        // Test directo sin background script
+        const response = await fetch(`${API_URL}/api/health`, {
+          headers: { 'ngrok-skip-browser-warning': 'any' }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          updateStatus(`✅ Test manual OK: ${JSON.stringify(data)}`, true);
+        } else {
+          updateStatus(`❌ Test manual failed: ${response.status}`, false);
+        }
+        
+        // Test background script
+        chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (bgStatus) => {
+          console.log('Background status:', bgStatus);
+        });
+        
+      } catch (error) {
+        updateStatus(`❌ Test error: ${error.message}`, false);
+      }
+    }
+
+    connectBtn.addEventListener('click', forceConnection);
+    testBtn.addEventListener('click', manualTest);
+
+    // Auto-test on load
+    manualTest();
+  </script>
+</body>
+</html>

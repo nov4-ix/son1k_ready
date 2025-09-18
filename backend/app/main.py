@@ -14,6 +14,7 @@ from .auth import (
     create_user, authenticate_user, create_access_token, 
     get_current_user, get_user_limits
 )
+from .db import get_db_session
 
 
 # --- Inicializa la app ---
@@ -72,8 +73,17 @@ def login(login_data: models.UserLogin):
     if not user:
         return {"error": "Invalid credentials"}, 401
     
+    # HOTFIX: Force correct plan for admin accounts
+    admin_emails = ["nov4@son1k.com", "nov4-ix@son1kvers3.com", "admin@son1k.com"]
+    actual_plan = "enterprise" if user.email in admin_emails else user.plan
+    
     token = create_access_token(user.id, user.email)
-    limits = get_user_limits(user)
+    
+    # Get limits based on actual plan
+    if actual_plan == "enterprise":
+        limits = {"daily_limit": -1, "monthly_limit": -1, "can_create_job": True}
+    else:
+        limits = get_user_limits(user)
     
     return {
         "access_token": token,
@@ -82,7 +92,7 @@ def login(login_data: models.UserLogin):
             "id": user.id,
             "email": user.email,
             "name": getattr(user, 'name', None),
-            "plan": user.plan,
+            "plan": actual_plan,
             "daily_usage": user.daily_usage,
             "daily_limit": limits["daily_limit"],
             "monthly_usage": user.monthly_usage,

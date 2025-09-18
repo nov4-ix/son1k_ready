@@ -22,3 +22,16 @@ logs/
 *.wav
 *.mp3
 *.flac
+# macOS / editor
+.DS_Store
+.vscode/
+# Python
+.venv/
+__pycache__/
+*.pyc
+# Node
+node_modules/
+# Son1kVers3
+.env
+keys/
+*.db

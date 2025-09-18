@@ -207,6 +207,20 @@
                 aria-selected="false">Archivo</button>
       </div>
       
+      <!-- Botones de autenticación -->
+      <div id="authButtons" class="flex space-x-3">
+        <button onclick="showLoginModal()" class="border border-white/20 px-4 py-2 rounded-lg hover:bg-white/5 transition btn">
+          Login
+        </button>
+        <button onclick="showRegisterModal()" class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition btn">
+          Registro
+        </button>
+      </div>
+      
+      <!-- Información del usuario autenticado -->
+      <div id="userInfo" style="display: none;"></div>
+      
+      <!-- Botón "Entrar al Estudio" (redirigirá o pedirá auth) -->
       <button id="entrarEstudio" class="bg-neon text-black px-6 py-2 rounded-lg font-semibold hover:bg-neon/90 transition btn">
         Entrar al Estudio
       </button>
@@ -718,10 +732,23 @@
       extension: false
     };
     
-    // API configurable para producción
-    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-      ? 'http://localhost:8000' 
-      : 'https://son1kvers3.com';
+    // API configurable para desarrollo y producción
+    const API_BASE_URL = (() => {
+      const hostname = window.location.hostname;
+      
+      // Local development
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:8000';
+      }
+      
+      // Ngrok tunnel (para testing)
+      if (hostname.includes('ngrok') || hostname.includes('ngrok-free.app')) {
+        return window.location.origin;
+      }
+      
+      // Production
+      return 'https://son1kvers3.com';
+    })();
     
     // Configuración de knobs con soporte móvil, teclado y ARIA
     function setupKnobs() {
@@ -1399,6 +1426,391 @@
         showToast('Bienvenido a Son1kVers3 - La Resistencia Sonora', 'success');
       }, 1000);
     });
+
+    // ================================
+    // SISTEMA DE AUTENTICACIÓN
+    // ================================
+
+    // Variables globales de autenticación
+    let currentUser = null;
+    let authToken = localStorage.getItem('authToken');
+
+    // Verificar autenticación al cargar
+    if (authToken) {
+      verifyToken();
+    }
+
+    // Función para mostrar modal de login
+    function showLoginModal() {
+      document.getElementById('authModal').style.display = 'flex';
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+    }
+
+    // Función para mostrar modal de registro
+    function showRegisterModal() {
+      document.getElementById('authModal').style.display = 'flex';
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+    }
+
+    // Función para cerrar modal
+    function closeAuthModal() {
+      document.getElementById('authModal').style.display = 'none';
+    }
+
+    // Función de login
+    async function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        showToast('Por favor completa todos los campos', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          authToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem('authToken', authToken);
+          updateAuthUI();
+          closeAuthModal();
+          showToast(`¡Bienvenido ${currentUser.email}! Plan: ${currentUser.plan.toUpperCase()}`, 'success');
+        } else {
+          showToast(data.detail || 'Error en el login', 'error');
+        }
+      } catch (error) {
+        showToast('Error de conexión', 'error');
+        console.error('Login error:', error);
+      }
+    }
+
+    // Función de registro
+    async function register() {
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const name = document.getElementById('registerName').value;
+
+      if (!email || !password) {
+        showToast('Email y contraseña son obligatorios', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password, name })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          authToken = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem('authToken', authToken);
+          updateAuthUI();
+          closeAuthModal();
+          showToast(`¡Cuenta creada! Bienvenido ${currentUser.email}`, 'success');
+        } else {
+          showToast(data.detail || 'Error en el registro', 'error');
+        }
+      } catch (error) {
+        showToast('Error de conexión', 'error');
+        console.error('Register error:', error);
+      }
+    }
+
+    // Función de logout
+    function logout() {
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem('authToken');
+      updateAuthUI();
+      showToast('Sesión cerrada', 'info');
+    }
+
+    // Verificar token válido
+    async function verifyToken() {
+      if (!authToken) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (response.ok) {
+          currentUser = await response.json();
+          updateAuthUI();
+        } else {
+          // Token inválido
+          logout();
+        }
+      } catch (error) {
+        console.error('Token verification error:', error);
+        logout();
+      }
+    }
+
+    // Actualizar UI según estado de autenticación
+    function updateAuthUI() {
+      const authButtons = document.getElementById('authButtons');
+      const userInfo = document.getElementById('userInfo');
+
+      if (currentUser) {
+        authButtons.style.display = 'none';
+        userInfo.style.display = 'block';
+        userInfo.innerHTML = `
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-sm font-medium">${currentUser.email}</div>
+              <div class="text-xs text-neon">${currentUser.plan.toUpperCase()} - ${currentUser.daily_usage}/${currentUser.daily_limit} hoy</div>
+            </div>
+            <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">
+              Salir
+            </button>
+          </div>
+        `;
+      } else {
+        authButtons.style.display = 'block';
+        userInfo.style.display = 'none';
+      }
+    }
+
+    // Configurar eventos de autenticación cuando se hace clic en "Entrar al Estudio"
+    document.getElementById('entrarEstudio').addEventListener('click', () => {
+      if (!currentUser) {
+        showLoginModal();
+      } else {
+        // Usuario autenticado, ir al estudio
+        const tabButton = document.querySelector('[data-section="estudio"]');
+        if (tabButton) {
+          tabButton.click();
+        }
+      }
+    });
+
+    document.getElementById('entrarEstudioMain').addEventListener('click', () => {
+      if (!currentUser) {
+        showLoginModal();
+      } else {
+        // Usuario autenticado, ir al estudio
+        const tabButton = document.querySelector('[data-section="estudio"]');
+        if (tabButton) {
+          tabButton.click();
+        }
+      }
+    });
+
+    // ================================
+    // PROTECCIÓN OBLIGATORIA DE AUTENTICACIÓN
+    // ================================
+
+    // Interceptar todos los clicks en tabs para requerir autenticación
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const section = tab.getAttribute('data-section');
+        
+        // Secciones que requieren autenticación
+        const protectedSections = ['estudio', 'extension', 'archivo'];
+        
+        if (protectedSections.includes(section) && !currentUser) {
+          e.preventDefault();
+          e.stopPropagation();
+          showLoginModal();
+          showToast('Debes iniciar sesión para acceder a esta sección', 'error');
+          return false;
+        }
+      });
+    });
+
+    // Proteger funciones de generación
+    const originalGenerateFunction = window.generarCancion;
+    window.generarCancion = function() {
+      if (!currentUser) {
+        showLoginModal();
+        showToast('Debes iniciar sesión para generar música', 'error');
+        return;
+      }
+      return originalGenerateFunction.apply(this, arguments);
+    };
+
+    // Proteger función de envío
+    const originalSendFunction = window.enviarASuno;
+    window.enviarASuno = function() {
+      if (!currentUser) {
+        showLoginModal();
+        showToast('Debes iniciar sesión para enviar a Suno', 'error');
+        return;
+      }
+      return originalSendFunction.apply(this, arguments);
+    };
+
+    // Añadir headers de autorización a todas las requests API
+    function makeAuthenticatedRequest(endpoint, options = {}) {
+      if (!currentUser || !authToken) {
+        showLoginModal();
+        throw new Error('Autenticación requerida');
+      }
+
+      const defaultOptions = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+          ...options.headers
+        },
+        ...options
+      };
+
+      return fetch(`${API_BASE_URL}${endpoint}`, defaultOptions);
+    }
+
+    // Reemplazar función global de fetch para endpoints protegidos
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options = {}) {
+      // Si es una llamada a API de songs, requerir autenticación
+      if (url.includes('/api/songs/') || url.includes('/api/auth/me')) {
+        if (!currentUser || !authToken) {
+          showLoginModal();
+          return Promise.reject(new Error('Autenticación requerida'));
+        }
+        
+        // Añadir token de autorización
+        options.headers = {
+          ...options.headers,
+          'Authorization': `Bearer ${authToken}`
+        };
+      }
+      
+      return originalFetch.call(this, url, options);
+    };
+
+    // Verificar autenticación al inicializar
+    function checkAuthenticationOnLoad() {
+      if (authToken) {
+        verifyToken();
+      } else {
+        // Si no hay token, mostrar modal después de un breve delay
+        setTimeout(() => {
+          if (!currentUser) {
+            showToast('¡Bienvenido! Inicia sesión para usar todas las funciones', 'info');
+          }
+        }, 3000);
+      }
+    }
+
+    // Ejecutar verificación al cargar
+    checkAuthenticationOnLoad();
   </script>
+
+  <!-- Modal de Autenticación -->
+  <div id="authModal" style="display: none;" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div class="bg-zinc-900 p-8 rounded-xl border border-white/20 max-w-md w-full mx-4">
+      
+      <!-- Formulario de Login -->
+      <div id="loginForm">
+        <h2 class="text-2xl font-bold text-center mb-6">Iniciar Sesión</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="tu@email.com"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Contraseña</label>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+          <button 
+            onclick="login()" 
+            class="w-full bg-neon text-black py-3 rounded-lg font-semibold hover:bg-neon/90 transition"
+          >
+            Entrar
+          </button>
+          <div class="text-center">
+            <button onclick="showRegisterModal()" class="text-neon hover:underline">
+              ¿No tienes cuenta? Regístrate
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de Registro -->
+      <div id="registerForm" style="display: none;">
+        <h2 class="text-2xl font-bold text-center mb-6">Crear Cuenta</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Nombre (opcional)</label>
+            <input 
+              type="text" 
+              id="registerName" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="Tu nombre"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input 
+              type="email" 
+              id="registerEmail" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="tu@email.com"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Contraseña</label>
+            <input 
+              type="password" 
+              id="registerPassword" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+          <button 
+            onclick="register()" 
+            class="w-full bg-neon text-black py-3 rounded-lg font-semibold hover:bg-neon/90 transition"
+          >
+            Crear Cuenta
+          </button>
+          <div class="text-center">
+            <button onclick="showLoginModal()" class="text-neon hover:underline">
+              ¿Ya tienes cuenta? Inicia sesión
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button 
+        onclick="closeAuthModal()" 
+        class="absolute top-4 right-4 text-gray-400 hover:text-white"
+      >
+        ✕
+      </button>
+    </div>
+  </div>
+
 </body>
 </html>

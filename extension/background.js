@@ -12,9 +12,9 @@ let jobsCompleted = 0;
 let jobsFailed = 0;
 let autoWorkerEnabled = true; // Auto-worker habilitado por defecto
 
-// Configuración por defecto
+// Configuración por defecto (auto-detecta entorno)
 const DEFAULT_CONFIG = {
-  apiUrl: 'https://son1kvers3.com',
+  apiUrl: 'https://2a73bb633652.ngrok-free.app', // Configurado para ngrok actual
   autoSubmit: false,
   debugMode: false,
   pollingInterval: 60000, // 60 segundos para producción

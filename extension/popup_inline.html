@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            width: 320px;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+        }
+        h3 {
+            color: #00FFE7;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+        .button {
+            width: 100%;
+            padding: 15px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 6px;
+            background: #00FFE7;
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+        }
+        .button:hover {
+            background: #00d4c4;
+        }
+        #status {
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 6px;
+            text-align: center;
+            background: #333;
+            color: #fff;
+            min-height: 20px;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #22c55e !important;
+            color: #000 !important;
+        }
+        .error {
+            background: #ef4444 !important;
+            color: #fff !important;
+        }
+        .testing {
+            background: #f59e0b !important;
+            color: #000 !important;
+        }
+    </style>
+</head>
+<body>
+    <h3>Son1k Extension</h3>
+    
+    <button class="button" onclick="testBackendNow()">🧪 Test Backend</button>
+    <button class="button" onclick="connectNow()">🔗 Connect Extension</button>
+    
+    <div id="status">Click Test Backend to start</div>
+
+    <script>
+        const API_BASE = 'https://2a73bb633652.ngrok-free.app';
+        
+        function setStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type || '';
+            console.log('[Son1k]', message);
+        }
+        
+        function testBackendNow() {
+            setStatus('Testing backend...', 'testing');
+            
+            fetch(API_BASE + '/api/health', {
+                method: 'GET',
+                headers: {
+                    'ngrok-skip-browser-warning': 'any'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.ok === true) {
+                    setStatus('✅ Backend is working!', 'success');
+                    window.backendOK = true;
+                } else {
+                    throw new Error('Invalid response');
+                }
+            })
+            .catch(error => {
+                setStatus('❌ Error: ' + error.message, 'error');
+                window.backendOK = false;
+            });
+        }
+        
+        function connectNow() {
+            if (!window.backendOK) {
+                setStatus('❌ Test backend first!', 'error');
+                return;
+            }
+            
+            setStatus('Connecting...', 'testing');
+            
+            if (typeof chrome !== 'undefined' && chrome.storage) {
+                chrome.storage.sync.set({
+                    apiUrl: API_BASE,
+                    connected: true
+                }, function() {
+                    if (chrome.runtime.lastError) {
+                        setStatus('❌ Storage error', 'error');
+                    } else {
+                        setStatus('✅ Extension connected!', 'success');
+                        
+                        // Try background message
+                        if (chrome.runtime && chrome.runtime.sendMessage) {
+                            chrome.runtime.sendMessage({
+                                type: 'UPDATE_API_URL',
+                                apiUrl: API_BASE
+                            });
+                        }
+                    }
+                });
+            } else {
+                setStatus('❌ Chrome APIs not available', 'error');
+            }
+        }
+        
+        // Auto-test on load
+        setTimeout(function() {
+            testBackendNow();
+        }, 500);
+    </script>
+</body>
+</html>
