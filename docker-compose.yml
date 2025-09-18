@@ -1,27 +1,55 @@
-version: "3.9"
 services:
   api:
-    build: ./backend
+    build: .
     container_name: son1k_api
-    ports: ["8000:8000"]
-    depends_on: [redis, db]
+    depends_on:
+      - redis
+      - db
     environment:
       - REDIS_URL=redis://redis:6379/0
       - POSTGRES_DSN=postgresql+psycopg2://postgres:postgres@db:5432/postgres
+      - PYTHONPATH=/app
+    volumes:
+      - ./:/app          # monta todo el repo (backend + frontend) en /app
+      - son1k_data:/data # para uploads Ghost Studio y artefactos
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    working_dir: /app
+    command: ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
   worker:
-    build: ./backend
+    build: .
     container_name: son1k_worker
-    command: celery -A app.queue.celery_app worker -Q default -l INFO --concurrency=1
-    depends_on: [redis]
+    depends_on:
+      - redis
+      - db
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - PYTHONPATH=/app
+    volumes:
+      - ./:/app
+      - son1k_data:/data
+    restart: unless-stopped
+    working_dir: /app
+    command: ["celery", "-A", "backend.app.queue.celery_app", "worker", "--loglevel=INFO", "--concurrency=2", "-Q", "default"]
+
   redis:
     image: redis:7-alpine
     container_name: son1k_redis
-    ports: ["6379:6379"]
+    # Importante: sin puertos publicados para evitar conflicto con redis local
+    restart: unless-stopped
+
   db:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: son1k_db
     environment:
       - POSTGRES_PASSWORD=postgres
-    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  son1k_data:
+

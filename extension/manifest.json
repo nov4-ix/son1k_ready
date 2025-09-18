@@ -1,15 +1,34 @@
 {
   "manifest_version": 3,
-  "name": "Son1k ↔ Suno Bridge (PoC)",
-  "version": "0.2.0",
+  "name": "Son1k ↔ Suno Bridge",
+  "version": "2.0.0",
+  "description": "Conecta Suno.com con Son1k backend para generación musical automática",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_title": "Son1k ↔ Suno Bridge",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
   "permissions": [
     "storage",
+    "activeTab",
     "scripting",
-    "tabs",
-    "activeTab"
+    "tabs"
   ],
   "host_permissions": [
-    "https://*.suno.ai/*"
+    "http://localhost:8000/*",
+    "https://suno.com/*",
+    "https://suno.ai/*",
+    "https://app.suno.ai/*",
+    "https://studio.suno.ai/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -17,15 +36,26 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.suno.ai/*"
+        "https://suno.com/*",
+        "https://suno.ai/*", 
+        "https://app.suno.ai/*",
+        "https://studio.suno.ai/*"
       ],
-      "js": [
-        "content.js"
-      ],
-      "run_at": "document_idle"
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": false
+    },
+    {
+      "matches": ["http://localhost:8000/*"],
+      "js": ["localhost-content.js"],
+      "run_at": "document_end",
+      "all_frames": false
     }
   ],
-  "action": {
-    "default_popup": "popup.html"
-  }
+  "web_accessible_resources": [
+    {
+      "resources": ["icon16.png", "icon48.png", "icon128.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

@@ -1,16 +1,188 @@
 <!doctype html>
-<html><body style="font:14px system-ui;padding:12px;min-width:280px;">
-  <h3>Son1k ↔ Suno (PoC)</h3>
-  <label>Backend URL</label>
-  <input id="api" placeholder="http://localhost:8000" style="width:100%"><br><br>
-  <button id="test">Vincular / Probar</button>
-  <script>
-    const api = document.getElementById('api');
-    chrome.storage.sync.get(["api"], v => api.value = v.api || "");
-    document.getElementById('test').onclick = async () => {
-      await chrome.storage.sync.set({ api: api.value });
-      chrome.runtime.sendMessage({ type: "TRIGGER_TEST" });
-      window.close();
-    };
-  </script>
-</body></html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font: 14px system-ui;
+      padding: 16px;
+      min-width: 320px;
+      max-width: 400px;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    
+    h3 {
+      margin: 0 0 16px 0;
+      color: #00FFE7;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: #b0b0b0;
+    }
+    
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #00FFE7;
+      box-shadow: 0 0 4px rgba(0, 255, 231, 0.3);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+    
+    button {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #404040;
+      border-radius: 4px;
+      background: #2a2a2a;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      background: #3a3a3a;
+      border-color: #00FFE7;
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    #connect-btn {
+      background: #00FFE7;
+      color: #000;
+      border-color: #00FFE7;
+      font-weight: 600;
+    }
+    
+    #connect-btn:hover {
+      background: #00d4c4;
+    }
+    
+    #status {
+      margin: 12px 0;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      min-height: 20px;
+      transition: all 0.2s;
+    }
+    
+    .status-success {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .status-error {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-connected {
+      background: rgba(0, 255, 231, 0.1);
+      color: #00FFE7;
+      border: 1px solid rgba(0, 255, 231, 0.3);
+    }
+    
+    .status-disconnected {
+      background: rgba(156, 163, 175, 0.1);
+      color: #9ca3af;
+      border: 1px solid rgba(156, 163, 175, 0.3);
+    }
+    
+    #debug-info {
+      margin-top: 12px;
+      padding: 8px;
+      background: #0f0f0f;
+      border-radius: 4px;
+      border: 1px solid #404040;
+      font-size: 10px;
+      color: #808080;
+    }
+    
+    .indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    
+    .indicator.connected {
+      background: #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+    }
+    
+    .indicator.disconnected {
+      background: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <h3>
+    <span class="indicator disconnected" id="connection-indicator"></span>
+    Son1k ↔ Suno Bridge
+  </h3>
+
+  <label for="api-url">Backend URL</label>
+  <input 
+    id="api-url" 
+    name="api-url" 
+    placeholder="http://localhost:8000" 
+    type="url"
+  />
+  
+  <div class="button-group">
+    <button id="save-btn">Guardar</button>
+    <button id="test-btn">Probar</button>
+  </div>
+  
+  <button id="connect-btn" style="width: 100%;">🔄 Conectar</button>
+
+  <div id="status" aria-live="polite"></div>
+  
+  <!-- Worker Controls -->
+  <div id="worker-section" style="margin-top: 16px; border-top: 1px solid #404040; padding-top: 16px;">
+    <h3 style="margin-bottom: 8px;">
+      <span class="indicator disconnected" id="worker-indicator"></span>
+      Worker Automático
+    </h3>
+    
+    <div class="button-group">
+      <button id="start-worker-btn">🤖 Iniciar</button>
+      <button id="stop-worker-btn">🛑 Detener</button>
+    </div>
+    
+    <div id="worker-stats" style="font-size: 11px; color: #808080; margin-top: 8px;"></div>
+  </div>
+  
+  <div id="debug-info"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
