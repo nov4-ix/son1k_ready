@@ -1,0 +1,92 @@
+[
+  {
+    "index": 0,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "cl-socialButtonsIconButton cl-button cl-socialButtonsIconButton__apple cl-button__apple \ud83d\udd12\ufe0f cl-internal-yz784x",
+    "text": ""
+  },
+  {
+    "index": 1,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "cl-socialButtonsIconButton cl-button cl-socialButtonsIconButton__discord cl-button__discord \ud83d\udd12\ufe0f cl-internal-yz784x",
+    "text": ""
+  },
+  {
+    "index": 2,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "cl-socialButtonsIconButton cl-button cl-socialButtonsIconButton__facebook cl-button__facebook \ud83d\udd12\ufe0f cl-internal-yz784x",
+    "text": ""
+  },
+  {
+    "index": 3,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "cl-socialButtonsIconButton cl-button cl-socialButtonsIconButton__google cl-button__google \ud83d\udd12\ufe0f cl-internal-yz784x",
+    "text": ""
+  },
+  {
+    "index": 4,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "cl-socialButtonsIconButton cl-button cl-socialButtonsIconButton__microsoft cl-button__microsoft \ud83d\udd12\ufe0f cl-internal-yz784x",
+    "text": ""
+  },
+  {
+    "index": 5,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "",
+    "text": ""
+  },
+  {
+    "index": 6,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "cl-selectButton cl-button cl-selectButton__countryCode cl-button__countryCode \ud83d\udd12\ufe0f cl-internal-1gs6jik",
+    "text": "MX"
+  },
+  {
+    "index": 7,
+    "tag": "input",
+    "type": "tel",
+    "placeholder": "Enter your phone number",
+    "name": "identifier",
+    "data-testid": "",
+    "class": "cl-formFieldInput cl-input cl-formFieldInput__identifier cl-input__identifier cl-required \ud83d\udd12\ufe0f cl-internal-1wjkb6g",
+    "text": ""
+  },
+  {
+    "index": 8,
+    "tag": "button",
+    "type": "submit",
+    "placeholder": "",
+    "name": "",
+    "data-testid": "",
+    "class": "cl-formButtonPrimary cl-button \ud83d\udd12\ufe0f cl-internal-rvzr0s",
+    "text": "Continue"
+  }
+]

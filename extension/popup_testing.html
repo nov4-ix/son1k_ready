@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            width: 400px;
+            background: #1a1a1a;
+            color: #fff;
+            margin: 0;
+        }
+        h3 {
+            color: #00FFE7;
+            text-align: center;
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+        .status-indicator.connected {
+            background: #22c55e;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+        }
+        .status-indicator.testing {
+            background: #f59e0b;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .status-box {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            text-align: center;
+            background: #333;
+            color: #fff;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        .status-success {
+            background: #22c55e;
+            color: #000;
+        }
+        .status-error {
+            background: #ef4444;
+            color: #fff;
+        }
+        .status-warning {
+            background: #f59e0b;
+            color: #000;
+        }
+        .button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 6px;
+            background: #00FFE7;
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .button:hover {
+            background: #00d4c4;
+            transform: translateY(-1px);
+        }
+        .button:active {
+            transform: translateY(0);
+        }
+        .button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .button.secondary {
+            background: #444;
+            color: #fff;
+        }
+        .button.secondary:hover {
+            background: #555;
+        }
+        .info-section {
+            background: #333;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            align-items: center;
+        }
+        .info-label {
+            color: #888;
+        }
+        .info-value {
+            color: #00FFE7;
+            font-weight: bold;
+        }
+        .response-time {
+            font-size: 11px;
+            color: #888;
+        }
+        .testing-section {
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .testing-title {
+            color: #f59e0b;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .log-output {
+            background: #222;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin: 10px 0;
+            border: 1px solid #444;
+        }
+        .log-line {
+            margin: 2px 0;
+        }
+        .log-success { color: #22c55e; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #60a5fa; }
+        .log-warning { color: #f59e0b; }
+        
+        .suno-section {
+            border: 1px solid #00FFE7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .suno-title {
+            color: #00FFE7;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h3>
+        <span class="status-indicator" id="statusIndicator"></span>
+        Son1k Extension - Testing Mode
+    </h3>
+    
+    <div class="status-box" id="statusBox">
+        Initializing...
+    </div>
+    
+    <div class="info-section">
+        <div class="info-row">
+            <span class="info-label">Backend:</span>
+            <span class="info-value" id="backendUrl">Loading...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">User:</span>
+            <span class="info-value" id="userEmail">Loading...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Status:</span>
+            <span class="info-value" id="connectionStatus">Checking...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Last Check:</span>
+            <span class="info-value" id="lastCheck">Never</span>
+        </div>
+    </div>
+    
+    <div class="testing-section">
+        <div class="testing-title">🔧 CONNECTION TESTING</div>
+        
+        <button class="button" id="testConnectionBtn">
+            🏓 Ping API
+        </button>
+        
+        <button class="button secondary" id="forceConfigBtn">
+            ⚙️ Force Configuration
+        </button>
+        
+        <button class="button secondary" id="clearStorageBtn">
+            🗑️ Clear Storage
+        </button>
+        
+        <div class="log-output" id="logOutput">
+            <div class="log-line log-info">Extension popup loaded</div>
+        </div>
+    </div>
+    
+    <div class="suno-section">
+        <div class="suno-title">🎵 SUNO INTEGRATION</div>
+        
+        <div class="info-row">
+            <span class="info-label">Content Script:</span>
+            <span class="info-value" id="sunoStatus">Checking...</span>
+        </div>
+        
+        <button class="button" id="openSunoBtn">
+            🌐 Open Suno.com
+        </button>
+        
+        <button class="button secondary" id="testSunoBtn">
+            🎯 Test Suno Integration
+        </button>
+    </div>
+
+    <script>
+        // Global state
+        let extensionState = {
+            connected: false,
+            config: null,
+            logs: []
+        };
+        
+        // DOM elements
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusBox = document.getElementById('statusBox');
+        const backendUrl = document.getElementById('backendUrl');
+        const userEmail = document.getElementById('userEmail');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const lastCheck = document.getElementById('lastCheck');
+        const logOutput = document.getElementById('logOutput');
+        const sunoStatus = document.getElementById('sunoStatus');
+        
+        // Buttons
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const forceConfigBtn = document.getElementById('forceConfigBtn');
+        const clearStorageBtn = document.getElementById('clearStorageBtn');
+        const openSunoBtn = document.getElementById('openSunoBtn');
+        const testSunoBtn = document.getElementById('testSunoBtn');
+        
+        // Logging function
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logLine = document.createElement('div');
+            logLine.className = `log-line log-${type}`;
+            logLine.textContent = `[${timestamp}] ${message}`;
+            
+            logOutput.appendChild(logLine);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            extensionState.logs.push({ timestamp, message, type });
+            console.log(`[Son1k Extension] ${message}`);
+        }
+        
+        // Update UI status
+        function updateStatus(message, isConnected, type = 'info') {
+            statusBox.textContent = message;
+            statusBox.className = 'status-box ' + (
+                isConnected ? 'status-success' : 
+                type === 'warning' ? 'status-warning' : 'status-error'
+            );
+            
+            statusIndicator.className = 'status-indicator ' + (
+                isConnected ? 'connected' : 
+                type === 'warning' ? 'testing' : ''
+            );
+            
+            connectionStatus.textContent = isConnected ? 'Connected' : 'Disconnected';
+            lastCheck.textContent = new Date().toLocaleTimeString();
+            
+            extensionState.connected = isConnected;
+            addLog(message, isConnected ? 'success' : 'error');
+        }
+        
+        // Initialize popup
+        async function initializePopup() {
+            addLog('Initializing popup...');
+            
+            try {
+                // Get config from service worker
+                const response = await chrome.runtime.sendMessage({ type: 'GET_CONFIG' });
+                
+                if (response && response.success) {
+                    extensionState.config = response.config;
+                    
+                    backendUrl.textContent = response.config.apiUrl.replace('https://', '');
+                    userEmail.textContent = response.config.userEmail;
+                    
+                    addLog('Configuration loaded from service worker', 'success');
+                    
+                    // Test connection immediately
+                    await testConnection();
+                } else {
+                    addLog('Failed to get config from service worker', 'error');
+                    await forceConfiguration();
+                }
+                
+                // Check Suno integration
+                checkSunoIntegration();
+                
+            } catch (error) {
+                addLog('Error initializing: ' + error.message, 'error');
+                updateStatus('❌ Initialization failed', false);
+            }
+        }
+        
+        // Test connection via service worker
+        async function testConnection() {
+            addLog('Testing connection via service worker...');
+            updateStatus('🔍 Testing connection...', false, 'warning');
+            
+            testConnectionBtn.disabled = true;
+            statusIndicator.className = 'status-indicator testing';
+            
+            try {
+                const response = await chrome.runtime.sendMessage({ type: 'PING_API' });
+                
+                if (response && response.success) {
+                    updateStatus(`✅ Connected (${response.responseTime}ms)`, true);
+                    addLog(`API responding in ${response.responseTime}ms`, 'success');
+                } else {
+                    updateStatus('❌ Connection failed', false);
+                    addLog('API ping failed: ' + (response.message || 'Unknown error'), 'error');
+                }
+                
+            } catch (error) {
+                updateStatus('❌ Test failed', false);
+                addLog('Connection test error: ' + error.message, 'error');
+            } finally {
+                testConnectionBtn.disabled = false;
+            }
+        }
+        
+        // Force configuration
+        async function forceConfiguration() {
+            addLog('Forcing extension configuration...');
+            
+            const config = {
+                apiUrl: 'https://2a73bb633652.ngrok-free.app',
+                userEmail: 'soypepejaimes@gmail.com',
+                connected: false,
+                timestamp: Date.now()
+            };
+            
+            try {
+                // Save to storage
+                await chrome.storage.sync.set(config);
+                
+                // Update service worker
+                await chrome.runtime.sendMessage({
+                    type: 'UPDATE_API_URL',
+                    apiUrl: config.apiUrl
+                });
+                
+                extensionState.config = config;
+                backendUrl.textContent = config.apiUrl.replace('https://', '');
+                userEmail.textContent = config.userEmail;
+                
+                addLog('Configuration forced successfully', 'success');
+                
+                // Test connection
+                await testConnection();
+                
+            } catch (error) {
+                addLog('Error forcing configuration: ' + error.message, 'error');
+            }
+        }
+        
+        // Clear storage
+        async function clearStorage() {
+            addLog('Clearing extension storage...');
+            
+            try {
+                await chrome.storage.sync.clear();
+                addLog('Storage cleared successfully', 'success');
+                
+                // Reinitialize
+                setTimeout(initializePopup, 1000);
+                
+            } catch (error) {
+                addLog('Error clearing storage: ' + error.message, 'error');
+            }
+        }
+        
+        // Check Suno integration
+        function checkSunoIntegration() {
+            chrome.tabs.query({url: "*://suno.com/*"}, (tabs) => {
+                if (tabs.length > 0) {
+                    sunoStatus.textContent = `Active (${tabs.length} tabs)`;
+                    sunoStatus.style.color = '#22c55e';
+                    addLog(`Found ${tabs.length} Suno tab(s)`, 'success');
+                } else {
+                    sunoStatus.textContent = 'No Suno tabs';
+                    sunoStatus.style.color = '#888';
+                }
+            });
+        }
+        
+        // Open Suno.com
+        function openSuno() {
+            chrome.tabs.create({ url: 'https://suno.com' });
+            addLog('Opening Suno.com...', 'info');
+        }
+        
+        // Test Suno integration
+        function testSunoIntegration() {
+            chrome.tabs.query({url: "*://suno.com/*"}, (tabs) => {
+                if (tabs.length > 0) {
+                    chrome.tabs.sendMessage(tabs[0].id, {
+                        type: 'CAPTURE_SUNO_DATA'
+                    }, (response) => {
+                        if (response && response.success) {
+                            addLog('Suno integration test successful', 'success');
+                        } else {
+                            addLog('Suno integration test failed', 'error');
+                        }
+                    });
+                } else {
+                    addLog('No Suno tabs found for testing', 'warning');
+                }
+            });
+        }
+        
+        // Event listeners
+        testConnectionBtn.addEventListener('click', testConnection);
+        forceConfigBtn.addEventListener('click', forceConfiguration);
+        clearStorageBtn.addEventListener('click', clearStorage);
+        openSunoBtn.addEventListener('click', openSuno);
+        testSunoBtn.addEventListener('click', testSunoIntegration);
+        
+        // Listen for messages from service worker
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            switch (message.type) {
+                case 'CONNECTION_STATUS':
+                    updateStatus(message.message, message.connected);
+                    break;
+                    
+                case 'SUNO_INTEGRATION_READY':
+                    addLog('Suno integration ready', 'success');
+                    checkSunoIntegration();
+                    break;
+                    
+                case 'SUNO_DATA_SENT':
+                    addLog('Suno data sent successfully', 'success');
+                    break;
+            }
+        });
+        
+        // Initialize when popup loads
+        document.addEventListener('DOMContentLoaded', initializePopup);
+        
+        // Auto-refresh Suno status every 5 seconds
+        setInterval(checkSunoIntegration, 5000);
+    </script>
+</body>
+</html>

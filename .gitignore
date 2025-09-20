@@ -95,3 +95,34 @@ $PWD/
 04_*.html
 05_*.html
 *_state.html
+
+# Environment files
+*.env
+*.env.*
+.env.production
+.env.development
+.env.local
+
+# Deployment packages  
+*.tar.gz
+
+# Selenium artifacts
+selenium_artifacts/
+.selenium_profile_*
+
+# Database
+*.db
+*.sqlite
+
+# Cache and logs
+__pycache__/
+*.pyc
+*.log
+logs/
+
+# VS Code
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db

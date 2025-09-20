@@ -35,16 +35,25 @@ class User(Base):
     monthly_usage = Column(Integer, default=0)
     last_usage_reset = Column(DateTime(timezone=True), server_default=func.now())
     
-    # Billing
+    # Billing - Enhanced for Son1k payments
     stripe_customer_id = Column(String, nullable=True)
     subscription_status = Column(String, default="inactive")
     subscription_end_date = Column(DateTime(timezone=True), nullable=True)
+    credits_remaining = Column(Integer, default=3)  # Monthly credits
+    credits_used_this_month = Column(Integer, default=0)
+    
+    # Profile information
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    username = Column(String, unique=True, nullable=True)
+    profile_image = Column(String, nullable=True)
     
     # Metadata
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)
 
 class Job(Base):
     __tablename__ = "jobs"
@@ -139,26 +148,58 @@ class UsageLog(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
     log_metadata = Column(JSON, nullable=True)
 
-# Commercial rate limiting configuration
-PLAN_LIMITS = {
-    UserPlan.FREE: {
-        "daily_limit": 5,
-        "monthly_limit": 50,
+# Son1k Subscription Plans Configuration
+SUBSCRIPTION_PLANS = {
+    "free": {
+        "name": "Plan Gratuito",
+        "price": 0,
+        "credits_per_month": 3,
+        "max_duration": 60,  # segundos
+        "daily_limit": 3,
         "concurrent_jobs": 1,
-        "priority": 0
+        "priority": 0,
+        "features": ["3 canciones por mes", "Duración máxima 60s", "Calidad estándar"]
     },
-    UserPlan.PRO: {
+    "basic": {
+        "name": "Plan Básico", 
+        "price": 9.99,
+        "stripe_price_id": "price_basic_monthly",
+        "credits_per_month": 50,
+        "max_duration": 180,
+        "daily_limit": 15,
+        "concurrent_jobs": 2,
+        "priority": 5,
+        "features": ["50 canciones por mes", "Duración máxima 3min", "Calidad alta", "Sin marca de agua"]
+    },
+    "pro": {
+        "name": "Plan Pro",
+        "price": 19.99, 
+        "stripe_price_id": "price_pro_monthly",
+        "credits_per_month": 200,
+        "max_duration": 300,
         "daily_limit": 50,
-        "monthly_limit": 1000,
         "concurrent_jobs": 3,
-        "priority": 10
+        "priority": 10,
+        "features": ["200 canciones por mes", "Duración máxima 5min", "Calidad premium", "Descarga en múltiples formatos", "Uso comercial"]
     },
-    UserPlan.ENTERPRISE: {
-        "daily_limit": -1,  # Unlimited
-        "monthly_limit": -1,
+    "unlimited": {
+        "name": "Plan Ilimitado",
+        "price": 49.99,
+        "stripe_price_id": "price_unlimited_monthly", 
+        "credits_per_month": -1,  # Ilimitado
+        "max_duration": 600,
+        "daily_limit": -1,
         "concurrent_jobs": 10,
-        "priority": 20
+        "priority": 20,
+        "features": ["Canciones ilimitadas", "Duración máxima 10min", "Calidad premium", "Uso comercial", "API access", "Soporte prioritario"]
     }
+}
+
+# Backward compatibility
+PLAN_LIMITS = {
+    UserPlan.FREE: SUBSCRIPTION_PLANS["free"],
+    UserPlan.PRO: SUBSCRIPTION_PLANS["pro"],
+    UserPlan.ENTERPRISE: SUBSCRIPTION_PLANS["unlimited"]
 }
 
 # Pydantic models for API

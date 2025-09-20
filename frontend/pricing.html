@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes y Precios - Son1k</title>
+    <meta name="description" content="Elige el plan perfecto para generar música con IA. Desde gratis hasta ilimitado.">
+    
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .pricing-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+        
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .plan-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .plan-card.popular {
+            border-color: #ffd700;
+            transform: scale(1.05);
+        }
+        
+        .plan-card.popular::before {
+            content: "MÁS POPULAR";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .plan-price {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .plan-price .currency {
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        .plan-price .period {
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+        
+        .plan-description {
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin-bottom: 40px;
+        }
+        
+        .plan-features li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .plan-features li::before {
+            content: "✅";
+            margin-right: 10px;
+        }
+        
+        .plan-button {
+            width: 100%;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .plan-button.free {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .plan-button.paid {
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            color: white;
+        }
+        
+        .plan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .plan-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .faq-section {
+            margin-top: 80px;
+            text-align: center;
+        }
+        
+        .faq-section h2 {
+            font-size: 2rem;
+            margin-bottom: 40px;
+        }
+        
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            text-align: left;
+        }
+        
+        .faq-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .faq-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .faq-answer {
+            opacity: 0.8;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .error {
+            background: rgba(231, 76, 60, 0.3);
+            border: 1px solid #e74c3c;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .plan-card.popular {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Planes y Precios</h1>
+        <p>Elige el plan perfecto para tus necesidades musicales. Desde canciones ocasionales hasta producción profesional.</p>
+    </div>
+
+    <div class="pricing-container">
+        <div id="loading" class="loading">
+            <p>🎵 Cargando planes...</p>
+        </div>
+        
+        <div id="error" class="error">
+            <p>❌ Error al cargar los planes. Por favor, recarga la página.</p>
+        </div>
+        
+        <div id="plans-grid" class="plans-grid" style="display: none;">
+            <!-- Los planes se cargan dinámicamente -->
+        </div>
+        
+        <div class="faq-section">
+            <h2>Preguntas Frecuentes</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">¿Puedo cambiar de plan en cualquier momento?</div>
+                    <div class="faq-answer">Sí, puedes actualizar o cancelar tu plan cuando quieras desde tu cuenta.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">¿Los créditos se acumulan?</div>
+                    <div class="faq-answer">No, los créditos se renuevan cada mes. Los no utilizados no se transfieren al siguiente mes.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">¿Puedo usar las canciones comercialmente?</div>
+                    <div class="faq-answer">Sí, con los planes Pro e Ilimitado tienes derechos de uso comercial completos.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">¿Hay garantía de reembolso?</div>
+                    <div class="faq-answer">Ofrecemos reembolso completo dentro de los primeros 7 días si no estás satisfecho.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">¿Qué formatos de descarga están disponibles?</div>
+                    <div class="faq-answer">MP3 en todos los planes. Los planes Pro e Ilimitado incluyen WAV y FLAC de alta calidad.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">¿Hay soporte técnico?</div>
+                    <div class="faq-answer">Soporte por email para todos los planes. Los usuarios Ilimitados tienen soporte prioritario.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración global
+        let stripePublishableKey = '';
+        let stripe = null;
+
+        // Cargar planes al iniciar
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadPlans();
+        });
+
+        async function loadPlans() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const plansGrid = document.getElementById('plans-grid');
+
+            loading.classList.add('show');
+
+            try {
+                const response = await fetch('/api/subscription/plans');
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error('Error al cargar planes');
+                }
+
+                stripePublishableKey = data.stripe_publishable_key;
+                stripe = Stripe(stripePublishableKey);
+
+                renderPlans(data.plans);
+                
+                loading.classList.remove('show');
+                plansGrid.style.display = 'grid';
+
+            } catch (err) {
+                console.error('Error loading plans:', err);
+                loading.classList.remove('show');
+                error.classList.add('show');
+            }
+        }
+
+        function renderPlans(plans) {
+            const plansGrid = document.getElementById('plans-grid');
+            plansGrid.innerHTML = '';
+
+            // Orden de planes para mostrar
+            const planOrder = ['free', 'basic', 'pro', 'unlimited'];
+
+            planOrder.forEach((planId, index) => {
+                const plan = plans[planId];
+                if (!plan) return;
+
+                const isPopular = planId === 'pro';
+                const isFree = planId === 'free';
+
+                const planCard = document.createElement('div');
+                planCard.className = `plan-card ${isPopular ? 'popular' : ''}`;
+
+                planCard.innerHTML = `
+                    <div class="plan-name">${plan.name}</div>
+                    <div class="plan-price">
+                        ${isFree ? 'Gratis' : `<span class="currency">$</span>${plan.price}<span class="period">/mes</span>`}
+                    </div>
+                    <div class="plan-description">
+                        ${plan.credits_per_month === -1 ? 'Canciones ilimitadas' : `${plan.credits_per_month} canciones por mes`}
+                    </div>
+                    <ul class="plan-features">
+                        ${plan.features.map(feature => `<li>${feature}</li>`).join('')}
+                    </ul>
+                    <button 
+                        class="plan-button ${isFree ? 'free' : 'paid'}" 
+                        onclick="${isFree ? 'startFree()' : `subscribeToPlan('${planId}')`}"
+                        ${isFree ? '' : 'id="btn-' + planId + '"'}
+                    >
+                        ${isFree ? 'Comenzar Gratis' : 'Suscribirse Ahora'}
+                    </button>
+                `;
+
+                plansGrid.appendChild(planCard);
+            });
+        }
+
+        function startFree() {
+            // Redirigir a la página principal para comenzar gratis
+            window.location.href = '/';
+        }
+
+        async function subscribeToPlan(planId) {
+            const button = document.getElementById(`btn-${planId}`);
+            const originalText = button.textContent;
+            
+            // Solicitar email del usuario
+            const email = prompt('Ingresa tu email para continuar:');
+            if (!email) return;
+
+            // Validar email básico
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Por favor ingresa un email válido');
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Procesando...';
+
+            try {
+                // Crear sesión de checkout
+                const response = await fetch('/api/subscription/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        plan_id: planId,
+                        user_email: email
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.detail || 'Error al crear sesión de pago');
+                }
+
+                // Redirigir a Stripe Checkout
+                window.location.href = data.checkout_url;
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+                
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+
+        // Manejar parámetros de URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('cancelled') === 'true') {
+            setTimeout(() => {
+                alert('Pago cancelado. Puedes intentar nuevamente cuando quieras.');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
