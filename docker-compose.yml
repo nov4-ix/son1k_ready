@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   api:
     build: .
@@ -6,17 +8,22 @@ services:
       - redis
       - db
     environment:
+      # Dentro de la red de Compose, el host de Redis es "redis"
       - REDIS_URL=redis://redis:6379/0
       - POSTGRES_DSN=postgresql+psycopg2://postgres:postgres@db:5432/postgres
       - PYTHONPATH=/app
+      # (opcional) si usas CORS por env:
+      # - ALLOWED_ORIGINS=http://localhost:8000
+      # - ALLOWED_ORIGINS_EXT=chrome-extension://ghpilnilpmfdacoaiacjlafeemanjijn
+      # - ALLOWED_ORIGIN_REGEX=https://.*\.ngrok-free\.app
     volumes:
-      - ./:/app          # monta todo el repo (backend + frontend) en /app
-      - son1k_data:/data # para uploads Ghost Studio y artefactos
+      - ./:/app          # monta todo el repo
+      - son1k_data:/data # artefactos (descargas, ghost, etc.)
     ports:
-      - "8000:8000"
-    restart: unless-stopped
+      - "8000:8000"      # expone API a tu host para front/extensión
     working_dir: /app
-    command: ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command: ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
 
   worker:
     build: .
@@ -30,14 +37,15 @@ services:
     volumes:
       - ./:/app
       - son1k_data:/data
-    restart: unless-stopped
     working_dir: /app
-    command: ["celery", "-A", "backend.app.queue.celery_app", "worker", "--loglevel=INFO", "--concurrency=2", "-Q", "default"]
+    # Ajusta el módulo Celery a TU app real
+    command: ["celery", "-A", "backend.app.queue.celery_app", "worker", "--loglevel=info", "-Q", "default", "-c", "2"]
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     container_name: son1k_redis
-    # Importante: sin puertos publicados para evitar conflicto con redis local
+    # sin puertos publicados; la API habla dentro de la red de compose
     restart: unless-stopped
 
   db:
@@ -45,8 +53,29 @@ services:
     container_name: son1k_db
     environment:
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  selenium:
+    image: selenium/standalone-chrome:123.0
+    container_name: son1k_selenium
+    shm_size: 4gb
+    mem_limit: 4g
+    cpus: '2.0'
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SESSION_TIMEOUT=600
+      - SE_NODE_SESSION_TIMEOUT=600
+      - JAVA_OPTS=-Xmx2g
+    ports:
+      - "4444:4444"   # WebDriver
+      - "7900:7900"   # noVNC (web)
+    volumes:
+      - ./chrome_profile:/home/seluser/chrome_profile
     restart: unless-stopped
 
 volumes:

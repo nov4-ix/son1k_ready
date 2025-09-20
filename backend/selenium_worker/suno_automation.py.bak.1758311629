@@ -1,0 +1,761 @@
+"""
+Suno.com Automation Logic
+Handles song generation, cover creation, and result extraction
+"""
+import os
+import time
+import logging
+import requests
+from typing import Dict, List, Optional, Tuple
+from urllib.parse import urlparse
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import TimeoutException, WebDriverException
+
+from .browser_manager import BrowserManager
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class SunoAutomation:
+    """Automates Suno.com song generation and processing"""
+    
+    def __init__(self, browser_manager: BrowserManager):
+        self.browser = browser_manager
+        self.driver = browser_manager.driver
+        
+    def generate_song(self, job_data: Dict) -> Dict:
+        """
+        OPTIMIZED Commercial Song Generation
+        
+        Args:
+            job_data: Dictionary containing:
+                - prompt: Song description/prompt
+                - lyrics: Custom lyrics (optional)
+                - mode: 'original' or 'instrumental' 
+                - style: Music style/genre
+                - user_plan: User plan for priority handling
+                - priority: Priority score (1-10)
+                
+        Returns:
+            Dictionary with generation results
+        """
+        user_plan = job_data.get('user_plan', 'free')
+        priority = job_data.get('priority', 1)
+        
+        logger.info(f"🎵 COMMERCIAL {user_plan.upper()} generation: {job_data.get('prompt', 'No prompt')[:50]}... (Priority: {priority})")
+        
+        try:
+            # Optimized login check for commercial speed
+            if not self.browser.ensure_logged_in():
+                return {"success": False, "error": "Failed to login to Suno.com"}
+            
+            # Pre-cache selectors for speed optimization
+            start_time = time.time()
+            
+            # Priority-based timeout adjustments
+            timeout_config = {
+                'enterprise': {'page_load': 10, 'generation': 180, 'extraction': 30},
+                'vip': {'page_load': 15, 'generation': 240, 'extraction': 45},
+                'pro': {'page_load': 20, 'generation': 300, 'extraction': 60},
+                'free': {'page_load': 30, 'generation': 360, 'extraction': 90}
+            }
+            
+            timeouts = timeout_config.get(user_plan, timeout_config['free'])
+            
+            if not self.browser.navigate_to_create():
+                return {"success": False, "error": "Failed to navigate to create page"}
+            
+            # Fill the form
+            form_filled = self._fill_generation_form(job_data)
+            if not form_filled:
+                return {"success": False, "error": "Failed to fill generation form"}
+            
+            # Submit generation
+            generation_started = self._submit_generation()
+            if not generation_started:
+                return {"success": False, "error": "Failed to start generation"}
+            
+            # Wait for completion and extract results
+            results = self._wait_for_generation_completion()
+            if not results["success"]:
+                return results
+            
+            logger.info("✅ Song generation completed successfully")
+            return {
+                "success": True,
+                "audio_urls": results["audio_urls"],
+                "generation_id": results.get("generation_id"),
+                "metadata": results.get("metadata", {})
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Song generation failed: {e}")
+            self.browser.take_screenshot("generation_error.png")
+            return {"success": False, "error": str(e)}
+    
+    def create_cover(self, job_data: Dict) -> Dict:
+        """
+        Create a cover/remix using Ghost Studio
+        
+        Args:
+            job_data: Dictionary containing:
+                - audio_file_path: Path to audio file to upload
+                - style_prompt: Style instructions
+                - mode: 'cover' or 'remix'
+                
+        Returns:
+            Dictionary with cover creation results
+        """
+        logger.info(f"👻 Starting cover creation with Ghost Studio...")
+        
+        try:
+            # Navigate to cover/ghost studio page
+            cover_url = "https://suno.com/cover" 
+            self.driver.get(cover_url)
+            time.sleep(3)
+            
+            # Upload audio file
+            upload_success = self._upload_audio_file(job_data.get("audio_file_path"))
+            if not upload_success:
+                return {"success": False, "error": "Failed to upload audio file"}
+            
+            # Fill style/instructions
+            style_filled = self._fill_cover_form(job_data)
+            if not style_filled:
+                return {"success": False, "error": "Failed to fill cover form"}
+            
+            # Submit cover generation
+            generation_started = self._submit_cover_generation()
+            if not generation_started:
+                return {"success": False, "error": "Failed to start cover generation"}
+            
+            # Wait for completion
+            results = self._wait_for_generation_completion()
+            if not results["success"]:
+                return results
+            
+            logger.info("✅ Cover creation completed successfully")
+            return {
+                "success": True,
+                "audio_urls": results["audio_urls"],
+                "generation_id": results.get("generation_id"),
+                "metadata": results.get("metadata", {})
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Cover creation failed: {e}")
+            self.browser.take_screenshot("cover_error.png")
+            return {"success": False, "error": str(e)}
+    
+    def _fill_generation_form(self, job_data: Dict) -> bool:
+        """Fill the song generation form"""
+        try:
+            logger.info("📝 Filling generation form...")
+            
+            # Fill prompt/description
+            prompt = job_data.get("prompt", "")
+            if prompt:
+                prompt_selectors = [
+                    "textarea[placeholder*='Describe']",
+                    "textarea[placeholder*='prompt']", 
+                    "textarea[placeholder*='Song description']",
+                    "[data-testid='prompt-input']",
+                    "input[placeholder*='Describe']"
+                ]
+                
+                prompt_input = self._find_element_by_selectors(prompt_selectors)
+                if prompt_input:
+                    prompt_input.clear()
+                    prompt_input.send_keys(prompt)
+                    time.sleep(1)
+                    logger.info(f"✅ Filled prompt: {prompt[:30]}...")
+                else:
+                    logger.warning("⚠️ Could not find prompt input")
+            
+            # Fill lyrics if provided
+            lyrics = job_data.get("lyrics", "")
+            if lyrics:
+                lyrics_selectors = [
+                    "textarea[placeholder*='lyrics']",
+                    "textarea[placeholder*='Lyrics']",
+                    "textarea[placeholder*='Custom lyrics']",
+                    "[data-testid='lyrics-input']"
+                ]
+                
+                lyrics_input = self._find_element_by_selectors(lyrics_selectors)
+                if lyrics_input:
+                    lyrics_input.clear()
+                    lyrics_input.send_keys(lyrics)
+                    time.sleep(1)
+                    logger.info(f"✅ Filled lyrics: {len(lyrics)} characters")
+                else:
+                    logger.warning("⚠️ Could not find lyrics input")
+            
+            # Set instrumental mode if specified
+            if job_data.get("mode") == "instrumental":
+                instrumental_selectors = [
+                    "input[type='checkbox'][data-testid='instrumental']",
+                    "input[type='checkbox']:has-text('Instrumental')",
+                    ".instrumental-toggle input",
+                    "label:contains('Instrumental') input"
+                ]
+                
+                instrumental_toggle = self._find_element_by_selectors(instrumental_selectors)
+                if instrumental_toggle and not instrumental_toggle.is_selected():
+                    instrumental_toggle.click()
+                    time.sleep(1)
+                    logger.info("✅ Enabled instrumental mode")
+            
+            # Select music style/genre if available
+            style = job_data.get("style", "")
+            if style:
+                self._set_music_style(style)
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error filling form: {e}")
+            return False
+    
+    def _submit_generation(self) -> bool:
+        """Submit the generation form"""
+        try:
+            logger.info("🚀 Submitting generation...")
+            
+            # Find and click generate/create button
+            submit_selectors = [
+                "button[type='submit']",
+                "button:contains('Create')",
+                "button:contains('Generate')",
+                "[data-testid='create-button']",
+                ".generate-button",
+                ".create-button"
+            ]
+            
+            submit_button = self._find_element_by_selectors(submit_selectors, use_xpath_for_text=True)
+            if not submit_button:
+                logger.error("❌ Could not find submit button")
+                return False
+            
+            # Check if button is enabled
+            if not submit_button.is_enabled():
+                logger.error("❌ Submit button is disabled")
+                return False
+            
+            submit_button.click()
+            time.sleep(3)
+            
+            # Verify generation started (look for loading/progress indicators)
+            progress_selectors = [
+                ".loading",
+                ".generating",
+                ".progress",
+                "[data-testid='generation-progress']",
+                ".spinner"
+            ]
+            
+            # Wait for progress indicator to appear
+            try:
+                WebDriverWait(self.driver, 10).until(
+                    EC.any_of(*[
+                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                        for selector in progress_selectors
+                    ])
+                )
+                logger.info("✅ Generation started successfully")
+                return True
+                
+            except TimeoutException:
+                # Maybe generation completed immediately, or different UI
+                logger.info("⚠️ No progress indicator found, checking for results...")
+                return True
+                
+        except Exception as e:
+            logger.error(f"❌ Error submitting generation: {e}")
+            return False
+    
+    def _wait_for_generation_completion(self, timeout: int = 300) -> Dict:
+        """Wait for generation to complete and extract results"""
+        logger.info(f"⏳ Waiting for generation completion (timeout: {timeout}s)...")
+        
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            try:
+                # Check for completion indicators
+                completion_selectors = [
+                    ".audio-player",
+                    "audio",
+                    "[data-testid='audio-result']",
+                    ".download-button",
+                    ".play-button",
+                    "button:contains('Download')"
+                ]
+                
+                # Look for audio elements or download buttons
+                for selector in completion_selectors:
+                    try:
+                        if ":contains(" in selector:
+                            text_content = selector.split(':contains(')[1].split(')')[0].strip("'\"")
+                            xpath = f"//button[contains(text(), '{text_content}')]"
+                            elements = self.driver.find_elements(By.XPATH, xpath)
+                        else:
+                            elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                        
+                        if elements:
+                            logger.info(f"✅ Found completion indicator: {selector}")
+                            # Extract results
+                            return self._extract_generation_results()
+                            
+                    except Exception:
+                        continue
+                
+                # Check for error messages
+                error_selectors = [
+                    ".error",
+                    ".error-message",
+                    "[data-testid='error']",
+                    ".generation-failed"
+                ]
+                
+                for selector in error_selectors:
+                    try:
+                        error_element = self.driver.find_element(By.CSS_SELECTOR, selector)
+                        if error_element.is_displayed():
+                            error_text = error_element.text
+                            logger.error(f"❌ Generation failed: {error_text}")
+                            return {"success": False, "error": f"Generation failed: {error_text}"}
+                    except:
+                        continue
+                
+                # Wait and retry
+                time.sleep(5)
+                logger.info(f"⏳ Still waiting... {int(time.time() - start_time)}s elapsed")
+                
+            except Exception as e:
+                logger.error(f"❌ Error while waiting: {e}")
+                time.sleep(5)
+        
+        logger.error("❌ Generation timeout reached")
+        return {"success": False, "error": "Generation timeout"}
+    
+    def _extract_generation_results(self) -> Dict:
+        """Extract audio URLs and metadata from completed generation - FIXED to get real music"""
+        try:
+            logger.info("📦 Extracting generation results...")
+            
+            audio_urls = []
+            
+            # Method 1: Look for direct audio elements (EXCLUDE placeholder files)
+            audio_elements = self.driver.find_elements(By.TAG_NAME, "audio")
+            for audio in audio_elements:
+                src = audio.get_attribute("src")
+                if src and src.startswith("http") and not self._is_placeholder_audio(src):
+                    audio_urls.append(src)
+                    logger.info(f"🎵 Found real audio URL: {src}")
+                elif src and self._is_placeholder_audio(src):
+                    logger.warning(f"⚠️ Skipping placeholder audio: {src}")
+            
+            # Method 1.5: Check audio source elements
+            source_elements = self.driver.find_elements(By.CSS_SELECTOR, "audio source")
+            for source in source_elements:
+                src = source.get_attribute("src")
+                if src and src.startswith("http") and not self._is_placeholder_audio(src):
+                    audio_urls.append(src)
+                    logger.info(f"🎵 Found real audio source: {src}")
+            
+            # Method 2: Look for download links (FILTER OUT PLACEHOLDERS)
+            download_selectors = [
+                "a[href*='.mp3']",
+                "a[href*='.wav']",
+                "a[href*='download']",
+                "[data-testid='download-link']",
+                ".download-button[href]",
+                "button[data-audio-url]",
+                "[data-audio-src]"
+            ]
+            
+            for selector in download_selectors:
+                try:
+                    elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                    for element in elements:
+                        href = element.get_attribute("href") or element.get_attribute("data-audio-url") or element.get_attribute("data-audio-src")
+                        if href and href not in audio_urls and not self._is_placeholder_audio(href):
+                            audio_urls.append(href)
+                            logger.info(f"📥 Found real download URL: {href}")
+                        elif href and self._is_placeholder_audio(href):
+                            logger.warning(f"⚠️ Skipping placeholder download: {href}")
+                except:
+                    continue
+            
+            # Method 3: Enhanced JavaScript extraction with placeholder filtering
+            try:
+                # Execute comprehensive script to find real audio URLs
+                script_result = self.driver.execute_script("""
+                    var urls = [];
+                    var placeholderPatterns = ['sil-', 'silence', 'placeholder', 'temp', 'loading'];
+                    
+                    function isPlaceholder(url) {
+                        if (!url) return true;
+                        var lowerUrl = url.toLowerCase();
+                        return placeholderPatterns.some(pattern => lowerUrl.includes(pattern));
+                    }
+                    
+                    // Check for audio elements and their sources
+                    document.querySelectorAll('audio').forEach(function(audio) {
+                        if (audio.src && !isPlaceholder(audio.src)) {
+                            urls.push(audio.src);
+                        }
+                        // Check source elements within audio
+                        audio.querySelectorAll('source').forEach(function(source) {
+                            if (source.src && !isPlaceholder(source.src)) {
+                                urls.push(source.src);
+                            }
+                        });
+                    });
+                    
+                    // Check for data attributes (common in Suno)
+                    var dataSelectors = ['[data-audio-url]', '[data-audio-src]', '[data-track-url]', '[data-song-url]'];
+                    dataSelectors.forEach(function(selector) {
+                        document.querySelectorAll(selector).forEach(function(el) {
+                            var url = el.getAttribute(selector.slice(1, -1)); // Remove brackets
+                            if (url && !isPlaceholder(url)) {
+                                urls.push(url);
+                            }
+                        });
+                    });
+                    
+                    // Check for download links in href attributes
+                    document.querySelectorAll('a[href]').forEach(function(link) {
+                        var href = link.href;
+                        if (href && (href.includes('.mp3') || href.includes('.wav')) && !isPlaceholder(href)) {
+                            urls.push(href);
+                        }
+                    });
+                    
+                    // Check for common JavaScript variables and React state
+                    try {
+                        if (window.audioUrls) {
+                            window.audioUrls.forEach(function(url) {
+                                if (!isPlaceholder(url)) urls.push(url);
+                            });
+                        }
+                        if (window.tracks) {
+                            window.tracks.forEach(function(track) {
+                                if (track.audio_url && !isPlaceholder(track.audio_url)) {
+                                    urls.push(track.audio_url);
+                                }
+                            });
+                        }
+                        
+                        // Check React props and state (common in modern SPAs)
+                        var reactElements = document.querySelectorAll('[data-reactroot] *');
+                        for (var i = 0; i < Math.min(reactElements.length, 100); i++) {
+                            var element = reactElements[i];
+                            for (var prop in element) {
+                                if (typeof element[prop] === 'object' && element[prop] !== null) {
+                                    try {
+                                        var str = JSON.stringify(element[prop]);
+                                        var matches = str.match(/https?:\/\/[^"]*\.(mp3|wav)/g);
+                                        if (matches) {
+                                            matches.forEach(function(match) {
+                                                if (!isPlaceholder(match)) urls.push(match);
+                                            });
+                                        }
+                                    } catch(e) {}
+                                }
+                            }
+                        }
+                    } catch(e) {}
+                    
+                    // Remove duplicates and return
+                    return [...new Set(urls)];
+                """)
+                
+                if script_result:
+                    for url in script_result:
+                        if url and url not in audio_urls and not self._is_placeholder_audio(url):
+                            audio_urls.append(url)
+                            logger.info(f"🔍 Found real audio URL via script: {url}")
+                        elif url and self._is_placeholder_audio(url):
+                            logger.warning(f"⚠️ Script found placeholder: {url}")
+                            
+            except Exception as e:
+                logger.warning(f"⚠️ Enhanced script extraction failed: {e}")
+            
+            # Method 4: Network tab inspection (check for recent audio requests)
+            try:
+                # Get network logs if available
+                logs = self.driver.get_log('performance')
+                for log in logs[-50:]:  # Check last 50 network events
+                    message = log.get('message', {})
+                    if isinstance(message, str):
+                        try:
+                            message = eval(message)  # Convert string to dict
+                        except:
+                            continue
+                    
+                    if message.get('method') == 'Network.responseReceived':
+                        response = message.get('params', {}).get('response', {})
+                        url = response.get('url', '')
+                        mime_type = response.get('mimeType', '')
+                        
+                        if (url and 
+                            ('audio' in mime_type or url.endswith(('.mp3', '.wav'))) and 
+                            not self._is_placeholder_audio(url) and 
+                            url not in audio_urls):
+                            audio_urls.append(url)
+                            logger.info(f"🌐 Found audio URL from network logs: {url}")
+                            
+            except Exception as e:
+                logger.debug(f"Network log extraction failed: {e}")  # This is expected in many browsers
+            
+            # Extract metadata
+            metadata = self._extract_generation_metadata()
+            
+            # Generate a unique ID for this generation
+            generation_id = f"suno_{int(time.time())}"
+            
+            if audio_urls:
+                logger.info(f"✅ Successfully extracted {len(audio_urls)} REAL audio URLs")
+                # Log first few URLs for verification
+                for i, url in enumerate(audio_urls[:3]):
+                    logger.info(f"  🎵 Audio {i+1}: {url[:80]}...")
+                
+                return {
+                    "success": True,
+                    "audio_urls": audio_urls,
+                    "generation_id": generation_id,
+                    "metadata": metadata
+                }
+            else:
+                logger.error("❌ NO REAL AUDIO URLs FOUND - only placeholders detected")
+                self.browser.take_screenshot("no_real_audio_found.png")
+                # Also save page source for debugging
+                try:
+                    with open("/tmp/suno_page_source.html", "w") as f:
+                        f.write(self.driver.page_source)
+                    logger.info("📄 Page source saved for debugging")
+                except:
+                    pass
+                return {"success": False, "error": "No real audio URLs found - only placeholders"}
+                
+        except Exception as e:
+            logger.error(f"❌ Error extracting results: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def _extract_generation_metadata(self) -> Dict:
+        """Extract metadata from the generation page"""
+        metadata = {}
+        
+        try:
+            # Extract song title
+            title_selectors = [
+                ".song-title",
+                "[data-testid='song-title']",
+                "h1",
+                "h2",
+                ".track-title"
+            ]
+            
+            title_element = self._find_element_by_selectors(title_selectors)
+            if title_element:
+                metadata["title"] = title_element.text.strip()
+            
+            # Extract duration
+            duration_selectors = [
+                ".duration",
+                "[data-testid='duration']",
+                ".track-duration"
+            ]
+            
+            duration_element = self._find_element_by_selectors(duration_selectors)
+            if duration_element:
+                metadata["duration"] = duration_element.text.strip()
+            
+            # Extract generation date/time
+            metadata["generated_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            
+            logger.info(f"📋 Extracted metadata: {metadata}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Error extracting metadata: {e}")
+            
+        return metadata
+    
+    def _find_element_by_selectors(self, selectors: List[str], use_xpath_for_text: bool = False) -> Optional[object]:
+        """Find element using multiple selectors as fallbacks"""
+        for selector in selectors:
+            try:
+                if use_xpath_for_text and ":contains(" in selector:
+                    # Convert contains selector to XPath
+                    text = selector.split(":contains(")[1].split(")")[0].strip("'\"")
+                    xpath = f"//button[contains(text(), '{text}')]"
+                    element = self.driver.find_element(By.XPATH, xpath)
+                else:
+                    element = self.driver.find_element(By.CSS_SELECTOR, selector)
+                
+                if element.is_displayed():
+                    return element
+                    
+            except Exception:
+                continue
+        
+        return None
+    
+    def _upload_audio_file(self, file_path: str) -> bool:
+        """Upload audio file for cover/remix generation"""
+        try:
+            if not os.path.exists(file_path):
+                logger.error(f"❌ Audio file not found: {file_path}")
+                return False
+            
+            # Find file upload input
+            upload_selectors = [
+                "input[type='file']",
+                "[data-testid='file-upload']",
+                ".file-upload input",
+                ".upload-input"
+            ]
+            
+            upload_input = self._find_element_by_selectors(upload_selectors)
+            if not upload_input:
+                logger.error("❌ Could not find file upload input")
+                return False
+            
+            # Upload file
+            upload_input.send_keys(file_path)
+            time.sleep(3)
+            
+            # Wait for upload completion
+            WebDriverWait(self.driver, 30).until(
+                EC.any_of(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".upload-complete")),
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".file-uploaded")),
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".upload-success"))
+                )
+            )
+            
+            logger.info("✅ Audio file uploaded successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error uploading audio file: {e}")
+            return False
+    
+    def _fill_cover_form(self, job_data: Dict) -> bool:
+        """Fill cover/remix generation form"""
+        try:
+            style_prompt = job_data.get("style_prompt", "")
+            if style_prompt:
+                style_selectors = [
+                    "textarea[placeholder*='style']",
+                    "textarea[placeholder*='instruction']",
+                    "[data-testid='style-input']",
+                    ".style-prompt textarea"
+                ]
+                
+                style_input = self._find_element_by_selectors(style_selectors)
+                if style_input:
+                    style_input.clear()
+                    style_input.send_keys(style_prompt)
+                    time.sleep(1)
+                    logger.info(f"✅ Filled style prompt: {style_prompt[:30]}...")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error filling cover form: {e}")
+            return False
+    
+    def _submit_cover_generation(self) -> bool:
+        """Submit cover generation"""
+        try:
+            submit_selectors = [
+                "button:contains('Generate')",
+                "button:contains('Create Cover')",
+                "[data-testid='generate-cover']",
+                ".generate-button"
+            ]
+            
+            submit_button = self._find_element_by_selectors(submit_selectors, use_xpath_for_text=True)
+            if submit_button and submit_button.is_enabled():
+                submit_button.click()
+                time.sleep(3)
+                logger.info("✅ Cover generation submitted")
+                return True
+            
+            logger.error("❌ Could not submit cover generation")
+            return False
+            
+        except Exception as e:
+            logger.error(f"❌ Error submitting cover generation: {e}")
+            return False
+    
+    def _set_music_style(self, style: str) -> bool:
+        """Set music style/genre if available"""
+        try:
+            # Look for style/genre dropdowns or inputs
+            style_selectors = [
+                "select[name*='style']",
+                "select[name*='genre']",
+                "[data-testid='style-select']",
+                ".style-selector"
+            ]
+            
+            style_element = self._find_element_by_selectors(style_selectors)
+            if style_element:
+                if style_element.tag_name == "select":
+                    # Handle dropdown
+                    options = style_element.find_elements(By.TAG_NAME, "option")
+                    for option in options:
+                        if style.lower() in option.text.lower():
+                            option.click()
+                            logger.info(f"✅ Selected style: {option.text}")
+                            return True
+                else:
+                    # Handle input field
+                    style_element.clear()
+                    style_element.send_keys(style)
+                    logger.info(f"✅ Set style: {style}")
+                    return True
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not set style: {e}")
+            
+        return False
+    
+    def _is_placeholder_audio(self, url: str) -> bool:
+        """Check if an audio URL is a placeholder/silence file"""
+        if not url:
+            return True
+        
+        url_lower = url.lower()
+        
+        # Common placeholder patterns in Suno
+        placeholder_patterns = [
+            'sil-',           # Silence files like sil-100.mp3
+            'silence',
+            'placeholder', 
+            'temp',
+            'loading',
+            'empty',
+            'blank',
+            'default',
+            'dummy'
+        ]
+        
+        # Check if URL contains any placeholder patterns
+        for pattern in placeholder_patterns:
+            if pattern in url_lower:
+                return True
+        
+        # Additional checks for very small file indicators
+        if any(indicator in url_lower for indicator in ['100', '200', '500']) and 'sil' in url_lower:
+            return True
+            
+        return False

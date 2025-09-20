@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.production
+    container_name: son1k_api_prod
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=production
+      - POSTGRES_DSN=postgresql://son1k_user:${DB_PASSWORD}@db:5432/son1k_prod
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_ORIGINS=https://son1kvers3.com,https://www.son1kvers3.com
+      - CORS_ORIGINS=https://son1kvers3.com
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - app_data:/app/data
+    networks:
+      - son1k_network
+
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.production
+    container_name: son1k_worker_prod
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=production
+      - POSTGRES_DSN=postgresql://son1k_user:${DB_PASSWORD}@db:5432/son1k_prod
+      - REDIS_URL=redis://redis:6379/0
+    command: ["celery", "-A", "backend.app.queue.celery_app", "worker", "--loglevel=info", "-Q", "default", "-c", "2"]
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - app_data:/app/data
+    networks:
+      - son1k_network
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: son1k_selenium_prod
+    restart: unless-stopped
+    shm_size: 2gb
+    environment:
+      - SE_NODE_MAX_SESSIONS=2
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SESSION_TIMEOUT=600
+    volumes:
+      - selenium_data:/home/seluser/downloads
+    networks:
+      - son1k_network
+
+  db:
+    image: postgres:15-alpine
+    container_name: son1k_db_prod
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=son1k_prod
+      - POSTGRES_USER=son1k_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - son1k_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: son1k_redis_prod
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - son1k_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: son1k_nginx_prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - api
+    networks:
+      - son1k_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  app_data:
+  selenium_data:
+
+networks:
+  son1k_network:
+    driver: bridge

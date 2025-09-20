@@ -1,21 +1,32 @@
 {
   "manifest_version": 3,
   "name": "Son1k Extension",
-  "version": "3.0.0",
-  "description": "Son1k Music Bridge - Working Version",
+  "version": "3.1.0",
+  "description": "Son1k-Suno Bridge - Full Integration",
   "action": {
     "default_title": "Son1k Extension",
-    "default_popup": "popup_nojs.html"
+    "default_popup": "popup_testing.html"
   },
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "tabs",
+    "scripting"
   ],
   "host_permissions": [
     "https://*.ngrok-free.app/*",
-    "https://2a73bb633652.ngrok-free.app/*"
+    "https://2a73bb633652.ngrok-free.app/*",
+    "https://suno.com/*",
+    "https://*.suno.com/*"
   ],
   "background": {
-    "service_worker": "background_minimal.js"
-  }
+    "service_worker": "background_robust.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://suno.com/*", "https://*.suno.com/*"],
+      "js": ["content_suno.js"],
+      "run_at": "document_end"
+    }
+  ]
 }

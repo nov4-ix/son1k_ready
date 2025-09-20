@@ -1,0 +1,407 @@
+"""
+Browser Manager for Selenium Chrome Sessions
+Handles Chrome WebDriver lifecycle and session management
+"""
+import os
+import time
+import logging
+from typing import Optional
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.common.exceptions import TimeoutException, WebDriverException
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class BrowserManager:
+    """Manages Chrome browser sessions for Suno automation"""
+    
+    def __init__(self, headless: bool = True, user_data_dir: Optional[str] = None):
+        self.driver: Optional[webdriver.Chrome] = None
+        self.headless = headless
+        self.user_data_dir = user_data_dir or "/tmp/son1k_chrome_profile"
+        self.suno_email = "soypepejaimes@gmail.com"
+        self.suno_password = "Nov4-ix90"
+        self.logged_in = False
+        
+    def setup_driver(self) -> webdriver.Chrome:
+        """Initialize Chrome WebDriver with COMMERCIAL SPEED optimizations"""
+        logger.info("🚀 Setting up OPTIMIZED Chrome WebDriver for commercial speed...")
+        
+        # Chrome options with commercial-grade optimizations
+        chrome_options = Options()
+        
+        if self.headless:
+            chrome_options.add_argument("--headless=new")
+        
+        # COMMERCIAL SPEED OPTIMIZATIONS
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-images")  # Faster page loads
+        chrome_options.add_argument("--disable-javascript-harmony-shipping")
+        chrome_options.add_argument("--disable-background-timer-throttling")
+        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
+        chrome_options.add_argument("--disable-renderer-backgrounding")
+        chrome_options.add_argument("--disable-features=TranslateUI")
+        chrome_options.add_argument("--disable-ipc-flooding-protection")
+        chrome_options.add_argument("--no-first-run")
+        chrome_options.add_argument("--no-default-browser-check")
+        chrome_options.add_argument("--disable-default-apps")
+        
+        # Performance prefs for commercial speed
+        prefs = {
+            "profile.default_content_setting_values": {
+                "notifications": 2,  # Block notifications
+                "media_stream": 2,   # Block media
+            },
+            "profile.managed_default_content_settings": {
+                "images": 2  # Block images for speed
+            },
+            "profile.content_settings.exceptions.automatic_downloads.*.setting": 1
+        }
+        chrome_options.add_experimental_option("prefs", prefs)
+        
+        # Anti-detection (keep these for reliability)
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+        
+        # Optimized user agent for speed
+        chrome_options.add_argument("--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        
+        # Persistent profile
+        os.makedirs(self.user_data_dir, exist_ok=True)
+        chrome_options.add_argument(f"--user-data-dir={self.user_data_dir}")
+        
+        # Audio/media permissions
+        chrome_options.add_argument("--allow-running-insecure-content")
+        chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")
+        chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+        
+        # Enable performance logging for network monitoring
+        chrome_options.add_argument("--enable-logging")
+        chrome_options.add_argument("--log-level=0")
+        
+        # Set logging preferences for network monitoring
+        caps = {
+            'goog:loggingPrefs': {
+                'performance': 'ALL',
+                'browser': 'ALL'
+            }
+        }
+        chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_experimental_option('w3c', False)  # For better logging support
+        
+        try:
+            # Setup WebDriver with logging capabilities
+            service = Service(ChromeDriverManager().install())
+            from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+            
+            # Enable performance logging
+            caps = DesiredCapabilities.CHROME
+            caps['goog:loggingPrefs'] = {
+                'performance': 'ALL',
+                'browser': 'ALL'
+            }
+            
+            self.driver = webdriver.Chrome(service=service, options=chrome_options, desired_capabilities=caps)
+            
+            # Configure driver
+            self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            self.driver.set_window_size(1920, 1080)
+            self.driver.implicitly_wait(10)
+            
+            logger.info("✅ Chrome WebDriver initialized successfully")
+            return self.driver
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to setup WebDriver: {e}")
+            raise
+    
+    def ensure_logged_in(self) -> bool:
+        """Ensure user is logged into Suno.com"""
+        if not self.driver:
+            raise RuntimeError("WebDriver not initialized")
+            
+        try:
+            logger.info("🔐 Checking Suno.com login status...")
+            
+            # Go to Suno.com
+            self.driver.get("https://suno.com")
+            time.sleep(3)
+            
+            # Check if already logged in
+            try:
+                # Look for user menu or create button
+                WebDriverWait(self.driver, 5).until(
+                    EC.any_of(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='user-menu']")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "button:contains('Create')")),
+                        EC.presence_of_element_located((By.CSS_SELECTOR, ".create-button")),
+                        EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Create')]"))
+                    )
+                )
+                logger.info("✅ Already logged into Suno.com")
+                self.logged_in = True
+                return True
+                
+            except TimeoutException:
+                logger.info("🔑 Need to login to Suno.com")
+                return self._perform_login()
+                
+        except Exception as e:
+            logger.error(f"❌ Error checking login status: {e}")
+            return False
+    
+    def _perform_login(self) -> bool:
+        """Perform login to Suno.com"""
+        try:
+            logger.info("🚪 Performing Suno.com login...")
+            
+            # Look for login button
+            login_selectors = [
+                "button:contains('Log in')",
+                "button:contains('Sign in')",
+                "[data-testid='login-button']",
+                ".login-button",
+                "a[href*='login']"
+            ]
+            
+            login_button = None
+            for selector in login_selectors:
+                try:
+                    if ":contains(" in selector:
+                        # XPath for text content
+                        text_content = selector.split(':contains(')[1].split(')')[0].strip("'\"")
+                        xpath = f"//button[contains(text(), '{text_content}')]"
+                        login_button = self.driver.find_element(By.XPATH, xpath)
+                    else:
+                        login_button = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    break
+                except:
+                    continue
+            
+            if not login_button:
+                logger.error("❌ Could not find login button")
+                return False
+            
+            login_button.click()
+            time.sleep(3)
+            
+            # Fill email
+            email_selectors = [
+                "input[type='email']",
+                "input[name='email']",
+                "[data-testid='email-input']",
+                "input[placeholder*='email']"
+            ]
+            
+            email_input = None
+            for selector in email_selectors:
+                try:
+                    email_input = WebDriverWait(self.driver, 5).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, selector))
+                    )
+                    break
+                except:
+                    continue
+            
+            if not email_input:
+                logger.error("❌ Could not find email input")
+                return False
+            
+            email_input.clear()
+            email_input.send_keys(self.suno_email)
+            time.sleep(1)
+            
+            # Fill password
+            password_selectors = [
+                "input[type='password']",
+                "input[name='password']",
+                "[data-testid='password-input']"
+            ]
+            
+            password_input = None
+            for selector in password_selectors:
+                try:
+                    password_input = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    break
+                except:
+                    continue
+            
+            if not password_input:
+                logger.error("❌ Could not find password input")
+                return False
+            
+            password_input.clear()
+            password_input.send_keys(self.suno_password)
+            time.sleep(1)
+            
+            # Submit login
+            submit_selectors = [
+                "button[type='submit']",
+                "button:contains('Log in')",
+                "button:contains('Sign in')",
+                "[data-testid='login-submit']"
+            ]
+            
+            submit_button = None
+            for selector in submit_selectors:
+                try:
+                    if ":contains(" in selector:
+                        text_content = selector.split(':contains(')[1].split(')')[0].strip("'\"")
+                        xpath = f"//button[contains(text(), '{text_content}')]"
+                        submit_button = self.driver.find_element(By.XPATH, xpath)
+                    else:
+                        submit_button = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    break
+                except:
+                    continue
+            
+            if submit_button:
+                submit_button.click()
+                time.sleep(5)
+                
+                # Verify login success
+                try:
+                    WebDriverWait(self.driver, 10).until(
+                        EC.any_of(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, "[data-testid='user-menu']")),
+                            EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Create')]"))
+                        )
+                    )
+                    logger.info("✅ Successfully logged into Suno.com")
+                    self.logged_in = True
+                    return True
+                    
+                except TimeoutException:
+                    logger.error("❌ Login verification failed")
+                    return False
+            else:
+                logger.error("❌ Could not find submit button")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Login failed: {e}")
+            return False
+    
+    def navigate_to_create(self) -> bool:
+        """Navigate to Suno create page"""
+        try:
+            logger.info("🎵 Navigating to Suno create page...")
+            
+            # Try direct URL first
+            self.driver.get("https://suno.com/create")
+            time.sleep(3)
+            
+            # Verify we're on create page
+            create_indicators = [
+                "[data-testid='create-form']",
+                "textarea[placeholder*='Describe']",
+                "textarea[placeholder*='lyrics']",
+                ".create-page",
+                "button:contains('Create')"
+            ]
+            
+            for selector in create_indicators:
+                try:
+                    if ":contains(" in selector:
+                        text_content = selector.split(':contains(')[1].split(')')[0].strip("'\"")
+                        xpath = f"//button[contains(text(), '{text_content}')]"
+                        self.driver.find_element(By.XPATH, xpath)
+                    else:
+                        self.driver.find_element(By.CSS_SELECTOR, selector)
+                    logger.info("✅ Successfully navigated to create page")
+                    return True
+                except:
+                    continue
+            
+            # If direct URL didn't work, try clicking create button
+            create_buttons = [
+                "button:contains('Create')",
+                "[data-testid='create-button']",
+                "a[href*='create']",
+                ".create-button"
+            ]
+            
+            for selector in create_buttons:
+                try:
+                    if ":contains(" in selector:
+                        text_content = selector.split(':contains(')[1].split(')')[0].strip("'\"")
+                        xpath = f"//button[contains(text(), '{text_content}')]"
+                        button = self.driver.find_element(By.XPATH, xpath)
+                    else:
+                        button = self.driver.find_element(By.CSS_SELECTOR, selector)
+                    
+                    button.click()
+                    time.sleep(3)
+                    logger.info("✅ Clicked create button")
+                    return True
+                except:
+                    continue
+            
+            logger.error("❌ Could not navigate to create page")
+            return False
+            
+        except Exception as e:
+            logger.error(f"❌ Error navigating to create page: {e}")
+            return False
+    
+    def take_screenshot(self, filename: str = None) -> str:
+        """Take screenshot for debugging"""
+        if not self.driver:
+            return ""
+            
+        try:
+            if not filename:
+                filename = f"screenshot_{int(time.time())}.png"
+            
+            screenshot_path = f"/tmp/{filename}"
+            self.driver.save_screenshot(screenshot_path)
+            logger.info(f"📸 Screenshot saved: {screenshot_path}")
+            return screenshot_path
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to take screenshot: {e}")
+            return ""
+    
+    def close(self):
+        """Close browser and cleanup"""
+        if self.driver:
+            try:
+                self.driver.quit()
+                logger.info("🔒 Browser closed successfully")
+            except Exception as e:
+                logger.error(f"❌ Error closing browser: {e}")
+            finally:
+                self.driver = None
+                self.logged_in = False
+    
+    def __enter__(self):
+        """Context manager entry"""
+        self.setup_driver()
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit"""
+        self.close()
+        
+    def is_healthy(self) -> bool:
+        """Check if browser session is healthy"""
+        try:
+            if not self.driver:
+                return False
+            
+            # Try to get current URL
+            current_url = self.driver.current_url
+            return bool(current_url)
+            
+        except Exception:
+            return False

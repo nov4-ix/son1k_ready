@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from backend.app.routers import music, audio, tracks, captcha, music_generation
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,7 +7,7 @@ from pathlib import Path
 
 from .settings import settings
 from .queue import enqueue_generation
-from .queue_commercial import enqueue_generation as enqueue_commercial, get_job_status, job_manager
+# from .queue_commercial import enqueue_generation as enqueue_commercial, get_job_status, job_manager
 from . import models
 from .deps import rate_limiter
 from .ws import router as ws_router
@@ -19,14 +20,51 @@ from .db import get_db_session
 
 # --- Inicializa la app ---
 app = FastAPI(title=settings.PROJECT_NAME)
+app.include_router(music_generation.router)  # Router transparente PRIMERO
+app.include_router(audio.router)
+app.include_router(tracks.router, prefix="/api")
+app.include_router(captcha.router, prefix="/api")
+app.include_router(music.router, prefix="/api/legacy")  # Router legacy en ruta diferente
 
-# --- Middleware CORS ---
+# --- Middleware CORS ROBUSTO PARA EXTENSIÓN ---
+# Configurar origins específicos para Chrome Extension
+extension_origins = [
+    "chrome-extension://ghpilnilpmfdacoaiacjlafeemanjijn",
+    "chrome-extension://bfbmjmiodbnnpllbbbfblcplfjjepjdn",
+    "chrome-extension://aapbdbdomjkkjkaonfhkkikfgjllcleb"
+]
+
+ngrok_origins = [
+    "https://2a73bb633652.ngrok-free.app",
+    "https://*.ngrok-free.app"
+]
+
+# CORS origins completos
+if settings.CORS_ORIGINS == "*":
+    allowed_origins = ["*"]
+else:
+    allowed_origins = (
+        settings.CORS_ORIGINS.split(",") + 
+        extension_origins + 
+        ngrok_origins
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.CORS_ORIGINS] if settings.CORS_ORIGINS != "*" else ["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization", 
+        "ngrok-skip-browser-warning",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers"
+    ],
+    expose_headers=["*"]
 )
 
 # --- WebSocket router ---
@@ -269,11 +307,320 @@ def update_job_status(job_id: str, update_data: dict):
     except Exception as e:
         return {"error": str(e)}, 500
 
+# --- Intelligent Queue Management Endpoints ---
+@app.get("/api/queue/status")
+def get_queue_status():
+    """Get comprehensive queue status for all plans"""
+    return queue_manager.get_queue_status()
 
-# --- Endpoints para funciones de IA ---
+@app.post("/api/queue/generate")
+def generate_with_intelligent_queue(
+    generation_request: models.GenerationRequest, 
+    current_user: models.User = Depends(get_current_user)
+):
+    """Generate music using intelligent queue management"""
+    try:
+        # Get user plan
+        user_plan = UserPlan(current_user.plan.lower())
+        
+        # Enhanced payload with AI prompts
+        payload = {
+            "prompt": generation_request.prompt,
+            "lyrics": generation_request.lyrics,
+            "style": generation_request.style,
+            "instrumental": generation_request.instrumental,
+            "user_id": current_user.id,
+            "user_plan": user_plan.value,
+            "enhanced_with_ai": True
+        }
+        
+        # Use AI to enhance prompt if enabled
+        if getattr(generation_request, 'use_ai_enhancement', True):
+            from .ai_prompts import ai_engine
+            
+            # Generate enhanced lyrics if not provided
+            if not generation_request.lyrics and generation_request.prompt:
+                ai_result = ai_engine.generate_lyrics(
+                    generation_request.prompt, 
+                    generation_request.style or "",
+                    "spanish"
+                )
+                if ai_result["success"]:
+                    payload["lyrics"] = ai_result["lyrics"]
+                    payload["ai_enhanced_lyrics"] = True
+            
+            # Enhance style prompt
+            if generation_request.prompt:
+                style_result = ai_engine.generate_style_prompt(
+                    generation_request.prompt,
+                    getattr(generation_request, 'mood', ''),
+                    getattr(generation_request, 'instruments', [])
+                )
+                if style_result["success"]:
+                    payload["enhanced_prompt"] = style_result["prompt"]
+                    payload["ai_enhanced_style"] = True
+        
+        # Submit to intelligent queue
+        job_id = queue_manager.enqueue_generation(
+            payload, 
+            user_plan, 
+            current_user.id
+        )
+        
+        # Get queue position and wait estimate
+        queue_status = queue_manager.get_queue_status()
+        plan_status = queue_status.get(user_plan.value, {})
+        
+        return {
+            "ok": True,
+            "job_id": job_id,
+            "user_plan": user_plan.value,
+            "queue_position": plan_status.get("queue_size", 0),
+            "estimated_wait_minutes": plan_status.get("estimated_wait_minutes", 0),
+            "priority_level": plan_status.get("priority_level", 0),
+            "ai_enhanced": payload.get("enhanced_with_ai", False),
+            "message": f"Job queued with {user_plan.value} priority"
+        }
+        
+    except Exception as e:
+        return {"ok": False, "error": str(e)}, 500
+
+# --- Selenium Worker Endpoints ---
+@app.get("/api/selenium/jobs/next")
+def get_next_selenium_job(worker_id: str):
+    """Get next priority job for Selenium worker"""
+    try:
+        job_data = job_manager.get_next_job_for_worker(worker_id)
+        if job_data:
+            # Enhance job data for Selenium worker
+            enhanced_job = {
+                **job_data,
+                "worker_type": "selenium",
+                "automation_config": {
+                    "timeout": 300,  # 5 minutes
+                    "retry_count": 2,
+                    "screenshot_on_error": True
+                }
+            }
+            return enhanced_job
+        else:
+            return {"message": "No jobs available"}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.post("/api/selenium/jobs/{job_id}/complete")
+def complete_selenium_job(job_id: str, result_data: dict):
+    """Complete Selenium job with enhanced result handling"""
+    try:
+        # Extract Selenium-specific results
+        success = result_data.get("success", False)
+        
+        if success:
+            # Handle successful generation
+            audio_files = result_data.get("all_files", [])
+            primary_file = result_data.get("primary_file", {})
+            
+            # Update job with file paths
+            job_manager.update_job_status(
+                job_id, 
+                "completed",
+                audio_url=primary_file.get("file_path"),
+                preview_url=primary_file.get("file_path"),
+                result_data={
+                    **result_data,
+                    "worker_type": "selenium",
+                    "file_count": len(audio_files),
+                    "generation_method": "suno_automation"
+                }
+            )
+            
+            return {"ok": True, "message": "Selenium job completed successfully"}
+        else:
+            # Handle failed generation
+            error_msg = result_data.get("error", "Unknown error")
+            job_manager.update_job_status(
+                job_id, 
+                "failed",
+                error_message=error_msg,
+                result_data=result_data
+            )
+            
+            return {"ok": False, "error": error_msg}, 500
+            
+    except Exception as e:
+        return {"ok": False, "error": str(e)}, 500
+
+@app.get("/api/selenium/worker/stats")
+def get_selenium_worker_stats(worker_id: str):
+    """Get Selenium worker statistics"""
+    try:
+        from .db import get_db_session
+        from .models import Worker
+        
+        with get_db_session() as db:
+            worker = db.query(Worker).filter(Worker.id == worker_id).first()
+            
+            if not worker:
+                return {"error": "Worker not found"}, 404
+            
+            # Get additional stats from job manager
+            worker_jobs = job_manager.get_worker_job_stats(worker_id)
+            
+            return {
+                "worker_id": worker_id,
+                "status": worker.status,
+                "last_heartbeat": worker.last_heartbeat.isoformat() if worker.last_heartbeat else None,
+                "jobs_completed": worker.jobs_completed or 0,
+                "jobs_failed": worker.jobs_failed or 0,
+                "current_job": worker.last_job_id,
+                "version": worker.version,
+                "worker_type": "selenium",
+                "job_stats": worker_jobs
+            }
+            
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.post("/api/selenium/test")
+def test_selenium_generation():
+    """Test endpoint for Selenium worker"""
+    try:
+        # Create a test job
+        test_job_data = {
+            "prompt": "A cheerful pop song about automation and technology",
+            "lyrics": "",
+            "mode": "original",
+            "style": "pop",
+            "user_email": "test@son1k.com"
+        }
+        
+        # Enqueue the test job
+        from .queue_commercial import enqueue_generation
+        job_id = enqueue_generation(test_job_data, user_id="test_user")
+        
+        if job_id:
+            return {
+                "ok": True, 
+                "message": "Test job created for Selenium worker",
+                "job_id": job_id,
+                "test_data": test_job_data
+            }
+        else:
+            return {"ok": False, "error": "Failed to create test job"}, 500
+            
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+# --- AI-Powered Endpoints ---
 @app.post("/api/generate-lyrics")
-def generate_lyrics(request: dict):
-    """Generar letras basadas en un prompt musical"""
+def generate_lyrics_ai(request: dict):
+    """Generate lyrics using Llama 3.1 8B AI model"""
+    try:
+        from .ai_prompts import ai_engine
+        
+        prompt = request.get("prompt", "")
+        style = request.get("style", "")
+        language = request.get("language", "spanish")
+        
+        if not prompt:
+            return {"error": "Prompt is required"}, 400
+        
+        # Generate lyrics using AI
+        result = ai_engine.generate_lyrics(prompt, style, language)
+        
+        if result.get("success"):
+            return {
+                "lyrics": result["lyrics"],
+                "metadata": {
+                    "word_count": result.get("word_count", 0),
+                    "char_count": result.get("char_count", 0),
+                    "style": result.get("style", ""),
+                    "language": result.get("language", ""),
+                    "cached": result.get("cached", False),
+                    "ai_generated": True
+                }
+            }
+        else:
+            # Return fallback lyrics on AI failure
+            return {
+                "lyrics": result["lyrics"],
+                "metadata": {
+                    "fallback": True,
+                    "error": result.get("error", ""),
+                    "ai_generated": False
+                }
+            }
+            
+    except Exception as e:
+        # Fallback to simple generation
+        return generate_lyrics_fallback(request)
+
+@app.post("/api/generate-style-prompt")  
+def generate_style_prompt_ai(request: dict):
+    """Generate enhanced musical style prompt using AI"""
+    try:
+        from .ai_prompts import ai_engine
+        
+        basic_input = request.get("input", "")
+        mood = request.get("mood", "")
+        instruments = request.get("instruments", [])
+        
+        if not basic_input:
+            return {"error": "Input is required"}, 400
+        
+        # Generate style prompt using AI
+        result = ai_engine.generate_style_prompt(basic_input, mood, instruments)
+        
+        if result.get("success"):
+            return {
+                "enhanced_prompt": result["prompt"],
+                "original_input": result.get("original_input", ""),
+                "metadata": {
+                    "mood": result.get("mood", ""),
+                    "instruments": result.get("instruments", []),
+                    "cached": result.get("cached", False),
+                    "ai_generated": True
+                }
+            }
+        else:
+            return {
+                "enhanced_prompt": result["prompt"],
+                "metadata": {
+                    "fallback": True,
+                    "error": result.get("error", ""),
+                    "ai_generated": False
+                }
+            }
+            
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.post("/api/analyze-prompt")
+def analyze_music_prompt_ai(request: dict):
+    """Analyze music prompt and provide suggestions"""
+    try:
+        from .ai_prompts import ai_engine
+        
+        prompt = request.get("prompt", "")
+        
+        if not prompt:
+            return {"error": "Prompt is required"}, 400
+        
+        # Analyze prompt using AI
+        result = ai_engine.analyze_music_prompt(prompt)
+        
+        return {
+            "analysis": result.get("analysis", {}),
+            "suggestions": result.get("analysis", {}).get("suggestions", []),
+            "success": result.get("success", False)
+        }
+        
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+def generate_lyrics_fallback(request: dict):
+    """Fallback lyrics generation (original logic)"""
     prompt = request.get("prompt", "")
     
     # Análisis básico del prompt para generar letra coherente
@@ -297,7 +644,13 @@ def generate_lyrics(request: dict):
         # Letra genérica basada en el prompt
         lyrics = f"Verso 1:\n{prompt} me inspira\nCada nota que resuena\nEn mi corazón se aviva\nUna melodía serena\n\nCoro:\nEsta es mi canción\nNacida de la pasión\nCon {prompt}\nHallo mi dirección\n\nVerso 2:\nLas palabras fluyen\nComo ríos al mar\nY en cada verso\nEncuentro mi lugar"
     
-    return {"lyrics": lyrics}
+    return {
+        "lyrics": lyrics,
+        "metadata": {
+            "ai_generated": False,
+            "fallback": True
+        }
+    }
 
 
 @app.post("/api/improve-lyrics")

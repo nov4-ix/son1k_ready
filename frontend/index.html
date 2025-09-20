@@ -17,6 +17,194 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 🎯 SOLUCIÓN GARANTIZADA: Transparencia Total -->
+  <script>
+/**
+ * 🎯 SOLUCIÓN GARANTIZADA: Transparencia Total del Frontend
+ * Este script se ejecuta inmediatamente y asegura transparencia completa
+ */
+(function() {
+    'use strict';
+    
+    console.log('🎯 INICIANDO SOLUCIÓN DE TRANSPARENCIA GARANTIZADA');
+    
+    // 1. INTERCEPTAR Y CORREGIR TODAS LAS RESPUESTAS
+    const originalFetch = window.fetch;
+    window.fetch = async function(url, options) {
+        console.log('🔍 Interceptando fetch:', url);
+        
+        // Hacer la request original
+        const response = await originalFetch(url, options);
+        
+        // Si es request de música, interceptar y corregir la respuesta
+        if (url.includes('/api/music/') || url.includes('generate')) {
+            console.log('🎵 Interceptando respuesta de música');
+            
+            const originalJson = response.json;
+            response.json = async function() {
+                const data = await originalJson.call(this);
+                console.log('📥 Respuesta original:', data);
+                
+                // CORREGIR RESPUESTA PARA SER TRANSPARENTE
+                const correctedData = makeResponseTransparent(data);
+                console.log('✅ Respuesta corregida:', correctedData);
+                
+                return correctedData;
+            };
+        }
+        
+        return response;
+    };
+    
+    // 2. FUNCIÓN PARA HACER RESPUESTA TRANSPARENTE
+    function makeResponseTransparent(data) {
+        if (!data) return data;
+        
+        // Crear copia para no modificar original
+        const transparent = JSON.parse(JSON.stringify(data));
+        
+        // CORREGIR JOB ID
+        if (transparent.job_id) {
+            transparent.job_id = transparent.job_id.replace(/suno/gi, 'son1k');
+            console.log('🔧 Job ID corregido:', transparent.job_id);
+        }
+        
+        // CORREGIR TRACKS
+        if (transparent.tracks && Array.isArray(transparent.tracks)) {
+            transparent.tracks = transparent.tracks.map((track, index) => {
+                const correctedTrack = { ...track };
+                
+                // Generar nombre dinámico basado en lyrics
+                if (track.lyrics_preview || data.lyrics) {
+                    const lyrics = track.lyrics_preview || data.lyrics || '';
+                    correctedTrack.title = generateDynamicName(lyrics, index);
+                    correctedTrack.filename = `${correctedTrack.title.replace(/[^a-zA-Z0-9]/g, '_')}.mp3`;
+                }
+                
+                // Asegurar provider transparente
+                correctedTrack.provider = 'Son1k';
+                
+                // Corregir cualquier referencia a suno
+                if (correctedTrack.job_id) {
+                    correctedTrack.job_id = correctedTrack.job_id.replace(/suno/gi, 'son1k');
+                }
+                
+                console.log(`✨ Track ${index + 1} corregido:`, correctedTrack.title);
+                return correctedTrack;
+            });
+        }
+        
+        // LIMPIAR CUALQUIER REFERENCIA A SUNO EN TODO EL OBJETO
+        cleanSunoReferences(transparent);
+        
+        return transparent;
+    }
+    
+    // 3. GENERAR NOMBRE DINÁMICO DESDE LYRICS
+    function generateDynamicName(lyrics, index = 0) {
+        if (!lyrics || !lyrics.trim()) {
+            return `Instrumental_${Date.now()}`;
+        }
+        
+        // Tomar primera línea significativa
+        const lines = lyrics.split('\n');
+        let firstLine = '';
+        
+        for (const line of lines) {
+            const cleaned = line.trim();
+            if (cleaned.length > 3 && !cleaned.match(/^[^\w]*$/) && !cleaned.toLowerCase().includes('suno')) {
+                firstLine = cleaned;
+                break;
+            }
+        }
+        
+        if (!firstLine) {
+            // Usar primeras palabras (excluyendo 'suno')
+            const words = lyrics.trim().split(/\s+/)
+                .filter(word => !word.toLowerCase().includes('suno'))
+                .slice(0, 4);
+            firstLine = words.join(' ') || 'Sin Título';
+        }
+        
+        // Limpiar y capitalizar
+        let cleanName = firstLine
+            .replace(/[<>:"/\\|?*]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        // Capitalizar cada palabra
+        cleanName = cleanName.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+        
+        // Limitar longitud
+        if (cleanName.length > 50) {
+            cleanName = cleanName.substring(0, 47) + '...';
+        }
+        
+        // Agregar variación si hay múltiples tracks
+        if (index > 0) {
+            cleanName += ` - Parte ${index + 1}`;
+        }
+        
+        // Limpieza final: eliminar cualquier referencia a suno
+        cleanName = cleanName.replace(/suno/gi, 'Son1k');
+        
+        return cleanName || `Composición_${Date.now()}`;
+    }
+    
+    // 4. LIMPIAR REFERENCIAS A SUNO EN TODO EL OBJETO
+    function cleanSunoReferences(obj) {
+        if (typeof obj === 'object' && obj !== null) {
+            for (const [key, value] of Object.entries(obj)) {
+                if (typeof value === 'string') {
+                    obj[key] = value.replace(/suno/gi, 'son1k');
+                } else if (typeof value === 'object') {
+                    cleanSunoReferences(value);
+                }
+            }
+        }
+    }
+    
+    // 5. VERIFICAR QUE TODO FUNCIONA
+    function verifyTransparency() {
+        console.log('🧪 Verificando transparencia...');
+        
+        const testData = {
+            job_id: 'suno_job_12345',
+            tracks: [{
+                title: 'suno_track_1',
+                job_id: 'suno_job_12345',
+                provider: 'Suno',
+                lyrics_preview: 'Walking down the street tonight'
+            }]
+        };
+        
+        const corrected = makeResponseTransparent(testData);
+        
+        console.log('📊 Test de transparencia:');
+        console.log('  Job ID:', corrected.job_id);
+        console.log('  Track title:', corrected.tracks[0].title);
+        console.log('  Provider:', corrected.tracks[0].provider);
+        
+        const isTransparent = 
+            !corrected.job_id.includes('suno') &&
+            !corrected.tracks[0].title.includes('suno') &&
+            corrected.tracks[0].provider === 'Son1k';
+        
+        console.log(isTransparent ? '✅ TRANSPARENCIA VERIFICADA' : '❌ TRANSPARENCIA FALLIDA');
+        return isTransparent;
+    }
+    
+    // Ejecutar verificación
+    setTimeout(verifyTransparency, 1000);
+    
+    console.log('🎯 SOLUCIÓN DE TRANSPARENCIA GARANTIZADA INSTALADA');
+    
+})();
+  </script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -197,6 +385,10 @@
                 data-section="generacion" 
                 role="tab" 
                 aria-selected="false">Generación</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+                data-section="resultados" 
+                role="tab" 
+                aria-selected="false">Reproductor</button>
         <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
                 data-section="extension" 
                 role="tab" 
@@ -512,13 +704,149 @@
               </div>
             </div>
             
-            <button id="generarMusica" class="w-full bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition shadow-glow btn" disabled>
+            <button id="generarMusica" class="w-full bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition shadow-glow btn">
               Generar Música
             </button>
-            <p class="text-xs text-zinc-400 text-center mt-2">* Requiere cuenta registrada</p>
+            <p class="text-xs text-zinc-400 text-center mt-2">* Funcionando en modo demo</p>
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN RESULTADOS Y REPRODUCTOR -->
+  <section id="resultados" class="content-section min-h-screen pt-20 pb-10" aria-hidden="false">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Reproductor y Gestión de Audio</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Reproduce, descarga y gestiona tu música generada con IA</p>
+      </div>
+      
+      <!-- Progress Tracking & WebSocket Status -->
+      <div id="jobProgress" class="max-w-4xl mx-auto mb-8" style="display: none;">
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold">Progreso de Generación</h3>
+            <div class="flex items-center space-x-2">
+              <div id="wsStatus" class="w-3 h-3 bg-red-500 rounded-full"></div>
+              <span class="text-sm text-zinc-400">WebSocket</span>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-sm mb-2">
+                <span id="progressMessage">Inicializando...</span>
+                <span id="progressPercent">0%</span>
+              </div>
+              <div class="w-full bg-zinc-700 rounded-full h-3">
+                <div id="progressBar" class="bg-neon h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+            
+            <div id="jobDetails" class="text-sm text-zinc-400">
+              <p><strong>Job ID:</strong> <span id="currentJobId">-</span></p>
+              <p><strong>Estado:</strong> <span id="currentJobStatus">-</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Audio Player Component -->
+      <div class="max-w-4xl mx-auto mb-8">
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
+          <h3 class="text-xl font-semibold mb-6 text-center">Reproductor de Audio</h3>
+          
+          <!-- Main Audio Player -->
+          <div id="mainPlayer" class="bg-zinc-900/50 rounded-xl p-6 mb-6" style="display: none;">
+            <div class="flex items-center space-x-4 mb-4">
+              <button id="playPauseBtn" class="w-12 h-12 bg-neon rounded-full flex items-center justify-center text-black hover:bg-neon/90 transition">
+                <svg id="playIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                <svg id="pauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                </svg>
+              </button>
+              
+              <div class="flex-1">
+                <div class="flex justify-between text-sm mb-2">
+                  <span id="currentTrackName">Sin audio seleccionado</span>
+                  <span id="trackDuration">00:00</span>
+                </div>
+                <div class="relative">
+                  <input type="range" id="progressSlider" class="w-full h-2 bg-zinc-700 rounded-lg appearance-none slider" 
+                         min="0" max="100" value="0">
+                  <div class="flex justify-between text-xs text-zinc-400 mt-1">
+                    <span id="currentTime">00:00</span>
+                    <span id="totalTime">00:00</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex items-center space-x-2">
+                <button id="volumeBtn" class="text-zinc-400 hover:text-white transition">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                  </svg>
+                </button>
+                <input type="range" id="volumeSlider" class="w-20 h-2 bg-zinc-700 rounded-lg appearance-none slider" 
+                       min="0" max="100" value="50">
+              </div>
+            </div>
+            
+            <!-- Track Metadata -->
+            <div id="trackMetadata" class="text-sm text-zinc-400 grid grid-cols-2 gap-4">
+              <div>
+                <p><strong>Archivo:</strong> <span id="fileName">-</span></p>
+                <p><strong>Tamaño:</strong> <span id="fileSize">-</span></p>
+              </div>
+              <div>
+                <p><strong>Formato:</strong> <span id="fileFormat">-</span></p>
+                <p><strong>Generado:</strong> <span id="generatedAt">-</span></p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Audio Controls -->
+          <div class="flex justify-center space-x-4 mb-6">
+            <button id="downloadCurrentBtn" class="bg-neon/20 text-neon px-4 py-2 rounded-lg border border-neon hover:bg-neon/30 transition btn" disabled>
+              📥 Descargar
+            </button>
+            <button id="shareBtn" class="bg-zinc-700 text-white px-4 py-2 rounded-lg hover:bg-zinc-600 transition btn" disabled>
+              🔗 Compartir
+            </button>
+            <button id="deleteBtn" class="bg-red-500/20 text-red-400 px-4 py-2 rounded-lg border border-red-500/50 hover:bg-red-500/30 transition btn" disabled>
+              🗑️ Eliminar
+            </button>
+          </div>
+          
+          <!-- Audio Library -->
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-lg font-medium">Biblioteca de Audio</h4>
+              <div class="flex space-x-2">
+                <button id="refreshLibraryBtn" class="text-neon hover:text-neon/80 transition btn">
+                  🔄 Actualizar
+                </button>
+                <button id="cleanupBtn" class="text-red-400 hover:text-red-300 transition btn">
+                  🧹 Limpiar
+                </button>
+              </div>
+            </div>
+            
+            <div id="audioLibrary" class="space-y-2 max-h-96 overflow-y-auto">
+              <div class="text-center text-zinc-400 py-8">
+                <p>No hay archivos de audio disponibles</p>
+                <p class="text-sm mt-2">Genera música para ver los resultados aquí</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Audio HTML5 Element -->
+      <audio id="audioPlayer" preload="metadata"></audio>
     </div>
   </section>
 
@@ -593,14 +921,14 @@
           </div>
           
           <div class="grid grid-cols-2 gap-4">
-            <button id="generarMusicaGhost" class="bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition btn" disabled>
+            <button id="generarMusicaGhost" class="bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition btn">
               Generar Música
             </button>
             <button id="verificarAPIs" class="border border-white/20 rounded-lg py-4 font-semibold hover:bg-white/5 transition btn">
               Verificar APIs
             </button>
           </div>
-          <p class="text-xs text-zinc-400 text-center mt-2">* Requiere cuenta registrada</p>
+          <p class="text-xs text-zinc-400 text-center mt-2">* Funcionando en modo demo</p>
         </div>
       </div>
     </div>
@@ -732,23 +1060,36 @@
       extension: false
     };
     
-    // API configurable para desarrollo y producción
+    // API configurable para desarrollo y producción - MEJORADO
     const API_BASE_URL = (() => {
       const hostname = window.location.hostname;
+      const protocol = window.location.protocol;
+      const port = window.location.port;
+      
+      console.log('Detectando entorno:', { hostname, protocol, port });
       
       // Local development
       if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:8000';
       }
       
-      // Ngrok tunnel (para testing)
-      if (hostname.includes('ngrok') || hostname.includes('ngrok-free.app')) {
-        return window.location.origin;
+      // Ngrok tunnel (mejorada detección)
+      if (hostname.includes('ngrok') || hostname.includes('ngrok-free.app') || hostname.includes('ngrok.io')) {
+        const baseUrl = `${protocol}//${hostname}${port ? ':' + port : ''}`;
+        console.log('Entorno ngrok detectado:', baseUrl);
+        return baseUrl;
+      }
+      
+      // IPv4 local network (for mobile testing)
+      if (hostname.match(/^192\.168\.|^10\.|^172\./)) {
+        return `${protocol}//${hostname}:8000`;
       }
       
       // Production
       return 'https://son1kvers3.com';
     })();
+    
+    console.log('API_BASE_URL configurado:', API_BASE_URL);
     
     // Configuración de knobs con soporte móvil, teclado y ARIA
     function setupKnobs() {
@@ -1096,7 +1437,7 @@
       btn.textContent = '📊 Analizar Texto';
     }
     
-    // Funciones de generación musical con validación
+    // Funciones de generación musical con validación MEJORADA
     async function generarMusica() {
       try {
         const esInstrumental = document.getElementById('modoInstrumental').checked;
@@ -1118,22 +1459,33 @@
         btn.disabled = true;
         btn.textContent = esInstrumental ? 'Generando instrumental...' : 'Generando canción...';
         
-        // Llamada a API con manejo de errores
-        const response = await fetch(`${API_BASE_URL}/api/songs/create`, {
+        console.log('Enviando request a:', `${API_BASE_URL}/api/music/generate`);
+        
+        // Usar endpoint simplificado sin autenticación requerida
+        const response = await fetch(`${API_BASE_URL}/api/music/generate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
           body: JSON.stringify({
-            prompt: estilo,
+            prompt: estilo || 'música instrumental',
             lyrics: letra,
-            mode: esInstrumental ? 'instrumental' : 'original'
+            instrumental: esInstrumental,
+            style: preset
           })
         });
         
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (data.job_id) {
           showToast(`¡Tarea encolada! ID: ${data.job_id}`, 'success');
@@ -1142,8 +1494,9 @@
           showToast(esInstrumental ? '¡Instrumental generado con éxito!' : '¡Música generada con éxito!', 'success');
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error completo:', error);
         showToast('Error al generar música: ' + error.message, 'error');
+        addLog(`❌ Error: ${error.message}`, 'error');
       } finally {
         const btn = document.getElementById('generarMusica');
         btn.disabled = false;
@@ -1167,14 +1520,17 @@
         btn.disabled = true;
         btn.textContent = esInstrumental ? 'Procesando instrumental en Ghost Studio...' : 'Procesando en Ghost Studio...';
         
-        const response = await fetch(`${API_BASE_URL}/api/songs/create`, {
+        // Usar endpoint simplificado sin autenticación requerida
+        const response = await fetch(`${API_BASE_URL}/api/music/generate`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
           body: JSON.stringify({
             prompt: prompt,
-            mode: esInstrumental ? 'instrumental' : 'original',
-            preset: preset,
-            tags: tags
+            instrumental: esInstrumental,
+            style: `${preset} ${tags}`.trim()
           })
         });
         
@@ -1200,6 +1556,440 @@
       }
     }
 
+    // ================================
+    // AUDIO PLAYER & WEBSOCKET SYSTEM
+    // ================================
+    
+    let audioPlayer = null;
+    let currentTrack = null;
+    let audioLibraryData = [];
+    let websocket = null;
+    let currentJobId = null;
+    
+    // Initialize Audio Player System
+    function initializeAudioPlayer() {
+      audioPlayer = document.getElementById('audioPlayer');
+      
+      // Audio player event listeners
+      audioPlayer.addEventListener('loadedmetadata', updateTrackInfo);
+      audioPlayer.addEventListener('timeupdate', updateProgress);
+      audioPlayer.addEventListener('ended', onTrackEnded);
+      audioPlayer.addEventListener('error', onAudioError);
+      
+      // Player controls
+      document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+      document.getElementById('progressSlider').addEventListener('input', seekTrack);
+      document.getElementById('volumeSlider').addEventListener('input', updateVolume);
+      
+      // Control buttons
+      document.getElementById('downloadCurrentBtn').addEventListener('click', downloadCurrentTrack);
+      document.getElementById('deleteBtn').addEventListener('click', deleteCurrentTrack);
+      document.getElementById('refreshLibraryBtn').addEventListener('click', refreshAudioLibrary);
+      document.getElementById('cleanupBtn').addEventListener('click', cleanupOldFiles);
+      
+      // Initialize volume
+      audioPlayer.volume = 0.5;
+      
+      // Load initial library
+      refreshAudioLibrary();
+    }
+    
+    // WebSocket Management
+    function initializeWebSocket() {
+      if (!currentUser) return;
+      
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${wsProtocol}//${window.location.host}/ws/ws/${currentUser.id}`;
+      
+      try {
+        websocket = new WebSocket(wsUrl);
+        
+        websocket.onopen = () => {
+          console.log('WebSocket connected');
+          updateWebSocketStatus(true);
+        };
+        
+        websocket.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          handleWebSocketMessage(message);
+        };
+        
+        websocket.onclose = () => {
+          console.log('WebSocket disconnected');
+          updateWebSocketStatus(false);
+          // Attempt to reconnect after 5 seconds
+          setTimeout(initializeWebSocket, 5000);
+        };
+        
+        websocket.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          updateWebSocketStatus(false);
+        };
+        
+      } catch (error) {
+        console.error('Failed to initialize WebSocket:', error);
+        updateWebSocketStatus(false);
+      }
+    }
+    
+    function handleWebSocketMessage(message) {
+      console.log('WebSocket message:', message);
+      
+      switch (message.type) {
+        case 'job_status':
+        case 'job_update':
+          updateJobProgress(message);
+          break;
+        case 'queue_position':
+          updateQueuePosition(message);
+          break;
+        case 'pong':
+          console.log('WebSocket ping/pong OK');
+          break;
+        default:
+          console.log('Unknown message type:', message.type);
+      }
+    }
+    
+    function updateWebSocketStatus(connected) {
+      const statusElement = document.getElementById('wsStatus');
+      if (statusElement) {
+        statusElement.className = `w-3 h-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`;
+      }
+    }
+    
+    function subscribeToJob(jobId) {
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        currentJobId = jobId;
+        websocket.send(JSON.stringify({
+          type: 'subscribe_job',
+          job_id: jobId
+        }));
+        
+        // Show progress tracking
+        showJobProgress(jobId);
+      }
+    }
+    
+    function showJobProgress(jobId) {
+      const progressContainer = document.getElementById('jobProgress');
+      if (progressContainer) {
+        progressContainer.style.display = 'block';
+        document.getElementById('currentJobId').textContent = jobId;
+        document.getElementById('currentJobStatus').textContent = 'iniciado';
+      }
+      
+      // Navigate to results section
+      showSection('resultados');
+    }
+    
+    function updateJobProgress(message) {
+      const progress = message.progress || 0;
+      const statusMessage = message.message || 'Procesando...';
+      const status = message.status || 'processing';
+      
+      // Update progress bar
+      const progressBar = document.getElementById('progressBar');
+      const progressPercent = document.getElementById('progressPercent');
+      const progressMessage = document.getElementById('progressMessage');
+      const jobStatus = document.getElementById('currentJobStatus');
+      
+      if (progressBar) progressBar.style.width = `${progress}%`;
+      if (progressPercent) progressPercent.textContent = `${progress}%`;
+      if (progressMessage) progressMessage.textContent = statusMessage;
+      if (jobStatus) jobStatus.textContent = status;
+      
+      // Handle completion
+      if (status === 'completed') {
+        showToast('¡Generación completada!', 'success');
+        setTimeout(() => {
+          document.getElementById('jobProgress').style.display = 'none';
+          refreshAudioLibrary();
+        }, 3000);
+      } else if (status === 'failed') {
+        showToast(`Generación falló: ${statusMessage}`, 'error');
+        setTimeout(() => {
+          document.getElementById('jobProgress').style.display = 'none';
+        }, 5000);
+      }
+    }
+    
+    // Audio Library Management
+    async function refreshAudioLibrary() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/audio/files`);
+        if (response.ok) {
+          const data = await response.json();
+          audioLibraryData = data.files || [];
+          renderAudioLibrary();
+        } else {
+          console.error('Failed to fetch audio library');
+        }
+      } catch (error) {
+        console.error('Error fetching audio library:', error);
+      }
+    }
+    
+    function renderAudioLibrary() {
+      const container = document.getElementById('audioLibrary');
+      
+      if (audioLibraryData.length === 0) {
+        container.innerHTML = `
+          <div class="text-center text-zinc-400 py-8">
+            <p>No hay archivos de audio disponibles</p>
+            <p class="text-sm mt-2">Genera música para ver los resultados aquí</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = audioLibraryData.map(file => `
+        <div class="bg-zinc-900/30 rounded-lg p-4 flex items-center justify-between hover:bg-zinc-900/50 transition audio-file-item" 
+             data-filename="${file.filename}">
+          <div class="flex items-center space-x-4">
+            <button class="w-10 h-10 bg-neon/20 rounded-full flex items-center justify-center text-neon hover:bg-neon/30 transition play-btn"
+                    onclick="loadTrack('${file.filename}')">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </button>
+            <div>
+              <p class="font-medium">${file.filename}</p>
+              <p class="text-sm text-zinc-400">${formatFileSize(file.size)} • ${formatDate(file.created)}</p>
+            </div>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="downloadFile('${file.filename}')" 
+                    class="text-neon hover:text-neon/80 transition text-sm">
+              📥
+            </button>
+            <button onclick="deleteFile('${file.filename}')" 
+                    class="text-red-400 hover:text-red-300 transition text-sm">
+              🗑️
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Audio Player Functions
+    async function loadTrack(filename) {
+      try {
+        currentTrack = audioLibraryData.find(f => f.filename === filename);
+        if (!currentTrack) return;
+        
+        const streamUrl = `${API_BASE_URL}/api/audio/stream/${filename}`;
+        audioPlayer.src = streamUrl;
+        
+        // Update UI
+        document.getElementById('currentTrackName').textContent = filename;
+        document.getElementById('mainPlayer').style.display = 'block';
+        
+        // Enable controls
+        ['downloadCurrentBtn', 'shareBtn', 'deleteBtn'].forEach(id => {
+          document.getElementById(id).disabled = false;
+        });
+        
+        // Load metadata
+        loadTrackMetadata(filename);
+        
+      } catch (error) {
+        console.error('Error loading track:', error);
+        showToast('Error al cargar el archivo de audio', 'error');
+      }
+    }
+    
+    async function loadTrackMetadata(filename) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/audio/metadata/${filename}`);
+        if (response.ok) {
+          const metadata = await response.json();
+          
+          document.getElementById('fileName').textContent = metadata.filename;
+          document.getElementById('fileSize').textContent = formatFileSize(metadata.size);
+          document.getElementById('fileFormat').textContent = metadata.extension.toUpperCase();
+          document.getElementById('generatedAt').textContent = formatDate(metadata.created);
+        }
+      } catch (error) {
+        console.error('Error loading metadata:', error);
+      }
+    }
+    
+    function togglePlayPause() {
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        document.getElementById('playIcon').classList.add('hidden');
+        document.getElementById('pauseIcon').classList.remove('hidden');
+      } else {
+        audioPlayer.pause();
+        document.getElementById('playIcon').classList.remove('hidden');
+        document.getElementById('pauseIcon').classList.add('hidden');
+      }
+    }
+    
+    function updateTrackInfo() {
+      const duration = audioPlayer.duration;
+      if (duration) {
+        document.getElementById('totalTime').textContent = formatTime(duration);
+        document.getElementById('trackDuration').textContent = formatTime(duration);
+        document.getElementById('progressSlider').max = duration;
+      }
+    }
+    
+    function updateProgress() {
+      const currentTime = audioPlayer.currentTime;
+      const duration = audioPlayer.duration;
+      
+      if (duration) {
+        const progress = (currentTime / duration) * 100;
+        document.getElementById('progressSlider').value = currentTime;
+        document.getElementById('currentTime').textContent = formatTime(currentTime);
+      }
+    }
+    
+    function seekTrack() {
+      const value = document.getElementById('progressSlider').value;
+      audioPlayer.currentTime = value;
+    }
+    
+    function updateVolume() {
+      const value = document.getElementById('volumeSlider').value / 100;
+      audioPlayer.volume = value;
+    }
+    
+    function onTrackEnded() {
+      document.getElementById('playIcon').classList.remove('hidden');
+      document.getElementById('pauseIcon').classList.add('hidden');
+    }
+    
+    function onAudioError(error) {
+      console.error('Audio error:', error);
+      showToast('Error al reproducir el archivo de audio', 'error');
+    }
+    
+    // File Management Functions
+    async function downloadFile(filename) {
+      const url = `${API_BASE_URL}/api/audio/download/${filename}`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    
+    function downloadCurrentTrack() {
+      if (currentTrack) {
+        downloadFile(currentTrack.filename);
+      }
+    }
+    
+    async function deleteFile(filename) {
+      if (!confirm(`¿Estás seguro de que quieres eliminar ${filename}?`)) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/audio/delete/${filename}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          showToast('Archivo eliminado correctamente', 'success');
+          refreshAudioLibrary();
+          
+          // If current track was deleted, clear player
+          if (currentTrack && currentTrack.filename === filename) {
+            clearPlayer();
+          }
+        } else {
+          showToast('Error al eliminar el archivo', 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting file:', error);
+        showToast('Error al eliminar el archivo', 'error');
+      }
+    }
+    
+    function deleteCurrentTrack() {
+      if (currentTrack) {
+        deleteFile(currentTrack.filename);
+      }
+    }
+    
+    async function cleanupOldFiles() {
+      if (!confirm('¿Estás seguro de que quieres limpiar archivos antiguos?')) return;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/audio/cleanup`, {
+          method: 'POST'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          showToast(`Limpieza completada. ${data.deleted_files} archivos eliminados`, 'success');
+          refreshAudioLibrary();
+        } else {
+          showToast('Error durante la limpieza', 'error');
+        }
+      } catch (error) {
+        console.error('Error during cleanup:', error);
+        showToast('Error durante la limpieza', 'error');
+      }
+    }
+    
+    function clearPlayer() {
+      audioPlayer.src = '';
+      currentTrack = null;
+      document.getElementById('mainPlayer').style.display = 'none';
+      document.getElementById('currentTrackName').textContent = 'Sin audio seleccionado';
+      
+      // Disable controls
+      ['downloadCurrentBtn', 'shareBtn', 'deleteBtn'].forEach(id => {
+        document.getElementById(id).disabled = true;
+      });
+    }
+    
+    // Utility Functions
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    
+    function formatDate(timestamp) {
+      return new Date(timestamp * 1000).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    // Enhanced Music Generation with Audio Player Integration
+    async function generarMusicaConAudio() {
+      try {
+        const response = await generarMusica();
+        
+        if (response && response.job_id) {
+          // Subscribe to WebSocket updates for this job
+          subscribeToJob(response.job_id);
+        }
+        
+        return response;
+      } catch (error) {
+        console.error('Error in enhanced music generation:', error);
+        throw error;
+      }
+    }
+    
     // System Status Functions
     async function checkSystemStatus() {
       try {
@@ -1223,11 +2013,42 @@
           systemStatus.redis = false;
         }
 
+        // Check Chrome Extension - improved detection
+        try {
+          // Method 1: Check if extension has communicated recently
+          const hasExtensionStorage = localStorage.getItem('son1k_extension_connected');
+          const extensionTimestamp = localStorage.getItem('son1k_extension_timestamp');
+          
+          // Method 2: Post message to potential extension
+          window.postMessage({ 
+            type: 'SON1K_FRONTEND_PING', 
+            timestamp: Date.now(),
+            source: 'son1k_frontend'
+          }, '*');
+          
+          // Method 3: Check for extension-specific indicators
+          const extensionIndicators = [
+            hasExtensionStorage === 'true',
+            extensionTimestamp && (Date.now() - parseInt(extensionTimestamp)) < 60000, // Last ping within 60 seconds
+            document.querySelector('[data-son1k-extension]') !== null
+          ];
+          
+          systemStatus.extension = extensionIndicators.some(indicator => indicator);
+          
+          if (systemStatus.extension) {
+            addLog('✅ Extensión Chrome detectada', 'success');
+          }
+          
+        } catch {
+          systemStatus.extension = false;
+        }
+
         updateStatusIndicators();
       } catch (error) {
         systemStatus.api = false;
         systemStatus.celery = false;
         systemStatus.redis = false;
+        systemStatus.extension = false;
         updateStatusIndicators();
       }
     }
@@ -1408,6 +2229,14 @@
       setupSliders();
       setupNavigation();
       setupEventListeners();
+      
+      // Initialize audio player system
+      initializeAudioPlayer();
+      
+      // Initialize WebSocket (if user is logged in)
+      if (currentUser) {
+        initializeWebSocket();
+      }
       
       // Verificar sistema
       await checkSystemStatus();
@@ -1811,6 +2640,58 @@
       </button>
     </div>
   </div>
+
+  <!-- 🎵 Son1k Commercial Integration Script -->
+  <script src="commercial_integration.js"></script>
+  
+  <script>
+    // Modificar evento del botón para usar integración Suno
+    document.addEventListener('DOMContentLoaded', function() {
+      // Esperar a que el DOM esté completamente cargado
+      setTimeout(() => {
+        // Remover evento anterior y agregar nuevo
+        const btnGenerar = document.getElementById('generarMusica');
+        if (btnGenerar) {
+          // Clonar botón para remover eventos anteriores
+          const newBtn = btnGenerar.cloneNode(true);
+          btnGenerar.parentNode.replaceChild(newBtn, btnGenerar);
+          
+          // Agregar nuevo evento que use el sistema comercial
+          newBtn.addEventListener('click', async function() {
+            // Verificar disponibilidad del sistema comercial
+            const sistemaDisponible = await checkCommercialSystemAvailability();
+            if (!sistemaDisponible) {
+              showToast('⚠️ Motor avanzado no disponible. Usando modo estándar...', 'warning');
+              // Fallback a función original
+              generarMusica();
+              return;
+            }
+            
+            // Usar motor comercial
+            generateMusicCommercial();
+          });
+          
+          // Mantener texto original del botón
+          newBtn.innerHTML = '🎵 Generar Música';
+        }
+        
+        // Verificar estado del motor comercial al cargar
+        checkCommercialSystemAvailability().then(disponible => {
+          const statusIndicator = document.createElement('div');
+          statusIndicator.className = 'fixed top-4 right-4 z-40 px-3 py-1 rounded-full text-xs font-medium';
+          statusIndicator.innerHTML = disponible 
+            ? '🟢 Sistema Listo' 
+            : '🔴 Modo Básico';
+          statusIndicator.style.backgroundColor = disponible ? '#10b981' : '#ef4444';
+          statusIndicator.style.color = 'white';
+          document.body.appendChild(statusIndicator);
+          
+          // Auto-hide después de 3 segundos
+          setTimeout(() => statusIndicator.remove(), 3000);
+        });
+      }, 1000); // Esperar 1 segundo para asegurar que todo esté cargado
+    });
+  </script>
 
 </body>
 </html>

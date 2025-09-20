@@ -4,6 +4,8 @@ FROM python:3.11-slim
 # Instalar dependencias del sistema necesarias
 RUN apt-get update && apt-get install -y \
     gcc \
+    libpq-dev \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Establecer directorio de trabajo

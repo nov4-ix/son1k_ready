@@ -35,3 +35,63 @@ node_modules/
 .env
 keys/
 *.db
+
+# Selenium & Cookie Security
+cookies.json
+temp_cookies.db
+screenshots/
+generated_audio/
+*.png
+*.jpg
+*.jpeg
+
+# Chrome profiles and temp files
+chrome_profile/
+selenium_temp/
+*.crdownload
+*.tmp
+
+# Sensitive automation files
+session_data/
+browser_cache/
+user_data/
+# === Son1kVers3 safe ===
+.env
+*.env
+son1k.db
+*.db
+*.sqlite
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.build/
+.ngrok2/
+.cloudflared/
+selenium_profile*/ 
+.nginx/
+.DS_Store
+# === Son1kVers3 safe ===
+.env
+*.env
+*.db
+son1k.db
+.venv/
+__pycache__/
+*.pyc
+*.log
+ngrok.log
+
+# Perfiles/artefactos locales
+.selenium_profile*/
+.seleni*profile*/
+$PWD/
+
+# HTML de debug (mantén tu frontend/index.html)
+00_*.html
+01_*.html
+02_*.html
+03_*.html
+04_*.html
+05_*.html
+*_state.html

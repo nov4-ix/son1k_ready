@@ -224,3 +224,19 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     user: UserResponse
+
+# --- añade esto en models.py ---
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+
+class GenerationRequest(BaseModel):
+    prompt: str
+    lyrics: Optional[str] = None
+    instrumental: bool = False
+    style: Optional[str] = None
+    user_id: Optional[str] = None
+    model: Optional[Literal["ghost", "studio", "cover", "remix", "default"]] = "default"
+    duration: Optional[int] = Field(default=30, ge=5, le=300)
+    seed: Optional[int] = None
+    metadata: Optional[dict] = None
+

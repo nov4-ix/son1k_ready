@@ -1,0 +1,687 @@
+#!/usr/bin/env python3
+"""
+Robust Suno.com automation module
+Handles navigation, form filling, and creation with enhanced reliability
+"""
+import os
+import time
+import logging
+from typing import Dict, List, Optional, Tuple, Union
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.common.exceptions import TimeoutException, WebDriverException
+
+logger = logging.getLogger(__name__)
+
+def ensure_on_create(driver: webdriver.Chrome, timeout: int = 30) -> bool:
+    """Navigate to create page and ensure we're there"""
+    try:
+        logger.info("🎯 Navigating to Suno create page...")
+        
+        # Try direct navigation first
+        driver.get("https://suno.com/create")
+        
+        # Wait for page to load
+        WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
+        
+        # Check if we're on create page
+        current_url = driver.current_url
+        page_source = driver.page_source.lower()
+        
+        # Multiple indicators for create page
+        create_indicators = [
+            "create" in current_url.lower(),
+            "custom" in page_source,
+            "lyrics" in page_source,
+            "generate" in page_source
+        ]
+        
+        if any(create_indicators):
+            logger.info("✅ Successfully on create page")
+            return True
+        
+        # Try clicking create button if not on page
+        create_buttons = [
+            "//button[contains(translate(text(), 'CREATE', 'create'), 'create')]",
+            "//a[contains(@href, 'create')]",
+            "//button[contains(@data-testid, 'create')]"
+        ]
+        
+        for xpath in create_buttons:
+            try:
+                button = WebDriverWait(driver, 5).until(
+                    EC.element_to_be_clickable((By.XPATH, xpath))
+                )
+                button.click()
+                time.sleep(3)
+                
+                if "create" in driver.current_url.lower():
+                    logger.info("✅ Reached create page via button click")
+                    return True
+            except TimeoutException:
+                continue
+        
+        logger.error("❌ Could not reach create page")
+        return False
+        
+    except Exception as e:
+        logger.error(f"❌ Error navigating to create: {e}")
+        return False
+
+def ensure_custom_tab(driver: webdriver.Chrome, timeout: int = 20) -> bool:
+    """Ensure Custom tab is active"""
+    try:
+        logger.info("🎛️ Activating Custom tab...")
+        
+        # Look for Custom tab/button
+        custom_selectors = [
+            "//button[contains(translate(text(), 'CUSTOM', 'custom'), 'custom')]",
+            "//div[contains(translate(text(), 'CUSTOM', 'custom'), 'custom')]",
+            "//span[contains(translate(text(), 'CUSTOM', 'custom'), 'custom')]/ancestor::button",
+            "[data-testid*='custom']",
+            ".custom-tab",
+            "button[aria-selected='false']:contains('Custom')"
+        ]
+        
+        for selector in custom_selectors:
+            try:
+                if selector.startswith("//"):
+                    element = WebDriverWait(driver, 5).until(
+                        EC.element_to_be_clickable((By.XPATH, selector))
+                    )
+                else:
+                    if ":contains(" in selector:
+                        # Convert to XPath for text matching
+                        text = selector.split(":contains('")[1].split("')")[0]
+                        xpath = f"//button[contains(translate(text(), 'CUSTOM', 'custom'), '{text.lower()}')]"
+                        element = WebDriverWait(driver, 5).until(
+                            EC.element_to_be_clickable((By.XPATH, xpath))
+                        )
+                    else:
+                        element = WebDriverWait(driver, 5).until(
+                            EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
+                        )
+                
+                # Scroll into view and click
+                driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                time.sleep(0.5)
+                element.click()
+                time.sleep(2)
+                
+                logger.info("✅ Custom tab activated")
+                return True
+                
+            except TimeoutException:
+                continue
+        
+        # Check if already on custom mode
+        page_source = driver.page_source.lower()
+        if "lyrics" in page_source and ("style" in page_source or "description" in page_source):
+            logger.info("✅ Already in Custom mode")
+            return True
+        
+        logger.warning("⚠️ Could not activate Custom tab")
+        return False
+        
+    except Exception as e:
+        logger.error(f"❌ Error activating Custom tab: {e}")
+        return False
+
+def get_lyrics_card_and_textarea(driver: webdriver.Chrome, timeout: int = 15) -> Tuple[Optional[WebElement], Optional[WebElement]]:
+    """Locate lyrics card and its textarea"""
+    try:
+        logger.info("🎵 Locating lyrics card and textarea...")
+        
+        # Method 1: Find by "Lyrics" header
+        lyrics_headers = [
+            "//h3[contains(translate(text(), 'LYRICS', 'lyrics'), 'lyrics')]",
+            "//h2[contains(translate(text(), 'LYRICS', 'lyrics'), 'lyrics')]", 
+            "//div[contains(translate(text(), 'LYRICS', 'lyrics'), 'lyrics')]",
+            "//span[contains(translate(text(), 'LYRICS', 'lyrics'), 'lyrics')]"
+        ]
+        
+        lyrics_card = None
+        for xpath in lyrics_headers:
+            try:
+                header = WebDriverWait(driver, 3).until(
+                    EC.presence_of_element_located((By.XPATH, xpath))
+                )
+                # Find parent card container
+                lyrics_card = driver.execute_script("""
+                    let el = arguments[0];
+                    while (el && el.parentElement) {
+                        let classes = el.className || '';
+                        if (classes.toLowerCase().includes('card') || 
+                            el.tagName === 'SECTION' || 
+                            el.hasAttribute('data-testid')) {
+                            return el;
+                        }
+                        el = el.parentElement;
+                    }
+                    return null;
+                """, header)
+                
+                if lyrics_card:
+                    break
+            except TimeoutException:
+                continue
+        
+        # Method 2: Find by textarea placeholder
+        if not lyrics_card:
+            try:
+                textarea = WebDriverWait(driver, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "textarea[placeholder*='lyrics' i]"))
+                )
+                lyrics_card = driver.execute_script("""
+                    let el = arguments[0];
+                    while (el && el.parentElement) {
+                        let classes = el.className || '';
+                        if (classes.toLowerCase().includes('card') || 
+                            el.tagName === 'SECTION') {
+                            return el;
+                        }
+                        el = el.parentElement;
+                    }
+                    return el.parentElement;
+                """, textarea)
+            except TimeoutException:
+                pass
+        
+        if not lyrics_card:
+            logger.error("❌ Could not find lyrics card")
+            return None, None
+        
+        # Find textarea within the card
+        textarea_selectors = [
+            "textarea[placeholder*='Write some lyrics' i]",
+            "textarea[placeholder*='lyrics' i]",
+            "textarea[placeholder*='Enter lyrics' i]",
+            "textarea"
+        ]
+        
+        textarea = None
+        for selector in textarea_selectors:
+            try:
+                textarea = lyrics_card.find_element(By.CSS_SELECTOR, selector)
+                if textarea:
+                    break
+            except:
+                continue
+        
+        if not textarea:
+            logger.error("❌ Could not find lyrics textarea")
+            return lyrics_card, None
+        
+        logger.info("✅ Found lyrics card and textarea")
+        return lyrics_card, textarea
+        
+    except Exception as e:
+        logger.error(f"❌ Error finding lyrics elements: {e}")
+        return None, None
+
+def get_styles_card(driver: webdriver.Chrome, lyrics_card: WebElement, timeout: int = 15) -> Optional[WebElement]:
+    """Get styles/description card, trying multiple methods"""
+    try:
+        logger.info("🎨 Locating styles card...")
+        
+        # Method 1: Find by "Styles" or "Song Description" header
+        styles_headers = [
+            "//h3[contains(translate(text(), 'STYLES', 'styles'), 'styles')]",
+            "//h3[contains(translate(text(), 'SONG DESCRIPTION', 'song description'), 'song description')]",
+            "//h2[contains(translate(text(), 'STYLES', 'styles'), 'styles')]",
+            "//div[contains(translate(text(), 'STYLE', 'style'), 'style')]",
+            "//span[contains(translate(text(), 'DESCRIPTION', 'description'), 'description')]"
+        ]
+        
+        for xpath in styles_headers:
+            try:
+                header = driver.find_element(By.XPATH, xpath)
+                styles_card = driver.execute_script("""
+                    let el = arguments[0];
+                    while (el && el.parentElement) {
+                        let classes = el.className || '';
+                        if (classes.toLowerCase().includes('card') || 
+                            el.tagName === 'SECTION') {
+                            return el;
+                        }
+                        el = el.parentElement;
+                    }
+                    return null;
+                """, header)
+                
+                if styles_card:
+                    logger.info("✅ Found styles card by header")
+                    return styles_card
+            except:
+                continue
+        
+        # Method 2: Find by placeholder text
+        try:
+            placeholder_selectors = [
+                "textarea[placeholder*='Hip-hop, R&B, upbeat' i]",
+                "textarea[placeholder*='genre' i]",
+                "textarea[placeholder*='style' i]",
+                "div[placeholder*='Hip-hop' i]"
+            ]
+            
+            for selector in placeholder_selectors:
+                try:
+                    element = driver.find_element(By.CSS_SELECTOR, selector)
+                    styles_card = driver.execute_script("""
+                        let el = arguments[0];
+                        while (el && el.parentElement) {
+                            let classes = el.className || '';
+                            if (classes.toLowerCase().includes('card') || 
+                                el.tagName === 'SECTION') {
+                                return el;
+                            }
+                            el = el.parentElement;
+                        }
+                        return null;
+                    """, element)
+                    
+                    if styles_card:
+                        logger.info("✅ Found styles card by placeholder")
+                        return styles_card
+                except:
+                    continue
+        except:
+            pass
+        
+        # Method 3: Positional fallback - next card sibling after lyrics
+        try:
+            styles_card = driver.execute_script("""
+                const lyricsCard = arguments[0];
+                let next = lyricsCard.nextElementSibling;
+                
+                while (next) {
+                    const classes = next.className || '';
+                    if (classes.toLowerCase().includes('card') || 
+                        next.tagName === 'SECTION' ||
+                        next.tagName === 'DIV') {
+                        // Check if it contains form elements
+                        const hasTextarea = next.querySelector('textarea');
+                        const hasContentEditable = next.querySelector('[contenteditable]');
+                        const hasInput = next.querySelector('input[type="text"]');
+                        
+                        if (hasTextarea || hasContentEditable || hasInput) {
+                            return next;
+                        }
+                    }
+                    next = next.nextElementSibling;
+                }
+                return null;
+            """, lyrics_card)
+            
+            if styles_card:
+                logger.info("✅ Found styles card by position (fallback)")
+                return styles_card
+        except Exception as e:
+            logger.debug(f"Positional fallback failed: {e}")
+        
+        logger.error("❌ Could not find styles card")
+        return None
+        
+    except Exception as e:
+        logger.error(f"❌ Error finding styles card: {e}")
+        return None
+
+def get_styles_editor(styles_card: WebElement) -> Optional[WebElement]:
+    """Get the styles editor (textarea or contenteditable)"""
+    try:
+        logger.info("📝 Locating styles editor...")
+        
+        # Method 1: Look for textarea first
+        textarea_selectors = [
+            "textarea[placeholder*='Hip-hop, R&B, upbeat' i]",
+            "textarea[placeholder*='genre' i]",
+            "textarea[placeholder*='style' i]",
+            "textarea"
+        ]
+        
+        for selector in textarea_selectors:
+            try:
+                editor = styles_card.find_element(By.CSS_SELECTOR, selector)
+                if editor:
+                    logger.info("✅ Found styles textarea editor")
+                    return editor
+            except:
+                continue
+        
+        # Method 2: Look for contenteditable elements
+        contenteditable_selectors = [
+            "div[contenteditable='true']",
+            "[role='textbox']",
+            "[data-slate-editor='true']",
+            "[contenteditable]"
+        ]
+        
+        for selector in contenteditable_selectors:
+            try:
+                editor = styles_card.find_element(By.CSS_SELECTOR, selector)
+                if editor:
+                    logger.info("✅ Found styles contenteditable editor")
+                    return editor
+            except:
+                continue
+        
+        logger.error("❌ Could not find styles editor")
+        return None
+        
+    except Exception as e:
+        logger.error(f"❌ Error finding styles editor: {e}")
+        return None
+
+def write_textarea(driver: webdriver.Chrome, element: WebElement, text: str) -> bool:
+    """Write text to textarea element"""
+    try:
+        # Clear and type
+        element.clear()
+        time.sleep(0.2)
+        
+        # Type character by character for more natural input
+        for char in text:
+            element.send_keys(char)
+            time.sleep(0.02)  # Small delay between characters
+        
+        # Trigger events
+        driver.execute_script("""
+            const el = arguments[0];
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        """, element)
+        
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error writing to textarea: {e}")
+        return False
+
+def write_contenteditable(driver: webdriver.Chrome, element: WebElement, text: str) -> bool:
+    """Write text to contenteditable element"""
+    try:
+        # Clear and set content using JavaScript
+        driver.execute_script("""
+            const el = arguments[0];
+            const text = arguments[1];
+            
+            // Clear content
+            el.innerText = '';
+            el.focus();
+            
+            // Set new content
+            el.innerText = text;
+            
+            // Dispatch events
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.dispatchEvent(new Event('blur', { bubbles: true }));
+        """, element, text)
+        
+        time.sleep(0.3)  # Allow time for re-render
+        return True
+    except Exception as e:
+        logger.error(f"❌ Error writing to contenteditable: {e}")
+        return False
+
+def read_value(element: WebElement) -> str:
+    """Read value from element (textarea or contenteditable)"""
+    try:
+        tag_name = element.tag_name.lower()
+        if tag_name == 'textarea' or tag_name == 'input':
+            return element.get_attribute('value') or ''
+        else:
+            return element.get_attribute('innerText') or element.text or ''
+    except:
+        return ''
+
+def click_create_when_enabled(driver: webdriver.Chrome, timeout: int = 40) -> bool:
+    """Click Create button when enabled"""
+    try:
+        logger.info("🚀 Looking for Create button...")
+        
+        create_xpaths = [
+            "//button[contains(translate(text(), 'CREATE', 'create'), 'create') and not(@disabled) and not(@aria-disabled='true')]",
+            "//button[contains(translate(text(), 'GENERATE', 'generate'), 'generate') and not(@disabled) and not(@aria-disabled='true')]"
+        ]
+        
+        end_time = time.time() + timeout
+        while time.time() < end_time:
+            for xpath in create_xpaths:
+                try:
+                    button = driver.find_element(By.XPATH, xpath)
+                    if button.is_enabled() and button.is_displayed():
+                        # Scroll into view and click
+                        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
+                        time.sleep(0.5)
+                        button.click()
+                        logger.info("✅ Create button clicked successfully")
+                        return True
+                except:
+                    continue
+            
+            time.sleep(1)  # Wait before next attempt
+        
+        logger.error("❌ Create button not found or not enabled")
+        return False
+        
+    except Exception as e:
+        logger.error(f"❌ Error clicking Create button: {e}")
+        return False
+
+def wait_captcha_if_any(driver: webdriver.Chrome, max_wait: int = 180) -> bool:
+    """Wait for captcha to be resolved if present"""
+    try:
+        logger.info("🔍 Checking for captcha...")
+        
+        captcha_iframes = [
+            "iframe[src*='hcaptcha']",
+            "iframe[src*='recaptcha']", 
+            "iframe[src*='turnstile']",
+            "iframe[title*='captcha' i]"
+        ]
+        
+        start_time = time.time()
+        captcha_detected = False
+        
+        while time.time() - start_time < max_wait:
+            # Check for captcha iframes
+            for selector in captcha_iframes:
+                try:
+                    iframes = driver.find_elements(By.CSS_SELECTOR, selector)
+                    if iframes:
+                        if not captcha_detected:
+                            logger.warning("⚠️ Captcha detected: Please solve it manually...")
+                            captcha_detected = True
+                        time.sleep(1)
+                        break
+                except:
+                    continue
+            else:
+                # No captcha found
+                if captcha_detected:
+                    logger.info("✅ Captcha resolved")
+                return True
+            
+            time.sleep(1)
+        
+        if captcha_detected:
+            logger.error("❌ Captcha timeout")
+            return False
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error checking captcha: {e}")
+        return True  # Continue anyway
+
+def compose_and_create(driver: webdriver.Chrome, lyrics: str, prompt: str, screenshots_dir: str) -> Dict:
+    """Main orchestration function"""
+    result = {
+        "ok": False,
+        "lyrics_ok": False, 
+        "styles_ok": False,
+        "created": False,
+        "shots": []
+    }
+    
+    os.makedirs(screenshots_dir, exist_ok=True)
+    
+    try:
+        # Step 1: Ensure on create page
+        screenshot_path = os.path.join(screenshots_dir, "00_loaded.png")
+        driver.save_screenshot(screenshot_path)
+        result["shots"].append(screenshot_path)
+        
+        if not ensure_on_create(driver):
+            screenshot_path = os.path.join(screenshots_dir, "ZZ_failed_navigate.png")
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+            return result
+        
+        # Step 2: Activate Custom tab
+        if not ensure_custom_tab(driver):
+            screenshot_path = os.path.join(screenshots_dir, "ZZ_failed_custom.png")
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+            return result
+        
+        screenshot_path = os.path.join(screenshots_dir, "01_custom.png")
+        driver.save_screenshot(screenshot_path)
+        result["shots"].append(screenshot_path)
+        
+        # Step 3: Get lyrics elements
+        lyrics_card, lyrics_textarea = get_lyrics_card_and_textarea(driver)
+        if not lyrics_card or not lyrics_textarea:
+            screenshot_path = os.path.join(screenshots_dir, "ZZ_failed_lyrics_elements.png")
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+            return result
+        
+        # Step 4: Write lyrics
+        if write_textarea(driver, lyrics_textarea, lyrics):
+            time.sleep(0.5)
+            # Verify lyrics were written
+            lyrics_value = read_value(lyrics_textarea)
+            if lyrics_value.strip():
+                result["lyrics_ok"] = True
+                logger.info(f"✅ Lyrics written: {len(lyrics_value)} characters")
+            else:
+                logger.error("❌ Lyrics not written properly")
+        
+        screenshot_path = os.path.join(screenshots_dir, "02_lyrics.png")
+        driver.save_screenshot(screenshot_path)
+        result["shots"].append(screenshot_path)
+        
+        # Step 5: Get styles elements
+        styles_card = get_styles_card(driver, lyrics_card)
+        if not styles_card:
+            screenshot_path = os.path.join(screenshots_dir, "ZZ_failed_styles_card.png")
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+            return result
+        
+        screenshot_path = os.path.join(screenshots_dir, "02b_styles_card.png")
+        driver.save_screenshot(screenshot_path)
+        result["shots"].append(screenshot_path)
+        
+        styles_editor = get_styles_editor(styles_card)
+        if not styles_editor:
+            screenshot_path = os.path.join(screenshots_dir, "ZZ_failed_styles_editor.png")
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+            return result
+        
+        # Safety check: ensure styles editor is different from lyrics textarea
+        if driver.execute_script("return arguments[0] === arguments[1]", styles_editor, lyrics_textarea):
+            logger.error("❌ Styles editor is the same as lyrics textarea!")
+            screenshot_path = os.path.join(screenshots_dir, "ZZ_same_editor_error.png")
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+            return result
+        
+        # Step 6: Write styles/prompt
+        is_contenteditable = styles_editor.get_attribute('contenteditable') == 'true'
+        write_success = False
+        
+        if is_contenteditable:
+            write_success = write_contenteditable(driver, styles_editor, prompt)
+        else:
+            write_success = write_textarea(driver, styles_editor, prompt)
+        
+        if write_success:
+            time.sleep(0.5)
+            # Verify styles were written
+            styles_value = read_value(styles_editor)
+            if styles_value.strip():
+                result["styles_ok"] = True
+                logger.info(f"✅ Styles written: {len(styles_value)} characters")
+                
+                # Double-check lyrics didn't change
+                lyrics_check = read_value(lyrics_textarea)
+                if not lyrics_check.strip():
+                    logger.error("❌ Lyrics disappeared after writing styles!")
+                    result["lyrics_ok"] = False
+            else:
+                logger.error("❌ Styles not written properly")
+        
+        screenshot_path = os.path.join(screenshots_dir, "03_styles.png")
+        driver.save_screenshot(screenshot_path)
+        result["shots"].append(screenshot_path)
+        
+        # Step 7: Click Create if both fields have content
+        if result["lyrics_ok"] and result["styles_ok"]:
+            # Wait for any captcha
+            if wait_captcha_if_any(driver):
+                if click_create_when_enabled(driver):
+                    result["created"] = True
+                    result["ok"] = True
+                    logger.info("🎉 Song creation initiated successfully!")
+                    
+                    screenshot_path = os.path.join(screenshots_dir, "04_create.png")
+                    driver.save_screenshot(screenshot_path)
+                    result["shots"].append(screenshot_path)
+                else:
+                    screenshot_path = os.path.join(screenshots_dir, "ZZ_failed_create_click.png")
+                    driver.save_screenshot(screenshot_path)
+                    result["shots"].append(screenshot_path)
+            else:
+                screenshot_path = os.path.join(screenshots_dir, "ZZ_captcha_timeout.png")
+                driver.save_screenshot(screenshot_path)
+                result["shots"].append(screenshot_path)
+        else:
+            logger.error("❌ Cannot create: lyrics_ok=%s, styles_ok=%s", result["lyrics_ok"], result["styles_ok"])
+            screenshot_path = os.path.join(screenshots_dir, "ZZ_fields_not_ready.png")
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Compose and create failed: {e}")
+        screenshot_path = os.path.join(screenshots_dir, "ZZ_exception.png")
+        try:
+            driver.save_screenshot(screenshot_path)
+            result["shots"].append(screenshot_path)
+        except:
+            pass
+        return result
+
+# Export main functions
+__all__ = [
+    "ensure_on_create",
+    "ensure_custom_tab", 
+    "get_lyrics_card_and_textarea",
+    "get_styles_card",
+    "get_styles_editor",
+    "write_textarea",
+    "write_contenteditable", 
+    "read_value",
+    "click_create_when_enabled",
+    "wait_captcha_if_any",
+    "compose_and_create"
+]
