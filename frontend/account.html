@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Cuenta - Son1k</title>
+    <meta name="description" content="Gestiona tu cuenta Son1k, suscripción, historial de pagos y configuraciones">
+    
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .nav-links a:hover {
+            opacity: 1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+        
+        .account-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+        
+        .profile-info {
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px;
+        }
+        
+        .profile-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .profile-email {
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .plan-free {
+            background: rgba(108, 117, 125, 0.3);
+            color: #6c757d;
+        }
+        
+        .plan-basic {
+            background: rgba(52, 152, 219, 0.3);
+            color: #3498db;
+        }
+        
+        .plan-pro {
+            background: rgba(155, 89, 182, 0.3);
+            color: #9b59b6;
+        }
+        
+        .plan-unlimited {
+            background: rgba(241, 196, 15, 0.3);
+            color: #f1c40f;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .subscription-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+            display: block;
+        }
+        
+        .stat-label {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .button-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ffd700);
+            color: white;
+        }
+        
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .button-danger {
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .payment-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-info {
+            flex: 1;
+        }
+        
+        .payment-plan {
+            font-weight: bold;
+        }
+        
+        .payment-date {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+        
+        .payment-amount {
+            font-weight: bold;
+            color: #2ecc71;
+        }
+        
+        .settings-form {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .error, .success {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .error {
+            background: rgba(231, 76, 60, 0.3);
+            border: 1px solid #e74c3c;
+        }
+        
+        .success {
+            background: rgba(46, 204, 113, 0.3);
+            border: 1px solid #2ecc71;
+        }
+        
+        .error.show, .success.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .account-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .subscription-status {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Son1k</div>
+            <div class="nav-links">
+                <a href="/">🎵 Crear Música</a>
+                <a href="/pricing">💳 Planes</a>
+                <a href="/account">👤 Mi Cuenta</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            <p>🎵 Cargando información de la cuenta...</p>
+        </div>
+
+        <div id="account-content" class="account-grid" style="display: none;">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Perfil -->
+                <div class="card">
+                    <div class="profile-info">
+                        <div class="profile-avatar" id="profileAvatar">👤</div>
+                        <div class="profile-name" id="profileName">Usuario</div>
+                        <div class="profile-email" id="profileEmail">email@ejemplo.com</div>
+                        <div class="plan-badge" id="planBadge">Plan Gratuito</div>
+                    </div>
+                </div>
+
+                <!-- Estado de Suscripción -->
+                <div class="card">
+                    <h2>Estado de Suscripción</h2>
+                    <div class="subscription-status">
+                        <div class="stat-item">
+                            <span class="stat-value" id="creditsRemaining">3</span>
+                            <span class="stat-label">Créditos disponibles</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="creditsUsed">0</span>
+                            <span class="stat-label">Usados este mes</span>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <a href="/pricing" class="button button-primary">Actualizar Plan</a>
+                        <button id="manageSubscriptionBtn" class="button button-secondary">Gestionar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="main-content">
+                <!-- Configuración de Cuenta -->
+                <div class="card">
+                    <h2>Configuración de Cuenta</h2>
+                    
+                    <div id="accountError" class="error"></div>
+                    <div id="accountSuccess" class="success"></div>
+                    
+                    <form id="accountForm" class="settings-form">
+                        <div class="form-group">
+                            <label for="firstName">Nombre</label>
+                            <input type="text" id="firstName" placeholder="Tu nombre">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lastName">Apellido</label>
+                            <input type="text" id="lastName" placeholder="Tu apellido">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="tu@email.com" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notifications">Notificaciones</label>
+                            <select id="notifications">
+                                <option value="all">Todas las notificaciones</option>
+                                <option value="important">Solo importantes</option>
+                                <option value="none">Ninguna</option>
+                            </select>
+                        </div>
+                        
+                        <div class="actions">
+                            <button type="submit" class="button button-primary">Guardar Cambios</button>
+                            <button type="button" id="changePasswordBtn" class="button button-secondary">Cambiar Contraseña</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Historial de Pagos -->
+                <div class="card">
+                    <h2>Historial de Pagos</h2>
+                    
+                    <div id="paymentLoading" class="loading">
+                        Cargando historial de pagos...
+                    </div>
+                    
+                    <div id="paymentHistory" class="payment-history" style="display: none;">
+                        <!-- Los pagos se cargan dinámicamente -->
+                    </div>
+                    
+                    <div id="noPayments" style="display: none; text-align: center; opacity: 0.7; padding: 40px;">
+                        <p>🎵 Aún no tienes historial de pagos</p>
+                        <p>Cuando actualices tu plan, tus facturas aparecerán aquí</p>
+                    </div>
+                </div>
+
+                <!-- Configuraciones Avanzadas -->
+                <div class="card">
+                    <h2>Configuraciones Avanzadas</h2>
+                    
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Eliminar Cuenta</label>
+                            <p style="opacity: 0.7; font-size: 14px; margin-bottom: 15px;">
+                                Esta acción eliminará permanentemente tu cuenta y todos los datos asociados.
+                            </p>
+                            <button id="deleteAccountBtn" class="button button-danger">Eliminar Cuenta</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Exportar Datos</label>
+                            <p style="opacity: 0.7; font-size: 14px; margin-bottom: 15px;">
+                                Descarga una copia de todos tus datos personales.
+                            </p>
+                            <button id="exportDataBtn" class="button button-secondary">Exportar Datos</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentUser = null;
+        let stripe = null;
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUserData();
+            await loadPaymentHistory();
+            setupEventListeners();
+        });
+
+        async function loadUserData() {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('account-content');
+
+            try {
+                // Simular carga de datos del usuario
+                // En producción, esto vendría de la API
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Datos de ejemplo
+                currentUser = {
+                    id: 'user_123',
+                    email: 'usuario@ejemplo.com',
+                    firstName: 'Usuario',
+                    lastName: 'Ejemplo',
+                    plan: 'free',
+                    creditsRemaining: 3,
+                    creditsUsed: 0,
+                    subscriptionStatus: 'active'
+                };
+
+                updateUserInterface(currentUser);
+                
+                loading.style.display = 'none';
+                content.style.display = 'grid';
+
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showError('accountError', 'Error al cargar los datos de la cuenta');
+                loading.style.display = 'none';
+            }
+        }
+
+        function updateUserInterface(user) {
+            // Actualizar perfil
+            document.getElementById('profileName').textContent = `${user.firstName} ${user.lastName}`;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profileAvatar').textContent = user.firstName.charAt(0).toUpperCase();
+
+            // Actualizar badge del plan
+            const planBadge = document.getElementById('planBadge');
+            const planNames = {
+                'free': 'Plan Gratuito',
+                'basic': 'Plan Básico',
+                'pro': 'Plan Pro',
+                'unlimited': 'Plan Ilimitado'
+            };
+            
+            planBadge.textContent = planNames[user.plan] || 'Plan Desconocido';
+            planBadge.className = `plan-badge plan-${user.plan}`;
+
+            // Actualizar estadísticas
+            document.getElementById('creditsRemaining').textContent = 
+                user.creditsRemaining === -1 ? '∞' : user.creditsRemaining;
+            document.getElementById('creditsUsed').textContent = user.creditsUsed;
+
+            // Rellenar formulario
+            document.getElementById('firstName').value = user.firstName || '';
+            document.getElementById('lastName').value = user.lastName || '';
+            document.getElementById('email').value = user.email || '';
+        }
+
+        async function loadPaymentHistory() {
+            const loading = document.getElementById('paymentLoading');
+            const history = document.getElementById('paymentHistory');
+            const noPayments = document.getElementById('noPayments');
+
+            try {
+                loading.style.display = 'block';
+
+                // Simular carga de historial
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // Datos de ejemplo
+                const payments = [
+                    {
+                        id: 'pay_123',
+                        plan: 'Plan Pro',
+                        amount: 19.99,
+                        date: '2025-08-20',
+                        status: 'succeeded'
+                    },
+                    {
+                        id: 'pay_124',
+                        plan: 'Plan Pro',
+                        amount: 19.99,
+                        date: '2025-07-20',
+                        status: 'succeeded'
+                    }
+                ];
+
+                if (payments.length === 0) {
+                    noPayments.style.display = 'block';
+                } else {
+                    renderPaymentHistory(payments);
+                    history.style.display = 'block';
+                }
+
+                loading.style.display = 'none';
+
+            } catch (error) {
+                console.error('Error loading payment history:', error);
+                loading.style.display = 'none';
+                noPayments.style.display = 'block';
+            }
+        }
+
+        function renderPaymentHistory(payments) {
+            const container = document.getElementById('paymentHistory');
+            container.innerHTML = '';
+
+            payments.forEach(payment => {
+                const item = document.createElement('div');
+                item.className = 'payment-item';
+                
+                item.innerHTML = `
+                    <div class="payment-info">
+                        <div class="payment-plan">${payment.plan}</div>
+                        <div class="payment-date">${new Date(payment.date).toLocaleDateString('es-ES')}</div>
+                    </div>
+                    <div class="payment-amount">$${payment.amount}</div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function setupEventListeners() {
+            // Formulario de cuenta
+            document.getElementById('accountForm').addEventListener('submit', handleAccountUpdate);
+            
+            // Botones de acción
+            document.getElementById('manageSubscriptionBtn').addEventListener('click', handleManageSubscription);
+            document.getElementById('changePasswordBtn').addEventListener('click', handleChangePassword);
+            document.getElementById('deleteAccountBtn').addEventListener('click', handleDeleteAccount);
+            document.getElementById('exportDataBtn').addEventListener('click', handleExportData);
+        }
+
+        async function handleAccountUpdate(e) {
+            e.preventDefault();
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+
+            try {
+                const formData = new FormData(e.target);
+                const data = {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    notifications: formData.get('notifications')
+                };
+
+                // Simular actualización
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                showSuccess('accountSuccess', 'Configuración actualizada exitosamente');
+
+            } catch (error) {
+                console.error('Error updating account:', error);
+                showError('accountError', 'Error al actualizar la configuración');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        async function handleManageSubscription() {
+            try {
+                // En producción, esto abriría el portal de Stripe
+                const response = await fetch(`/api/subscription/customer-portal/${currentUser.id}`, {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    window.open(data.portal_url, '_blank');
+                } else {
+                    throw new Error('Error al abrir portal de suscripción');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al abrir el portal de suscripción. Intenta nuevamente.');
+            }
+        }
+
+        async function handleChangePassword() {
+            const newPassword = prompt('Ingresa tu nueva contraseña:');
+            if (!newPassword) return;
+
+            if (newPassword.length < 8) {
+                alert('La contraseña debe tener al menos 8 caracteres');
+                return;
+            }
+
+            try {
+                // Simular cambio de contraseña
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                showSuccess('accountSuccess', 'Contraseña actualizada exitosamente');
+
+            } catch (error) {
+                showError('accountError', 'Error al cambiar la contraseña');
+            }
+        }
+
+        async function handleDeleteAccount() {
+            const confirmation = prompt('Para confirmar la eliminación, escribe "ELIMINAR":');
+            
+            if (confirmation !== 'ELIMINAR') {
+                alert('Eliminación cancelada');
+                return;
+            }
+
+            const finalConfirm = confirm('¿Estás absolutamente seguro? Esta acción no se puede deshacer.');
+            
+            if (!finalConfirm) return;
+
+            try {
+                // Simular eliminación
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                alert('Cuenta eliminada exitosamente. Serás redirigido a la página principal.');
+                window.location.href = '/';
+
+            } catch (error) {
+                showError('accountError', 'Error al eliminar la cuenta. Contacta soporte.');
+            }
+        }
+
+        async function handleExportData() {
+            try {
+                // Simular exportación
+                const exportBtn = document.getElementById('exportDataBtn');
+                const originalText = exportBtn.textContent;
+                
+                exportBtn.disabled = true;
+                exportBtn.textContent = 'Exportando...';
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Crear y descargar archivo simulado
+                const data = {
+                    user: currentUser,
+                    exportDate: new Date().toISOString(),
+                    dataTypes: ['profile', 'subscriptions', 'payments', 'usage']
+                };
+
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `son1k-datos-${currentUser.id}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
+
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showError('accountError', 'Error al exportar los datos');
+            }
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.add('show');
+            
+            setTimeout(() => {
+                element.classList.remove('show');
+            }, 5000);
+        }
+
+        function showSuccess(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.add('show');
+            
+            setTimeout(() => {
+                element.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

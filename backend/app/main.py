@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends
-from backend.app.routers import music, audio, tracks, captcha, music_generation, payments, subscription
+from backend.app.routers import music, audio, tracks, captcha, music_generation, payments, subscription, legal
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -23,6 +23,7 @@ app = FastAPI(title=settings.PROJECT_NAME)
 app.include_router(music_generation.router)  # Router transparente PRIMERO
 app.include_router(subscription.router)  # Sistema de suscripciones
 app.include_router(payments.router)  # Sistema de pagos
+app.include_router(legal.router)  # Sistema legal y compliance
 app.include_router(audio.router)
 app.include_router(tracks.router, prefix="/api")
 app.include_router(captcha.router, prefix="/api")
