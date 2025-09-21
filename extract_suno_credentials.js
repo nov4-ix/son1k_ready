@@ -16,7 +16,7 @@ console.log("======================================================");
 console.log("");
 
 // Función principal de extracción
-function extractSunoCredentials() {
+const extractSunoCredentials = function() {
     try {
         console.log("🔍 Buscando credenciales de Suno...");
         console.log("");
@@ -174,7 +174,7 @@ function extractSunoCredentials() {
 const credentials = extractSunoCredentials();
 
 // Función adicional para copiar al portapapeles
-function copyToClipboard(text) {
+const copyToClipboard = function(text) {
     navigator.clipboard.writeText(text).then(() => {
         console.log("✅ Copiado al portapapeles!");
     }).catch(() => {
@@ -183,7 +183,7 @@ function copyToClipboard(text) {
 }
 
 // Función para copiar SESSION_ID
-window.copySunoSessionId = function() {
+window.copySunoSessionId = () => {
     if (credentials.sessionId) {
         copyToClipboard(credentials.sessionId);
         console.log("📋 SESSION_ID copiado al portapapeles");
@@ -193,7 +193,7 @@ window.copySunoSessionId = function() {
 };
 
 // Función para copiar COOKIE completa
-window.copySunoCookie = function() {
+window.copySunoCookie = () => {
     copyToClipboard(credentials.fullCookie);
     console.log("📋 COOKIE completa copiada al portapapeles");
 };
