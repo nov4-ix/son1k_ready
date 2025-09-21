@@ -395,6 +395,9 @@ async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style:
         session_id = os.environ.get("SUNO_SESSION_ID")
         cookie = os.environ.get("SUNO_COOKIE", "").replace('\n', '').replace('\r', '').strip()
         
+        # Clean cookie string to avoid encoding issues
+        cookie = cookie.encode('ascii', 'ignore').decode('ascii')
+        
         if not session_id or not cookie:
             raise Exception("Missing Suno credentials")
         
