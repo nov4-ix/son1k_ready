@@ -1,0 +1,25 @@
+{
+  "name": "son1k-frontend",
+  "version": "1.0.0",
+  "description": "Son1k - Generador de Música con IA",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'",
+    "start": "echo 'Use Vercel for serving'"
+  },
+  "keywords": [
+    "music",
+    "ai",
+    "generation",
+    "son1k",
+    "suno",
+    "transparent"
+  ],
+  "author": "Son1k Team",
+  "license": "MIT",
+  "homepage": "https://son1kvers3.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nov4-ix/son1k-suno-mvp.git"
+  }
+}
