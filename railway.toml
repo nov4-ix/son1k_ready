@@ -3,8 +3,6 @@ builder = "nixpacks"
 buildCommand = "pip install --no-cache-dir -r requirements-railway.txt"
 
 [deploy]
-healthcheckPath = "/health"
-healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 startCommand = "python -m uvicorn main-railway:app --host 0.0.0.0 --port $PORT"
