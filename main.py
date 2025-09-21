@@ -152,9 +152,12 @@ async def process_suno_generation(job_id: str, request: GenerationRequest):
             job["error"] = "Suno credentials not configured. Please set SUNO_SESSION_ID and SUNO_COOKIE environment variables."
             return
         
-        # Real Suno API integration
+        # Real Suno API integration  
+        # Clean cookie string to remove invalid characters
+        clean_cookie = SUNO_COOKIE.replace('\n', '').replace('\r', '').strip()
+        
         headers = {
-            "Cookie": SUNO_COOKIE,
+            "Cookie": clean_cookie,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "Content-Type": "application/json",
             "Referer": "https://suno.com",
@@ -238,8 +241,9 @@ async def poll_suno_completion(job_id: str, song_ids: list):
     while attempt < max_attempts:
         try:
             # Check status of all songs
+            clean_cookie = SUNO_COOKIE.replace('\n', '').replace('\r', '').strip()
             headers = {
-                "Cookie": SUNO_COOKIE,
+                "Cookie": clean_cookie,
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
                 "Referer": "https://suno.com"
             }
