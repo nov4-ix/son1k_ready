@@ -17,6 +17,15 @@ import shutil
 from pathlib import Path
 import subprocess
 import logging
+from ollama_creative_assistant import (
+    ollama_assistant, 
+    LyricsRequest, 
+    PromptRequest, 
+    SongMetadataRequest,
+    LyricsResponse,
+    PromptResponse
+)
+from interactive_music_assistant import interactive_assistant, ConversationMessage
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -657,6 +666,443 @@ def list_ghost_studio_jobs():
             for job_id, job in ghost_studio_jobs.items()
         ]
     }
+
+# ===== OLLAMA CREATIVE AI ENDPOINTS =====
+
+@app.post("/api/ai/generate-lyrics")
+async def generate_lyrics_ai(request: LyricsRequest):
+    """
+    Generate coherent, structured lyrics using Ollama AI
+    """
+    try:
+        result = ollama_assistant.generate_coherent_lyrics(request)
+        return {
+            "success": True,
+            "lyrics": result.lyrics,
+            "structure": result.structure,
+            "rhyme_scheme": result.rhyme_scheme,
+            "suggested_melody_notes": result.suggested_melody_notes,
+            "coherence_score": result.coherence_score,
+            "metadata": {
+                "theme": request.theme,
+                "mood": request.mood,
+                "genre": request.genre,
+                "language": request.language
+            }
+        }
+    except Exception as e:
+        logger.error(f"❌ Lyrics generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate lyrics: {str(e)}")
+
+@app.post("/api/ai/generate-prompt")
+async def generate_prompt_ai(request: PromptRequest):
+    """
+    Convert user words into professional Suno prompts using AI
+    """
+    try:
+        result = ollama_assistant.generate_smart_prompt(request)
+        return {
+            "success": True,
+            "original_words": request.user_words,
+            "optimized_prompt": result.optimized_prompt,
+            "detected_genre": result.detected_genre,
+            "style_tags": result.style_tags,
+            "mood_analysis": result.mood_analysis,
+            "suggested_bpm": result.suggested_bpm,
+            "improvement_tips": [
+                "Use the optimized prompt for better Suno results",
+                f"Consider {result.suggested_bpm} BPM for this style",
+                f"Genre detected as {result.detected_genre} - adjust if needed"
+            ]
+        }
+    except Exception as e:
+        logger.error(f"❌ Prompt generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate prompt: {str(e)}")
+
+@app.post("/api/ai/generate-metadata")
+async def generate_metadata_ai(request: SongMetadataRequest):
+    """
+    Generate song metadata, titles, and descriptions using AI
+    """
+    try:
+        result = ollama_assistant.generate_song_metadata(request)
+        return {
+            "success": True,
+            "metadata": result,
+            "generated_at": time.time()
+        }
+    except Exception as e:
+        logger.error(f"❌ Metadata generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate metadata: {str(e)}")
+
+@app.post("/api/ai/suggest-structure")
+async def suggest_structure_ai(
+    theme: str,
+    genre: str = "pop",
+    duration: int = 180
+):
+    """
+    Suggest optimal song structure using AI
+    """
+    try:
+        result = ollama_assistant.suggest_song_structure(theme, genre, duration)
+        return {
+            "success": True,
+            "theme": theme,
+            "genre": genre,
+            "duration": duration,
+            "suggestions": result
+        }
+    except Exception as e:
+        logger.error(f"❌ Structure suggestion error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to suggest structure: {str(e)}")
+
+@app.post("/api/ai/improve-prompt")
+async def improve_prompt_ai(
+    current_prompt: str,
+    target_quality: str = "professional"
+):
+    """
+    Improve existing prompts for better Suno results
+    """
+    try:
+        result = ollama_assistant.recommend_style_improvements(current_prompt, target_quality)
+        return {
+            "success": True,
+            "original_prompt": current_prompt,
+            "improvements": result,
+            "target_quality": target_quality
+        }
+    except Exception as e:
+        logger.error(f"❌ Prompt improvement error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to improve prompt: {str(e)}")
+
+@app.post("/api/ai/enhance-lyrics")
+async def enhance_lyrics_ai(
+    lyrics: str,
+    improvements: List[str] = ["flow", "coherence", "rhyme"]
+):
+    """
+    Enhance existing lyrics for better quality
+    """
+    try:
+        enhanced_lyrics = ollama_assistant.enhance_existing_lyrics(lyrics, improvements)
+        return {
+            "success": True,
+            "original_lyrics": lyrics,
+            "enhanced_lyrics": enhanced_lyrics,
+            "improvements_applied": improvements,
+            "enhancement_tips": [
+                "Compare original vs enhanced versions",
+                "Choose the version that fits your vision better",
+                "Combine elements from both if needed"
+            ]
+        }
+    except Exception as e:
+        logger.error(f"❌ Lyrics enhancement error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to enhance lyrics: {str(e)}")
+
+@app.get("/api/ai/creative-suggestions")
+async def get_creative_suggestions(
+    mood: str = "upbeat",
+    genre: str = "pop"
+):
+    """
+    Get creative suggestions for songwriting
+    """
+    try:
+        # Generate creative prompts and ideas
+        suggestions = {
+            "theme_ideas": [
+                "Love in the digital age",
+                "Chasing dreams in the city",
+                "Finding peace in chaos",
+                "Dancing through the rain",
+                "Midnight conversations"
+            ],
+            "lyric_starters": [
+                f"In this {mood} {genre} song, we could explore...",
+                f"Picture a {mood} scene where...",
+                f"The {genre} rhythm captures the feeling of..."
+            ],
+            "prompt_templates": [
+                f"{genre}, {mood} mood, modern production",
+                f"Uplifting {genre} with {mood} energy, clean vocals",
+                f"Contemporary {genre}, {mood} vibes, radio-ready"
+            ],
+            "structure_suggestions": [
+                "Intro - Verse - Pre-Chorus - Chorus - Verse - Chorus - Bridge - Chorus - Outro",
+                "Verse - Chorus - Verse - Chorus - Bridge - Chorus - Chorus",
+                "Intro - Verse - Chorus - Verse - Chorus - Bridge - Final Chorus"
+            ]
+        }
+        
+        return {
+            "success": True,
+            "mood": mood,
+            "genre": genre,
+            "suggestions": suggestions,
+            "tip": "Use these as starting points and let your creativity flow!"
+        }
+    except Exception as e:
+        logger.error(f"❌ Creative suggestions error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get suggestions: {str(e)}")
+
+@app.get("/api/ai/ollama-status")
+async def check_ollama_status():
+    """
+    Check if Ollama is running and available
+    """
+    try:
+        # Test Ollama connection
+        test_response = ollama_assistant._call_ollama("Test", "Respond with 'OK' if you're working.")
+        
+        if "OK" in test_response or test_response:
+            return {
+                "ollama_available": True,
+                "model": ollama_assistant.model,
+                "status": "ready",
+                "response_test": test_response[:50] + "..." if len(test_response) > 50 else test_response
+            }
+        else:
+            return {
+                "ollama_available": False,
+                "model": ollama_assistant.model,
+                "status": "not_responding",
+                "error": "Ollama not responding"
+            }
+    except Exception as e:
+        return {
+            "ollama_available": False,
+            "model": ollama_assistant.model,
+            "status": "error",
+            "error": str(e)
+        }
+
+# ===== INTERACTIVE ASSISTANT ENDPOINTS =====
+
+@app.post("/api/assistant/start-session")
+async def start_creative_session(user_id: str):
+    """
+    Start a new interactive creative session with the AI assistant
+    """
+    try:
+        session = interactive_assistant.start_session(user_id)
+        return {
+            "success": True,
+            "session_id": session.session_id,
+            "welcome_message": session.conversation[-1].content if session.conversation else "",
+            "options": session.conversation[-1].metadata.get("options", []) if session.conversation else [],
+            "created_at": session.created_at
+        }
+    except Exception as e:
+        logger.error(f"❌ Session creation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start session: {str(e)}")
+
+@app.post("/api/assistant/chat/{session_id}")
+async def chat_with_assistant(session_id: str, message: str):
+    """
+    Send message to interactive assistant and get response
+    """
+    try:
+        response = interactive_assistant.process_user_message(session_id, message)
+        
+        if "error" in response:
+            raise HTTPException(status_code=404, detail=response["error"])
+        
+        return {
+            "success": True,
+            "session_id": session_id,
+            "assistant_response": response["response"]["content"],
+            "metadata": response["response"].get("metadata", {}),
+            "conversation_length": response["conversation_length"],
+            "current_step": response["current_step"],
+            "progress": response["project_progress"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Chat processing error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process message: {str(e)}")
+
+@app.get("/api/assistant/session/{session_id}")
+async def get_session_info(session_id: str):
+    """
+    Get information about a creative session
+    """
+    try:
+        summary = interactive_assistant.get_session_summary(session_id)
+        
+        if "error" in summary:
+            raise HTTPException(status_code=404, detail=summary["error"])
+        
+        return {
+            "success": True,
+            "session": summary
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Session info error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get session info: {str(e)}")
+
+@app.get("/api/assistant/conversation/{session_id}")
+async def get_conversation_history(session_id: str, limit: int = 50):
+    """
+    Get conversation history for a session
+    """
+    try:
+        if session_id not in interactive_assistant.active_sessions:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        session = interactive_assistant.active_sessions[session_id]
+        
+        # Get recent messages (limited)
+        conversation = session.conversation[-limit:] if len(session.conversation) > limit else session.conversation
+        
+        return {
+            "success": True,
+            "session_id": session_id,
+            "conversation": [
+                {
+                    "role": msg.role,
+                    "content": msg.content,
+                    "timestamp": msg.timestamp,
+                    "metadata": msg.metadata
+                }
+                for msg in conversation
+            ],
+            "total_messages": len(session.conversation),
+            "showing": len(conversation)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Conversation history error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get conversation: {str(e)}")
+
+@app.post("/api/assistant/recommendations/{session_id}")
+async def get_creative_recommendations(session_id: str):
+    """
+    Get personalized creative recommendations based on session
+    """
+    try:
+        recommendations = interactive_assistant.generate_project_recommendations(session_id)
+        
+        if "error" in recommendations:
+            raise HTTPException(status_code=404, detail=recommendations["error"])
+        
+        return {
+            "success": True,
+            "recommendations": recommendations
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Recommendations error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate recommendations: {str(e)}")
+
+@app.post("/api/assistant/quick-help")
+async def get_quick_help(
+    question: str,
+    context: str = "general"
+):
+    """
+    Get quick help without starting a full session
+    """
+    try:
+        system_prompt = f"""You are a helpful Son1k music assistant. 
+        
+        Context: {context}
+        
+        Provide a quick, helpful answer to the user's question about music creation.
+        Be concise but informative. Include actionable advice when possible."""
+        
+        response = ollama_assistant._call_ollama(question, system_prompt)
+        
+        return {
+            "success": True,
+            "question": question,
+            "answer": response,
+            "context": context,
+            "suggestion": "For more detailed help, start a creative session with our interactive assistant!"
+        }
+    except Exception as e:
+        logger.error(f"❌ Quick help error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to provide help: {str(e)}")
+
+@app.get("/api/assistant/templates")
+async def get_creative_templates():
+    """
+    Get creative templates and starting points
+    """
+    try:
+        templates = {
+            "song_themes": [
+                {"theme": "Amor perdido", "mood": "melancólico", "genre": "balada"},
+                {"theme": "Perseguir sueños", "mood": "inspirador", "genre": "pop"},
+                {"theme": "Noche de fiesta", "mood": "energético", "genre": "dance"},
+                {"theme": "Reflexiones de vida", "mood": "contemplativo", "genre": "indie"},
+                {"theme": "Superación personal", "mood": "motivacional", "genre": "rock"}
+            ],
+            "lyric_starters": [
+                "En el silencio de la noche...",
+                "Cuando todo parecía perdido...",
+                "Bajo las luces de la ciudad...",
+                "Con cada paso que doy...",
+                "Entre sueños y realidad..."
+            ],
+            "prompt_templates": [
+                "Pop moderno, voces claras, producción cristalina, 120 BPM",
+                "Rock alternativo, guitarras potentes, energía creciente",
+                "Balada emotiva, piano principal, cuerdas sutiles",
+                "Electrónica upbeat, sintetizadores brillantes, ritmo bailable",
+                "Indie folk, guitarra acústica, voces íntimas, orgánico"
+            ],
+            "creative_exercises": [
+                "Describe tu día perfecto en 4 líneas",
+                "Imagina un diálogo entre dos amigos",
+                "Piensa en un color y sus emociones",
+                "Recuerda tu canción favorita de la infancia",
+                "Describe el sonido de tu ciudad"
+            ]
+        }
+        
+        return {
+            "success": True,
+            "templates": templates,
+            "tip": "Usa estos templates como punto de partida para tu creatividad!"
+        }
+    except Exception as e:
+        logger.error(f"❌ Templates error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get templates: {str(e)}")
+
+@app.delete("/api/assistant/session/{session_id}")
+async def end_creative_session(session_id: str):
+    """
+    End and cleanup a creative session
+    """
+    try:
+        if session_id in interactive_assistant.active_sessions:
+            # Get final summary before deletion
+            summary = interactive_assistant.get_session_summary(session_id)
+            
+            # Remove session
+            del interactive_assistant.active_sessions[session_id]
+            
+            return {
+                "success": True,
+                "message": "Session ended successfully",
+                "final_summary": summary
+            }
+        else:
+            raise HTTPException(status_code=404, detail="Session not found")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Session cleanup error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to end session: {str(e)}")
 
 # ===== GHOST STUDIO PROCESSING FUNCTIONS =====
 
