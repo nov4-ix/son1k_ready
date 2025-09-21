@@ -44,12 +44,40 @@ class PromptResponse(BaseModel):
     suggested_bpm: str
 
 class OllamaCreativeAssistant:
-    def __init__(self, ollama_url: str = "http://localhost:11434", model: str = "llama3.1:8b"):
-        self.ollama_url = ollama_url
+    def __init__(self, ollama_url: str = None, model: str = "llama3.1:8b"):
+        # Try multiple Ollama URLs (local, external, cloud)
+        possible_urls = [
+            os.environ.get("OLLAMA_URL"),
+            "https://bcea9a8ab0da.ngrok-free.app",  # Current ngrok tunnel
+            "http://localhost:11434",
+            "http://127.0.0.1:11434"
+        ]
+        
+        self.ollama_url = None
+        for url in possible_urls:
+            if url and self._test_connection(url):
+                self.ollama_url = url
+                break
+        
+        if not self.ollama_url:
+            self.ollama_url = ollama_url or "http://localhost:11434"
+            
         self.model = model
+        self.available = self._test_connection(self.ollama_url)
+    
+    def _test_connection(self, url):
+        """Test if Ollama is available at given URL"""
+        try:
+            response = requests.get(f"{url}/api/tags", timeout=5)
+            return response.status_code == 200
+        except:
+            return False
         
     def _call_ollama(self, prompt: str, system_prompt: str = None) -> str:
-        """Make request to local Ollama instance"""
+        """Make request to Ollama instance"""
+        if not self.available:
+            return f"AI assistant not available. Please check Ollama installation at {self.ollama_url}"
+            
         try:
             payload = {
                 "model": self.model,
