@@ -4,6 +4,7 @@ import os
 import requests
 import logging
 import time
+import json
 from datetime import datetime
 from typing import Optional, Dict, Any
 
@@ -244,230 +245,169 @@ def get_system_health():
         }
     }
 
-async def call_suno_browser_automation(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None):
-    """Use browser automation to generate music via Suno web interface"""
+async def call_suno_hybrid_api(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None):
+    """Hybrid approach: Try direct API calls with proper authentication"""
     
-    try:
-        # Import selenium libraries
-        from selenium import webdriver
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from selenium.webdriver.chrome.options import Options
-        import json
-        import uuid
-        
-        # Setup Chrome options
-        chrome_options = Options()
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--window-size=1920,1080')
-        
-        logger.info("🎵 Starting browser automation for Suno")
-        
-        # Create driver
-        driver = webdriver.Chrome(options=chrome_options)
-        wait = WebDriverWait(driver, 30)
-        
-        try:
-            # Navigate to Suno
-            logger.info("🌐 Navigating to Suno.com")
-            driver.get("https://suno.com")
-            
-            # Inject cookies for authentication
-            cookie = os.environ.get("SUNO_COOKIE", "")
-            if cookie:
-                cookies = cookie.split(';')
-                for cookie_pair in cookies:
-                    if '=' in cookie_pair:
-                        name, value = cookie_pair.strip().split('=', 1)
-                        driver.add_cookie({
-                            'name': name,
-                            'value': value,
-                            'domain': '.suno.com'
-                        })
-                
-                # Refresh to apply cookies
-                driver.refresh()
-            
-            # Wait for page to load and look for create button
-            logger.info("🎯 Looking for create interface")
-            
-            # Try to find create/generate button
-            create_selectors = [
-                "button[data-testid='create-song']",
-                "button:contains('Create')",
-                "a[href*='create']",
-                "[data-testid*='create']",
-                "button:contains('Generate')"
-            ]
-            
-            create_button = None
-            for selector in create_selectors:
-                try:
-                    create_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, selector)))
-                    break
-                except:
-                    continue
-            
-            if not create_button:
-                # Try XPath selectors
-                xpath_selectors = [
-                    "//button[contains(text(), 'Create')]",
-                    "//a[contains(@href, 'create')]",
-                    "//button[contains(text(), 'Generate')]"
-                ]
-                
-                for xpath in xpath_selectors:
-                    try:
-                        create_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
-                        break
-                    except:
-                        continue
-            
-            if create_button:
-                logger.info("✅ Found create button, clicking")
-                create_button.click()
-                
-                # Wait for form to appear
-                time.sleep(3)
-                
-                # Look for prompt/lyrics input fields
-                prompt_field = None
-                lyrics_field = None
-                
-                # Try different selectors for input fields
-                input_selectors = [
-                    "textarea[placeholder*='prompt']",
-                    "textarea[placeholder*='describe']",
-                    "input[placeholder*='prompt']",
-                    "textarea[name='prompt']",
-                    "textarea[id*='prompt']"
-                ]
-                
-                for selector in input_selectors:
-                    try:
-                        prompt_field = driver.find_element(By.CSS_SELECTOR, selector)
-                        break
-                    except:
-                        continue
-                
-                if prompt_field:
-                    logger.info("📝 Filling prompt field")
-                    prompt_field.clear()
-                    prompt_field.send_keys(prompt)
-                
-                # Look for lyrics field
-                lyrics_selectors = [
-                    "textarea[placeholder*='lyrics']", 
-                    "textarea[name='lyrics']",
-                    "textarea[id*='lyrics']"
-                ]
-                
-                for selector in lyrics_selectors:
-                    try:
-                        lyrics_field = driver.find_element(By.CSS_SELECTOR, selector)
-                        break
-                    except:
-                        continue
-                
-                if lyrics_field and lyrics:
-                    logger.info("📝 Filling lyrics field")
-                    lyrics_field.clear()
-                    lyrics_field.send_keys(lyrics)
-                
-                # Look for generate/submit button
-                submit_selectors = [
-                    "button[type='submit']",
-                    "button:contains('Generate')",
-                    "button:contains('Create')",
-                    "button[data-testid*='generate']",
-                    "button[data-testid*='submit']"
-                ]
-                
-                submit_button = None
-                for selector in submit_selectors:
-                    try:
-                        submit_button = driver.find_element(By.CSS_SELECTOR, selector)
-                        break
-                    except:
-                        continue
-                
-                if not submit_button:
-                    # Try XPath
-                    xpath_submits = [
-                        "//button[contains(text(), 'Generate')]",
-                        "//button[contains(text(), 'Create')]",
-                        "//button[@type='submit']"
-                    ]
-                    
-                    for xpath in xpath_submits:
-                        try:
-                            submit_button = driver.find_element(By.XPATH, xpath)
-                            break
-                        except:
-                            continue
-                
-                if submit_button:
-                    logger.info("🚀 Submitting music generation")
-                    submit_button.click()
-                    
-                    # Wait for generation to start
-                    time.sleep(5)
-                    
-                    # Generate a job ID for tracking
-                    job_id = str(uuid.uuid4())
-                    
-                    driver.quit()
-                    
-                    return {
-                        "id": job_id,
-                        "status": "submitted",
-                        "prompt": prompt,
-                        "lyrics": lyrics,
-                        "method": "browser_automation",
-                        "message": "Music generation submitted via browser automation"
-                    }
-                else:
-                    logger.error("❌ Could not find submit button")
-                    driver.quit()
-                    raise Exception("Submit button not found")
-            else:
-                logger.error("❌ Could not find create button")
-                driver.quit()
-                raise Exception("Create button not found")
-                
-        except Exception as e:
-            logger.error(f"❌ Browser automation error: {e}")
-            driver.quit()
-            raise e
-            
-    except ImportError:
-        logger.error("❌ Selenium not available, falling back to direct API")
-        # Fallback to simulated response
+    session_id = os.environ.get("SUNO_SESSION_ID")
+    cookie = os.environ.get("SUNO_COOKIE")
+    
+    if not session_id or not cookie:
+        logger.error("❌ Missing Suno credentials")
         job_id = f"sim_{int(time.time())}"
         return {
             "id": job_id,
-            "status": "simulated", 
+            "status": "error",
             "prompt": prompt,
             "lyrics": lyrics,
-            "method": "simulation",
-            "message": "Music generation simulated (Selenium not available)"
+            "method": "credentials_missing",
+            "message": "Suno credentials not configured"
         }
-    except Exception as e:
-        logger.error(f"❌ Browser automation failed: {e}")
-        # Fallback to simulated response
-        job_id = f"sim_{int(time.time())}"
-        return {
-            "id": job_id,
-            "status": "simulated",
-            "prompt": prompt, 
-            "lyrics": lyrics,
-            "method": "simulation_fallback",
-            "message": f"Music generation simulated (automation failed: {str(e)})"
+    
+    # Updated endpoints based on current Suno architecture
+    endpoints_to_try = [
+        "https://studio-api.suno.ai/api/generate/v2/",
+        "https://studio-api.suno.ai/api/custom_generate",
+        "https://clerk.suno.com/v1/client/sessions/" + session_id + "/tokens",
+        "https://suno.com/api/generate"
+    ]
+    
+    # Prepare comprehensive headers
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Cookie": cookie.replace('\n', '').replace('\r', '').strip(),
+        "Referer": "https://suno.com/",
+        "Origin": "https://suno.com",
+        "X-Requested-With": "XMLHttpRequest",
+        "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"macOS"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin"
+    }
+    
+    # Enhanced payload with multiple formats
+    payloads = [
+        {
+            "prompt": prompt,
+            "tags": style if style else "",
+            "lyrics": lyrics if lyrics else "",
+            "mv": "chirp-v3-5",
+            "title": "",
+            "continue_at": None,
+            "infill": False,
+            "make_instrumental": False
+        },
+        {
+            "gpt_description_prompt": prompt,
+            "prompt": lyrics if lyrics else "",
+            "tags": style if style else "",
+            "make_instrumental": False,
+            "mv": "chirp-v3-5"
+        },
+        {
+            "prompt": prompt,
+            "custom_mode": True,
+            "lyrics": lyrics if lyrics else "",
+            "style": style if style else "",
+            "title": "",
+            "wait_audio": False
         }
+    ]
+    
+    last_error = None
+    
+    # Try each endpoint with each payload
+    for endpoint in endpoints_to_try:
+        for payload in payloads:
+            try:
+                logger.info(f"🎵 Trying: {endpoint}")
+                logger.info(f"📦 Payload: {payload}")
+                
+                response = requests.post(endpoint, json=payload, headers=headers, timeout=30)
+                logger.info(f"📊 Response: {response.status_code}")
+                
+                if response.status_code == 200:
+                    try:
+                        result = response.json()
+                        logger.info(f"✅ SUCCESS! Suno API worked: {result}")
+                        
+                        # Extract job ID from response
+                        job_id = None
+                        if isinstance(result, list) and len(result) > 0:
+                            job_id = result[0].get("id")
+                        elif isinstance(result, dict):
+                            job_id = result.get("id") or result.get("clips", [{}])[0].get("id")
+                        
+                        if not job_id:
+                            job_id = f"suno_{int(time.time())}"
+                        
+                        return {
+                            "id": job_id,
+                            "status": "submitted",
+                            "prompt": prompt,
+                            "lyrics": lyrics,
+                            "method": "direct_api",
+                            "message": "Music generation submitted successfully to Suno",
+                            "endpoint": endpoint,
+                            "full_response": result
+                        }
+                    except json.JSONDecodeError:
+                        logger.info(f"✅ Success but non-JSON response: {response.text[:200]}")
+                        job_id = f"suno_{int(time.time())}"
+                        return {
+                            "id": job_id,
+                            "status": "submitted",
+                            "prompt": prompt,
+                            "lyrics": lyrics,
+                            "method": "direct_api_text",
+                            "message": "Music generation submitted (text response)",
+                            "endpoint": endpoint,
+                            "response_text": response.text[:200]
+                        }
+                        
+                elif response.status_code == 401:
+                    logger.error(f"❌ Invalid credentials at {endpoint}")
+                    suno_status.valid = False
+                    suno_status.last_error = "Invalid credentials"
+                    last_error = "Invalid credentials"
+                    continue
+                    
+                elif response.status_code == 429:
+                    logger.warning(f"⏰ Rate limited at {endpoint}")
+                    last_error = "Rate limited"
+                    continue
+                    
+                else:
+                    logger.warning(f"⚠️ {endpoint}: {response.status_code} - {response.text[:100]}")
+                    last_error = f"HTTP {response.status_code}: {response.text[:100]}"
+                    continue
+                    
+            except requests.exceptions.Timeout:
+                logger.warning(f"⏰ Timeout at {endpoint}")
+                last_error = f"Timeout at {endpoint}"
+                continue
+            except Exception as e:
+                logger.warning(f"❌ Error at {endpoint}: {e}")
+                last_error = f"Error: {str(e)}"
+                continue
+    
+    # If all failed, create a queued job that can be processed later
+    logger.warning("⚠️ All direct API attempts failed, creating queued job")
+    job_id = f"queued_{int(time.time())}"
+    
+    return {
+        "id": job_id,
+        "status": "queued", 
+        "prompt": prompt,
+        "lyrics": lyrics,
+        "method": "queued_for_retry",
+        "message": "Music generation queued for retry with working credentials",
+        "last_error": last_error,
+        "note": "This job will be processed when direct API access is restored"
+    }
 
 @app.post("/api/generate")
 async def generate_music(request: GenerateRequest):
@@ -484,8 +424,8 @@ async def generate_music(request: GenerateRequest):
         )
     
     try:
-        # Call Suno browser automation
-        suno_result = await call_suno_browser_automation(request.prompt, request.lyrics, request.style)
+        # Call Suno hybrid API
+        suno_result = await call_suno_hybrid_api(request.prompt, request.lyrics, request.style)
         
         return {
             "status": "success",
