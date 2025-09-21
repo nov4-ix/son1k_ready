@@ -34,8 +34,58 @@ class GenerateRequest(BaseModel):
     lyrics: Optional[str] = None
     style: Optional[str] = None
 
-@app.get("/")
+from fastapi.responses import HTMLResponse
+
+@app.get("/", response_class=HTMLResponse)
 def root():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Son1k - Music Generation API</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #1a1a1a; color: #fff; }
+            .container { max-width: 800px; margin: 0 auto; }
+            h1 { color: #ff6b6b; }
+            .status { background: #2d2d2d; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .endpoint { background: #333; padding: 10px; margin: 10px 0; border-radius: 4px; }
+            .success { color: #4CAF50; }
+            a { color: #ff6b6b; text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🎵 Son1k Music Generation API</h1>
+            <div class="status">
+                <h3>System Status: <span class="success">ONLINE</span></h3>
+                <p>Auto-Renewal System: <span class="success">ACTIVE</span></p>
+                <p>Version: 1.0.0</p>
+            </div>
+            
+            <h3>Available Endpoints:</h3>
+            <div class="endpoint">
+                <strong>POST /api/generate</strong> - Generate music
+            </div>
+            <div class="endpoint">
+                <strong>GET /api/system/health</strong> - <a href="/api/system/health">System health</a>
+            </div>
+            <div class="endpoint">
+                <strong>GET /api/system/credentials/status</strong> - <a href="/api/system/credentials/status">Credentials status</a>
+            </div>
+            
+            <h3>Documentation:</h3>
+            <p><a href="/docs">API Documentation (Swagger)</a></p>
+            
+            <footer style="margin-top: 40px; text-align: center; color: #666;">
+                <p>Son1k Auto-Renewal API - Powered by Railway</p>
+            </footer>
+        </div>
+    </body>
+    </html>
+    """
+
+@app.get("/api")
+def api_root():
     return {
         "service": "Son1k Auto-Renewal API", 
         "status": "running",
