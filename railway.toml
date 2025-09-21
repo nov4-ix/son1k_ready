@@ -3,7 +3,7 @@ builder = "nixpacks"
 buildCommand = "pip install --no-cache-dir -r requirements-railway.txt"
 
 [deploy]
-healthcheckPath = "/api/health"
+healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
