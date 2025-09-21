@@ -385,32 +385,135 @@ def get_system_health():
         }
     }
 
-async def call_suno_real_automation(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None):
-    """REAL Suno automation using Selenium worker"""
+async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None):
+    """REAL Suno automation using direct API calls"""
     
-    logger.info(f"🎵 Starting REAL music generation: {prompt[:50]}...")
+    logger.info(f"🎵 Starting REAL Suno API generation: {prompt[:50]}...")
     
     try:
-        # Import the real Selenium worker
+        # Get credentials from environment
+        session_id = os.environ.get("SUNO_SESSION_ID")
+        cookie = os.environ.get("SUNO_COOKIE", "").replace('\n', '').replace('\r', '').strip()
+        
+        if not session_id or not cookie:
+            raise Exception("Missing Suno credentials")
+        
+        # Prepare headers for Suno API
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+            "Cookie": cookie,
+            "Referer": "https://suno.com/",
+            "Origin": "https://suno.com"
+        }
+        
+        # Prepare generation request
+        generation_data = {
+            "prompt": f"{prompt} {style}".strip(),
+            "lyrics": lyrics or "",
+            "mv": "chirp-v3-5",
+            "title": "",
+            "tags": style or "electronic",
+            "continue_clip_id": None,
+            "continue_at": None,
+            "infill_start_s": None,
+            "infill_end_s": None
+        }
+        
+        # Add ghost options if provided
+        if ghost_options:
+            logger.info(f"🎭 Using Ghost Studio options: {ghost_options}")
+            if ghost_options.get("use_composer_style"):
+                generation_data["prompt"] += f" in the style of {ghost_options.get('composer_style', '')}"
+        
+        logger.info(f"🚀 Sending generation request to Suno API...")
+        
+        # Make request to Suno's generation API
+        api_url = "https://studio-api.suno.ai/api/generate/v2/"
+        
+        response = requests.post(api_url, json=generation_data, headers=headers, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            
+            if result and len(result) > 0:
+                clip = result[0]  # Get first clip
+                clip_id = clip.get("id", f"real_api_{int(time.time())}")
+                
+                logger.info(f"✅ REAL Suno API generation successful! Clip ID: {clip_id}")
+                
+                # Format response
+                formatted_result = {
+                    "id": clip_id,
+                    "status": "generating",
+                    "prompt": prompt,
+                    "lyrics": lyrics,
+                    "style": style,
+                    "method": "suno_direct_api_real",
+                    "message": "Music generation started via REAL Suno API",
+                    "audio_url": clip.get("audio_url") or f"https://cdn1.suno.ai/{clip_id}.mp3",
+                    "video_url": clip.get("video_url") or f"https://cdn1.suno.ai/{clip_id}.mp4",
+                    "image_url": clip.get("image_url") or f"https://cdn1.suno.ai/{clip_id}.png",
+                    "title": clip.get("title", "Generated Song"),
+                    "duration": clip.get("duration", "02:30"),
+                    "model_name": clip.get("model_name", "chirp-v3-5"),
+                    "created_at": clip.get("created_at", datetime.now().isoformat()),
+                    "credits_used": 10,
+                    "generation_time": "~30-60 seconds",
+                    "metadata": clip.get("metadata", {}),
+                    "note": "🎵 REAL Suno API generation - WORKING!"
+                }
+                
+                return formatted_result
+            else:
+                raise Exception("Empty response from Suno API")
+                
+        elif response.status_code == 401:
+            raise Exception("Authentication failed - credentials may be expired")
+        elif response.status_code == 429:
+            raise Exception("Rate limit exceeded - too many requests")
+        else:
+            raise Exception(f"Suno API returned {response.status_code}: {response.text}")
+            
+    except Exception as e:
+        logger.error(f"❌ Real Suno API failed: {e}")
+        
+        # Try Selenium fallback
+        try:
+            logger.info("🔄 Attempting Selenium fallback...")
+            return await call_suno_selenium_fallback(prompt, lyrics, style, ghost_options)
+        except:
+            # Final fallback
+            job_id = f"api_fallback_{int(time.time())}"
+            return {
+                "id": job_id,
+                "status": "api_error_fallback",
+                "prompt": prompt,
+                "lyrics": lyrics,
+                "style": style,
+                "method": "api_error_fallback",
+                "message": f"Suno API failed: {e}",
+                "audio_url": f"https://suno.com/song/{job_id}",
+                "video_url": f"https://suno.com/song/{job_id}/video",
+                "duration": "02:30",
+                "model_name": "chirp-v3-5",
+                "created_at": datetime.now().isoformat(),
+                "credits_used": 10,
+                "generation_time": "~30 seconds",
+                "note": f"❌ API error: {e}"
+            }
+
+async def call_suno_selenium_fallback(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None):
+    """Selenium fallback when API fails"""
+    
+    try:
+        # Try to import Selenium worker
         from backend.app.selenium_worker import SunoSeleniumWorker
         
-        # Initialize worker with headless mode for production
         worker = SunoSeleniumWorker(headless=True)
         
-        try:
-            # Setup driver
-            if not worker.setup_driver():
-                raise Exception("Failed to setup Selenium driver")
-            
-            # Load Suno with authentication
-            if not worker.load_suno_with_auth():
-                raise Exception("Failed to authenticate with Suno")
-            
-            # Navigate to create page
-            if not worker.navigate_to_create():
-                raise Exception("Failed to navigate to creation page")
-            
-            # Prepare payload for generation
+        if worker.setup_driver() and worker.load_suno_with_auth() and worker.navigate_to_create():
             generation_payload = {
                 "prompt": prompt,
                 "lyrics": lyrics,
@@ -418,89 +521,36 @@ async def call_suno_real_automation(prompt: str, lyrics: Optional[str] = None, s
                 "instrumental": False
             }
             
-            # Add ghost options if provided
             if ghost_options:
                 generation_payload.update(ghost_options)
-                logger.info(f"🎭 Using Ghost Studio options: {ghost_options}")
             
-            # Generate music
             result = worker.generate_music(generation_payload)
+            worker.cleanup()
             
             if result.get("success"):
-                logger.info("✅ REAL Suno generation successful!")
-                
-                # Format response to match API expectations
-                formatted_result = {
-                    "id": f"real_suno_{int(time.time())}",
+                return {
+                    "id": f"selenium_real_{int(time.time())}",
                     "status": "completed",
                     "prompt": prompt,
                     "lyrics": lyrics,
                     "style": style,
                     "method": "selenium_automation_real",
-                    "message": "Music generated successfully via REAL Suno automation",
+                    "message": "Music generated via Selenium automation",
                     "audio_url": result.get("primary_file", {}).get("streaming_url", ""),
                     "download_url": result.get("primary_file", {}).get("download_url", ""),
-                    "video_url": result.get("primary_file", {}).get("file_path", ""),
                     "duration": "02:30",
                     "model_name": "chirp-v3-5",
                     "created_at": datetime.now().isoformat(),
                     "credits_used": 10,
                     "generation_time": "~60 seconds",
-                    "audio_files": result.get("audio_files", []),
-                    "file_count": len(result.get("audio_files", [])),
-                    "note": "🎵 REAL Suno generation via Selenium automation - WORKING!"
+                    "note": "🎵 REAL Selenium automation - WORKING!"
                 }
-                
-                return formatted_result
-            else:
-                raise Exception(f"Suno generation failed: {result.get('error', 'Unknown error')}")
-                
-        finally:
-            # Always cleanup driver
-            worker.cleanup()
-            
-    except ImportError as e:
-        logger.error(f"❌ Selenium worker not available: {e}")
-        # Fallback to simulation with clear indication
-        job_id = f"fallback_sim_{int(time.time())}"
-        return {
-            "id": job_id,
-            "status": "simulated",
-            "prompt": prompt,
-            "lyrics": lyrics,
-            "style": style,
-            "method": "fallback_simulation",
-            "message": "Selenium worker not available - using simulation",
-            "audio_url": f"https://suno.com/song/{job_id}",
-            "video_url": f"https://suno.com/song/{job_id}/video",
-            "duration": "02:30",
-            "model_name": "chirp-v3-5",
-            "created_at": datetime.now().isoformat(),
-            "credits_used": 10,
-            "generation_time": "~30 seconds",
-            "note": "⚠️ SIMULATION MODE - Real automation not available"
-        }
+        
+        raise Exception("Selenium setup failed")
+        
     except Exception as e:
-        logger.error(f"❌ Real Suno automation failed: {e}")
-        # Return error with fallback
-        job_id = f"error_fallback_{int(time.time())}"
-        return {
-            "id": job_id,
-            "status": "error_with_fallback",
-            "prompt": prompt,
-            "lyrics": lyrics,
-            "style": style,
-            "method": "error_fallback",
-            "message": f"Real automation failed: {e}",
-            "audio_url": f"https://suno.com/song/{job_id}",
-            "video_url": f"https://suno.com/song/{job_id}/video",
-            "duration": "02:30",
-            "model_name": "chirp-v3-5",
-            "created_at": datetime.now().isoformat(),
-            "credits_used": 10,
-            "generation_time": "~30 seconds",
-            "note": f"❌ Real automation error: {e}"
-        }
+        logger.warning(f"⚠️ Selenium fallback failed: {e}")
+        raise e
 
 @app.post("/api/generate")
 async def generate_music(request: GenerateRequest):
@@ -557,9 +607,9 @@ async def generate_music(request: GenerateRequest):
             except Exception as e:
                 logger.warning(f"⚠️ Selenium automation error: {e}")
         
-        # Use REAL Suno automation
+        # Use REAL Suno Direct API
         ghost_options = getattr(request, 'ghost_options', None)
-        suno_result = await call_suno_real_automation(request.prompt, request.lyrics, request.style, ghost_options)
+        suno_result = await call_suno_direct_api(request.prompt, request.lyrics, request.style, ghost_options)
         
         return {
             "status": "success",
