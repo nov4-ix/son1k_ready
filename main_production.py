@@ -253,8 +253,14 @@ async def call_suno_api(prompt: str, lyrics: Optional[str] = None, style: Option
     if not session_id or not cookie:
         raise HTTPException(status_code=503, detail="Suno credentials not configured")
     
-    # Suno API endpoint
-    suno_url = "https://studio-api.suno.ai/api/generate/v2/"
+    # Try multiple Suno API endpoints
+    endpoints_to_try = [
+        "https://studio-api.suno.ai/api/generate/v2/",
+        "https://suno.com/api/generate/",
+        "https://studio-api.suno.ai/api/generate/",
+        "https://api.suno.ai/v1/generate",
+        "https://suno.com/api/custom_generate"
+    ]
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
@@ -265,44 +271,84 @@ async def call_suno_api(prompt: str, lyrics: Optional[str] = None, style: Option
         "Origin": "https://suno.com"
     }
     
-    # Prepare payload
-    payload = {
-        "prompt": prompt,
-        "make_instrumental": False,
-        "wait_audio": False
-    }
+    # Try different payload formats
+    payloads_to_try = [
+        {
+            "prompt": prompt,
+            "make_instrumental": False,
+            "wait_audio": False,
+            "lyrics": lyrics if lyrics else "",
+            "tags": style if style else ""
+        },
+        {
+            "gpt_description_prompt": prompt,
+            "make_instrumental": False,
+            "mv": "chirp-v3-0",
+            "prompt": lyrics if lyrics else ""
+        },
+        {
+            "prompt": prompt,
+            "custom_mode": True,
+            "lyrics": lyrics if lyrics else "",
+            "style": style if style else "",
+            "title": ""
+        },
+        {
+            "prompt": prompt,
+            "lyrics": lyrics if lyrics else None,
+            "tags": style if style else None,
+            "continue_at": None,
+            "infill": False
+        }
+    ]
     
-    if lyrics:
-        payload["lyrics"] = lyrics
+    # Try each endpoint until one works
+    last_error = None
     
-    if style:
-        payload["tags"] = style
+    for suno_url in endpoints_to_try:
+        for payload in payloads_to_try:
+            try:
+                logger.info(f"🎵 Trying Suno endpoint: {suno_url}")
+                logger.info(f"🎵 Payload: {payload}")
+                
+                response = requests.post(suno_url, json=payload, headers=headers, timeout=30)
+                
+                logger.info(f"📊 Response: {response.status_code} - {response.text[:200]}...")
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    logger.info(f"✅ Suno API success with {suno_url}: {result}")
+                    return result
+                elif response.status_code == 401:
+                    logger.error(f"❌ Suno API: Invalid credentials at {suno_url}")
+                    # Mark credentials as invalid for auto-renewal
+                    suno_status.valid = False
+                    suno_status.last_error = "Invalid credentials - auto-renewal needed"
+                    last_error = "Invalid credentials"
+                    continue  # Try next payload
+                elif response.status_code == 404:
+                    logger.warning(f"⚠️ Endpoint not found: {suno_url}")
+                    last_error = f"Endpoint not found: {suno_url}"
+                    break  # Try next endpoint
+                else:
+                    logger.error(f"❌ Suno API error at {suno_url}: {response.status_code} - {response.text}")
+                    last_error = f"HTTP {response.status_code}: {response.text[:100]}"
+                    continue  # Try next payload
+                    
+            except requests.exceptions.Timeout:
+                logger.error(f"⏰ Suno API timeout at {suno_url}")
+                last_error = f"Timeout at {suno_url}"
+                continue
+            except requests.exceptions.RequestException as e:
+                logger.error(f"🌐 Suno API connection error at {suno_url}: {e}")
+                last_error = f"Connection error at {suno_url}: {str(e)}"
+                continue
     
-    try:
-        logger.info(f"🎵 Calling Suno API with prompt: {prompt[:50]}...")
-        
-        response = requests.post(suno_url, json=payload, headers=headers, timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json()
-            logger.info(f"✅ Suno API success: {result}")
-            return result
-        elif response.status_code == 401:
-            logger.error("❌ Suno API: Invalid credentials")
-            # Mark credentials as invalid for auto-renewal
-            suno_status.valid = False
-            suno_status.last_error = "Invalid credentials - auto-renewal needed"
-            raise HTTPException(status_code=401, detail="Suno credentials expired. Auto-renewal system activated.")
-        else:
-            logger.error(f"❌ Suno API error: {response.status_code} - {response.text}")
-            raise HTTPException(status_code=502, detail=f"Suno API error: {response.status_code}")
-            
-    except requests.exceptions.Timeout:
-        logger.error("⏰ Suno API timeout")
-        raise HTTPException(status_code=504, detail="Suno API timeout")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"🌐 Suno API connection error: {e}")
-        raise HTTPException(status_code=502, detail="Failed to connect to Suno API")
+    # If we get here, all endpoints failed
+    if "Invalid credentials" in str(last_error):
+        raise HTTPException(status_code=401, detail="Suno credentials expired. Auto-renewal system activated.")
+    else:
+        raise HTTPException(status_code=502, detail=f"All Suno API endpoints failed. Last error: {last_error}")
 
 @app.post("/api/generate")
 async def generate_music(request: GenerateRequest):
