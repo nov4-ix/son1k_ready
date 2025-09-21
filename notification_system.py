@@ -6,8 +6,8 @@ import os
 import json
 import requests
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from typing import Dict, Any, Optional
 import logging
 
@@ -215,7 +215,7 @@ class NotificationManager:
             </html>
             """
             
-            msg.attach(MimeText(html_message, 'html'))
+            msg.attach(MIMEText(html_message, 'html'))
             
             # Send email
             server = smtplib.SMTP(self.smtp_server, self.smtp_port)
