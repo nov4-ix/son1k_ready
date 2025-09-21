@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import os
 import requests
 import logging
+import time
 from datetime import datetime
 from typing import Optional, Dict, Any
 
@@ -64,13 +65,27 @@ def root():
             
             <h3>Available Endpoints:</h3>
             <div class="endpoint">
-                <strong>POST /api/generate</strong> - Generate music
+                <strong>POST /api/generate</strong> - Generate music with real Suno API integration
+            </div>
+            <div class="endpoint">
+                <strong>GET /api/generate/{job_id}/status</strong> - Check music generation status
             </div>
             <div class="endpoint">
                 <strong>GET /api/system/health</strong> - <a href="/api/system/health">System health</a>
             </div>
             <div class="endpoint">
                 <strong>GET /api/system/credentials/status</strong> - <a href="/api/system/credentials/status">Credentials status</a>
+            </div>
+            <div class="endpoint">
+                <strong>POST /api/system/credentials/refresh</strong> - Refresh credentials
+            </div>
+            
+            <h3>🎵 Real Suno Integration:</h3>
+            <div class="status">
+                <p>✅ Connected to Suno Studio API</p>
+                <p>✅ Automatic credential management</p>
+                <p>✅ Real music generation with your prompts</p>
+                <p>✅ Job status tracking</p>
             </div>
             
             <h3>Documentation:</h3>
@@ -229,8 +244,70 @@ def get_system_health():
         }
     }
 
+async def call_suno_api(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None):
+    """Call real Suno API for music generation"""
+    
+    session_id = os.environ.get("SUNO_SESSION_ID")
+    cookie = os.environ.get("SUNO_COOKIE")
+    
+    if not session_id or not cookie:
+        raise HTTPException(status_code=503, detail="Suno credentials not configured")
+    
+    # Suno API endpoint
+    suno_url = "https://studio-api.suno.ai/api/generate/v2/"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Cookie": cookie.replace('\n', '').replace('\r', '').strip(),
+        "Referer": "https://suno.com/",
+        "Origin": "https://suno.com"
+    }
+    
+    # Prepare payload
+    payload = {
+        "prompt": prompt,
+        "make_instrumental": False,
+        "wait_audio": False
+    }
+    
+    if lyrics:
+        payload["lyrics"] = lyrics
+    
+    if style:
+        payload["tags"] = style
+    
+    try:
+        logger.info(f"🎵 Calling Suno API with prompt: {prompt[:50]}...")
+        
+        response = requests.post(suno_url, json=payload, headers=headers, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            logger.info(f"✅ Suno API success: {result}")
+            return result
+        elif response.status_code == 401:
+            logger.error("❌ Suno API: Invalid credentials")
+            # Mark credentials as invalid for auto-renewal
+            suno_status.valid = False
+            suno_status.last_error = "Invalid credentials - auto-renewal needed"
+            raise HTTPException(status_code=401, detail="Suno credentials expired. Auto-renewal system activated.")
+        else:
+            logger.error(f"❌ Suno API error: {response.status_code} - {response.text}")
+            raise HTTPException(status_code=502, detail=f"Suno API error: {response.status_code}")
+            
+    except requests.exceptions.Timeout:
+        logger.error("⏰ Suno API timeout")
+        raise HTTPException(status_code=504, detail="Suno API timeout")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"🌐 Suno API connection error: {e}")
+        raise HTTPException(status_code=502, detail="Failed to connect to Suno API")
+
 @app.post("/api/generate")
-def generate_music(request: GenerateRequest):
+async def generate_music(request: GenerateRequest):
+    """Generate music using real Suno API"""
+    
     # Check if Suno credentials are valid
     if not suno_status.valid:
         check_credentials()
@@ -241,15 +318,74 @@ def generate_music(request: GenerateRequest):
             detail="Suno credentials not available. Auto-renewal system will attempt to fix this."
         )
     
-    return {
-        "status": "success",
-        "message": "Music generation request submitted",
-        "prompt": request.prompt,
-        "lyrics": request.lyrics,
-        "style": request.style,
-        "timestamp": datetime.now().isoformat(),
-        "auto_renewal_active": True
+    try:
+        # Call real Suno API
+        suno_result = await call_suno_api(request.prompt, request.lyrics, request.style)
+        
+        return {
+            "status": "success",
+            "message": "Music generation submitted to Suno",
+            "prompt": request.prompt,
+            "lyrics": request.lyrics,
+            "style": request.style,
+            "timestamp": datetime.now().isoformat(),
+            "auto_renewal_active": True,
+            "suno_response": suno_result,
+            "job_id": suno_result.get("id") if suno_result else f"job_{int(time.time())}"
+        }
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions (they're already properly formatted)
+        raise
+    except Exception as e:
+        logger.error(f"❌ Unexpected error in music generation: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during music generation")
+
+@app.get("/api/generate/{job_id}/status")
+async def get_generation_status(job_id: str):
+    """Get status of a music generation job"""
+    
+    if not suno_status.valid:
+        check_credentials()
+        
+    if not suno_status.valid:
+        raise HTTPException(status_code=503, detail="Suno credentials not available")
+    
+    session_id = os.environ.get("SUNO_SESSION_ID")
+    cookie = os.environ.get("SUNO_COOKIE")
+    
+    suno_url = f"https://studio-api.suno.ai/api/feed/?ids={job_id}"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Cookie": cookie.replace('\n', '').replace('\r', '').strip(),
+        "Referer": "https://suno.com/",
+        "Origin": "https://suno.com"
     }
+    
+    try:
+        response = requests.get(suno_url, headers=headers, timeout=15)
+        
+        if response.status_code == 200:
+            result = response.json()
+            return {
+                "job_id": job_id,
+                "status": "found",
+                "data": result,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "job_id": job_id,
+                "status": "not_found",
+                "error": f"HTTP {response.status_code}",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+    except Exception as e:
+        logger.error(f"❌ Error checking job status: {e}")
+        raise HTTPException(status_code=502, detail="Failed to check job status")
 
 if __name__ == "__main__":
     import uvicorn
