@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python test_minimal.py"
+startCommand = "python main_production.py"
 
 [variables]
 PORT = "8000"
