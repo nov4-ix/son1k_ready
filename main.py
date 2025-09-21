@@ -184,13 +184,32 @@ async def process_suno_generation(job_id: str, request: GenerationRequest):
         print(f"📝 Prompt: {request.prompt}")
         print(f"🎤 Lyrics: {request.lyrics[:100]}..." if request.lyrics else "🎼 Instrumental")
         
-        # Make request to Suno API
-        response = requests.post(
+        # Make request to Suno API (try multiple endpoints)
+        endpoints_to_try = [
             f"{SUNO_BASE_URL}/api/generate/v2/",
-            headers=headers,
-            json=generation_payload,
-            timeout=30
-        )
+            f"{SUNO_BASE_URL}/api/custom_generate/",
+            f"{SUNO_BASE_URL}/api/generate/",
+            "https://suno.com/api/generate/"
+        ]
+        
+        response = None
+        for endpoint in endpoints_to_try:
+            try:
+                print(f"🔄 Trying endpoint: {endpoint}")
+                response = requests.post(
+                    endpoint,
+                    headers=headers,
+                    json=generation_payload,
+                    timeout=30
+                )
+                print(f"📡 Response status: {response.status_code}")
+                
+                if response.status_code not in [503, 404]:
+                    break  # Found working endpoint
+                    
+            except Exception as e:
+                print(f"❌ Endpoint {endpoint} failed: {e}")
+                continue
         
         if response.status_code == 401:
             job["status"] = "failed"
