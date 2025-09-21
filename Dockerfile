@@ -6,6 +6,10 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     postgresql-client \
+    curl \
+    wget \
+    gnupg \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Establecer directorio de trabajo
@@ -23,13 +27,14 @@ COPY . .
 # Variables de entorno
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV PORT=8000
 
 # Crear directorios necesarios
-RUN mkdir -p /data /app/storage
+RUN mkdir -p /data /app/storage /app/storage/uploads /app/storage/audio
 
-# Exponer puerto para FastAPI
-EXPOSE 8000
+# Exponer puerto para FastAPI (Railway usa variable PORT)
+EXPOSE $PORT
 
-# Comando de arranque por defecto (puede ser sobrescrito por docker-compose)
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Comando de arranque usando Railway's PORT variable
+CMD cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
