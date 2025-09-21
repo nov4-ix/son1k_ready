@@ -1,128 +1,37 @@
-# Dependencies
-node_modules/
-__pycache__/
-*.pyc
-.env
-.DS_Store
-
-# Virtual environments  
-venv/
-env/
-.venv/
-
-# IDE
-.vscode/
-.idea/
-
-# Logs
-*.log
-logs/
-
-# Audio files (opcional - podrían ser grandes)
-*.wav
+# Archivos grandes y temporales
 *.mp3
-*.flac
-# macOS / editor
-.DS_Store
-.vscode/
-# Python
-.venv/
-__pycache__/
-*.pyc
-# Node
-node_modules/
-# Son1kVers3
-.env
-keys/
-*.db
-
-# Selenium & Cookie Security
-cookies.json
-temp_cookies.db
-screenshots/
-generated_audio/
-*.png
-*.jpg
-*.jpeg
-
-# Chrome profiles and temp files
-chrome_profile/
-selenium_temp/
-*.crdownload
-*.tmp
-
-# Sensitive automation files
-session_data/
-browser_cache/
-user_data/
-# === Son1kVers3 safe ===
-.env
-*.env
-son1k.db
-*.db
-*.sqlite
-__pycache__/
-*.pyc
-node_modules/
-dist/
-.build/
-.ngrok2/
-.cloudflared/
-selenium_profile*/ 
-.nginx/
-.DS_Store
-# === Son1kVers3 safe ===
-.env
-*.env
-*.db
-son1k.db
-.venv/
-__pycache__/
-*.pyc
-*.log
-ngrok.log
-
-# Perfiles/artefactos locales
-.selenium_profile*/
-.seleni*profile*/
-$PWD/
-
-# HTML de debug (mantén tu frontend/index.html)
-00_*.html
-01_*.html
-02_*.html
-03_*.html
-04_*.html
-05_*.html
-*_state.html
-
-# Environment files
-*.env
-*.env.*
-.env.production
-.env.development
-.env.local
-
-# Deployment packages  
-*.tar.gz
-
-# Selenium artifacts
+*.wav
+*.mp4
+*.mov
+*.avi
 selenium_artifacts/
-.selenium_profile_*
+temp_*
+*.log
 
-# Database
-*.db
-*.sqlite
-
-# Cache and logs
+# Python
 __pycache__/
 *.pyc
-*.log
-logs/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+.pytest_cache/
 
-# VS Code
-.vscode/
+# Credenciales y configuración sensible
+.env
+*_backup.json
+credential_alerts.json
 
-# System files
+# Sistema
 .DS_Store
 Thumbs.db
+
+# Node.js (si aplica)
+node_modules/
+npm-debug.log
+
+# Railway
+.railway/

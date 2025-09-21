@@ -1,0 +1,157 @@
+{
+  "extracted_at": "2025-09-19T02:25:00.000000",
+  "domain": "suno.com",
+  "count": 15,
+  "cookies": [
+    {
+      "name": "singular_device_id",
+      "value": "7fc059fe-34d2-4536-8406-f0b36aa40b7b",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "ajs_anonymous_id",
+      "value": "f0f2cc3c-29fc-4994-b313-c6395f7f01c0",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_gcl_au",
+      "value": "1.1.967689396.1753245394",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_axwrt",
+      "value": "24c6944f-367e-4935-93d1-a3a85f8a00dd",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.666180024.1753245517",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_tt_enable_cookie",
+      "value": "1",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ttp",
+      "value": "01K0TS71AVG32RZB7XJHY47EVG_.tt.1",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "afUserId",
+      "value": "3882fe9a-09c9-44af-bbf0-2f795576bbe6-p",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_fbp",
+      "value": "fb.1.1753245523258.766316113280164517",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__client_uat",
+      "value": "1753245791",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": true,
+      "httpOnly": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__client_uat_U9tcbTPE",
+      "value": "1753245791",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": true,
+      "httpOnly": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__stripe_mid",
+      "value": "83485d6a-9536-455a-af6d-a1281884f0ded62e90",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": true,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "hmt_id",
+      "value": "dd784715-2094-4b73-8123-f22edc44dd2e",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_clck",
+      "value": "5g3z8b%5E2%5Efyz%5E0%5E2060",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_7B0KEDD7XP",
+      "value": "GS2.1.s1758248511$o282$g0$t1758248534$j37$l0$h0",
+      "domain": ".suno.com",
+      "path": "/",
+      "expires": 1896134400000000,
+      "secure": false,
+      "httpOnly": false,
+      "sameSite": "Lax"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+2025/09/19-17:04:09.323 6ea93 Reusing MANIFEST /Users/nov4-ix/Downloads/son1k_suno_poc_mvp_v2 2/.selenium_profile/Default/Local Storage/leveldb/MANIFEST-000001
+2025/09/19-17:04:09.324 6ea93 Recovering log #92
+2025/09/19-17:04:09.324 6ea93 Reusing old log /Users/nov4-ix/Downloads/son1k_suno_poc_mvp_v2 2/.selenium_profile/Default/Local Storage/leveldb/000092.log 
+2025/09/19-17:04:23.659 6ea93 Level-0 table #96: started
+2025/09/19-17:04:25.120 6ea93 Level-0 table #96: 200735 bytes OK
+2025/09/19-17:04:26.159 6ea93 Delete type=0 #92
