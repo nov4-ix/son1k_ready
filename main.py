@@ -75,6 +75,13 @@ generation_jobs: Dict[str, Dict[str, Any]] = {}
 ghost_studio_jobs: Dict[str, Dict[str, Any]] = {}
 user_ghost_usage: Dict[str, int] = {}  # Track Ghost Studio usage per user
 
+# Ghost Studio Usage Limits
+GHOST_STUDIO_LIMITS = {
+    "free": 1,      # 1 trial generation
+    "pro": 20,      # 20 generations per month
+    "enterprise": -1  # Unlimited (-1)
+}
+
 # Suno API Configuration
 SUNO_SESSION_ID = os.environ.get("SUNO_SESSION_ID", "")
 SUNO_COOKIE = os.environ.get("SUNO_COOKIE", "")
@@ -450,24 +457,38 @@ async def generate_ghost_studio(
     """
     Ghost Studio: Upload audio file for Suno Cover style transfer + postproduction
     - Free users: 1 trial generation with postproduction
-    - Pro/Enterprise users: unlimited generations with postproduction
+    - Pro users: 20 generations per month with postproduction
+    - Enterprise users: unlimited generations with postproduction
     """
     job_id = str(uuid.uuid4())
     
-    # Check usage limits for free users
+    # Check usage limits based on user tier
     user_usage = user_ghost_usage.get(user_id, 0)
+    tier_limit = GHOST_STUDIO_LIMITS.get(user_tier, 0)
     
-    if user_tier == "free":
-        if user_usage >= 1:
+    # Check if user has exceeded their tier limit
+    if tier_limit != -1 and user_usage >= tier_limit:  # -1 means unlimited (Enterprise)
+        if user_tier == "free":
             raise HTTPException(
                 status_code=403, 
-                detail="Free tier limit reached. Upgrade to Pro or Enterprise for unlimited Ghost Studio generations with postproduction."
+                detail="Free tier limit reached (1 generation). Upgrade to Pro (20/month) or Enterprise (unlimited) for more Ghost Studio generations."
             )
-        postproduction_enabled = True  # Free users get 1 trial with postproduction
-        user_ghost_usage[user_id] = user_usage + 1
-    else:
-        # Pro/Enterprise users get unlimited access with postproduction
-        postproduction_enabled = user_tier in ["pro", "enterprise"]
+        elif user_tier == "pro":
+            raise HTTPException(
+                status_code=403, 
+                detail="Pro tier limit reached (20 generations this month). Upgrade to Enterprise for unlimited Ghost Studio generations."
+            )
+        else:
+            raise HTTPException(
+                status_code=403, 
+                detail="Usage limit reached for your tier. Please check your subscription."
+            )
+    
+    # All tiers get postproduction (Free gets trial, Pro gets limited, Enterprise unlimited)
+    postproduction_enabled = True
+    
+    # Increment usage counter
+    user_ghost_usage[user_id] = user_usage + 1
     
     # Validate audio file
     if not audio_file.content_type.startswith('audio/'):
@@ -521,17 +542,25 @@ async def generate_ghost_studio(
         postprod_settings
     )
     
-    trial_message = ""
-    if user_tier == "free" and user_usage == 0:
-        trial_message = " (FREE TRIAL with postproduction - upgrade for unlimited access)"
+    # Calculate remaining usage
+    remaining_usage = "unlimited" if tier_limit == -1 else max(0, tier_limit - user_usage)
+    
+    # Create tier-specific message
+    tier_messages = {
+        "free": f" (FREE TRIAL - {remaining_usage} remaining)",
+        "pro": f" (PRO - {remaining_usage}/20 remaining this month)",
+        "enterprise": " (ENTERPRISE - unlimited access)"
+    }
+    tier_message = tier_messages.get(user_tier, "")
     
     return {
         "job_id": job_id,
         "status": "pending",
-        "message": f"Ghost Studio processing started {'with postproduction' if postproduction_enabled else 'without postproduction'}{trial_message}",
+        "message": f"Ghost Studio processing started with postproduction{tier_message}",
         "postproduction_enabled": postproduction_enabled,
         "user_tier": user_tier,
-        "usage_remaining": 0 if user_tier == "free" and user_usage >= 1 else "unlimited" if user_tier in ["pro", "enterprise"] else 1 - user_usage
+        "usage_remaining": remaining_usage,
+        "tier_limit": tier_limit if tier_limit != -1 else "unlimited"
     }
 
 @app.get("/api/ghost-studio/status/{job_id}")
@@ -585,6 +614,29 @@ def download_ghost_studio_audio(job_id: str):
         media_type="audio/mpeg",
         filename=filename
     )
+
+@app.get("/api/ghost-studio/usage/{user_id}")
+def get_user_ghost_usage(user_id: str, user_tier: str = "free"):
+    """
+    Check user's Ghost Studio usage and remaining quota
+    """
+    user_usage = user_ghost_usage.get(user_id, 0)
+    tier_limit = GHOST_STUDIO_LIMITS.get(user_tier, 0)
+    remaining_usage = "unlimited" if tier_limit == -1 else max(0, tier_limit - user_usage)
+    
+    return {
+        "user_id": user_id,
+        "user_tier": user_tier,
+        "usage_count": user_usage,
+        "tier_limit": tier_limit if tier_limit != -1 else "unlimited",
+        "remaining_usage": remaining_usage,
+        "can_generate": tier_limit == -1 or user_usage < tier_limit,
+        "upgrade_message": {
+            "free": "Upgrade to Pro for 20 generations/month or Enterprise for unlimited",
+            "pro": "Upgrade to Enterprise for unlimited Ghost Studio generations",
+            "enterprise": "You have unlimited access"
+        }.get(user_tier, "")
+    }
 
 @app.get("/api/ghost-studio/jobs")
 def list_ghost_studio_jobs():
