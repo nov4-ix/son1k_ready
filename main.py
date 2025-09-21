@@ -164,32 +164,39 @@ async def process_suno_generation(job_id: str, request: GenerationRequest):
             "Origin": "https://suno.com"
         }
         
-        # Step 1: Create generation request
+        # Step 1: Create generation request (modern Suno format)
         generation_payload = {
+            "gpt_description_prompt": request.prompt,
             "mv": "chirp-v3-5",
-            "prompt": request.prompt,
+            "prompt": "",
             "make_instrumental": False,
             "wait_audio": False
         }
         
-        # Add lyrics if provided
+        # Add lyrics if provided (modern format)
         if request.lyrics:
-            generation_payload["lyrics"] = request.lyrics
+            generation_payload["prompt"] = request.lyrics
             generation_payload["tags"] = request.style or "pop"
+            generation_payload["gpt_description_prompt"] = request.prompt
         else:
             generation_payload["make_instrumental"] = True
             generation_payload["tags"] = f"{request.style or 'instrumental'}, {request.prompt}"
+            generation_payload["prompt"] = "[Instrumental]"
         
         print(f"🎵 Starting Suno generation for job {job_id}")
         print(f"📝 Prompt: {request.prompt}")
         print(f"🎤 Lyrics: {request.lyrics[:100]}..." if request.lyrics else "🎼 Instrumental")
         
-        # Make request to Suno API (try multiple endpoints)
+        # Make request to Suno API (try multiple modern endpoints)
         endpoints_to_try = [
+            "https://studio-api.suno.ai/api/external_generate/",
+            "https://studio-api.suno.ai/api/generate/v2/",
+            "https://studio-api.suno.ai/api/generate/",
+            "https://studio-api.suno.ai/api/custom_generate/",
+            "https://clerk.suno.com/api/generate/",
+            "https://suno.com/api/generate/",
             f"{SUNO_BASE_URL}/api/generate/v2/",
-            f"{SUNO_BASE_URL}/api/custom_generate/",
-            f"{SUNO_BASE_URL}/api/generate/",
-            "https://suno.com/api/generate/"
+            f"{SUNO_BASE_URL}/api/generate/"
         ]
         
         response = None
