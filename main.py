@@ -17,6 +17,8 @@ import shutil
 from pathlib import Path
 import subprocess
 import logging
+import asyncio
+from contextlib import asynccontextmanager
 # Import AI assistants with fallback handling
 try:
     from ollama_creative_assistant import (
@@ -50,14 +52,41 @@ except Exception as e:
             for k, v in kwargs.items():
                 setattr(self, k, v)
 
+# Import auto credential manager
+try:
+    from auto_credential_manager import credential_manager
+    AUTO_RENEWAL_AVAILABLE = True
+except Exception as e:
+    logger.warning(f"⚠️ Auto-renewal not available: {e}")
+    AUTO_RENEWAL_AVAILABLE = False
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle startup and shutdown events"""
+    # Startup
+    logger.info("🚀 Starting Son1k API with auto-renewal system")
+    
+    if AUTO_RENEWAL_AVAILABLE:
+        # Start credential monitoring in background
+        asyncio.create_task(credential_manager.start_monitoring())
+        logger.info("✅ Auto-renewal system activated")
+    
+    yield
+    
+    # Shutdown
+    if AUTO_RENEWAL_AVAILABLE:
+        credential_manager.stop_monitoring()
+        logger.info("🛑 Auto-renewal system stopped")
+
 app = FastAPI(
     title="Son1k Suno API", 
-    description="Transparent music generation API",
-    version="1.0.0"
+    description="Transparent music generation API with auto-renewal",
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS Configuration for Son1k frontend
@@ -1159,6 +1188,226 @@ async def end_creative_session(session_id: str):
     except Exception as e:
         logger.error(f"❌ Session cleanup error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to end session: {str(e)}")
+
+# ===== AUTO-RENEWAL SYSTEM ENDPOINTS =====
+
+@app.get("/api/system/credentials/status")
+async def get_credentials_status():
+    """
+    Get current status of all credentials and auto-renewal system
+    """
+    if not AUTO_RENEWAL_AVAILABLE:
+        return {
+            "auto_renewal_available": False,
+            "message": "Auto-renewal system not configured",
+            "manual_check_needed": True
+        }
+    
+    try:
+        status = credential_manager.get_system_status()
+        return {
+            "auto_renewal_available": True,
+            "status": status,
+            "recommendations": _get_credential_recommendations(status)
+        }
+    except Exception as e:
+        logger.error(f"❌ Error getting credential status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get status: {str(e)}")
+
+@app.post("/api/system/credentials/refresh")
+async def force_credential_refresh(service: Optional[str] = None):
+    """
+    Force immediate credential refresh for specific service or all services
+    """
+    if not AUTO_RENEWAL_AVAILABLE:
+        raise HTTPException(
+            status_code=503, 
+            detail="Auto-renewal system not available"
+        )
+    
+    try:
+        await credential_manager.force_renewal(service)
+        
+        # Get updated status
+        status = credential_manager.get_system_status()
+        
+        return {
+            "success": True,
+            "message": f"Credential refresh completed for {service or 'all services'}",
+            "updated_status": status
+        }
+    except Exception as e:
+        logger.error(f"❌ Error forcing credential refresh: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to refresh credentials: {str(e)}")
+
+@app.post("/api/system/credentials/backup")
+async def create_credentials_backup():
+    """
+    Create backup of current credentials
+    """
+    if not AUTO_RENEWAL_AVAILABLE:
+        raise HTTPException(
+            status_code=503, 
+            detail="Auto-renewal system not available"
+        )
+    
+    try:
+        credential_manager.save_credentials_backup()
+        return {
+            "success": True,
+            "message": "Credentials backup created successfully",
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        logger.error(f"❌ Error creating backup: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create backup: {str(e)}")
+
+@app.get("/api/system/health")
+async def get_system_health():
+    """
+    Comprehensive system health check
+    """
+    health_data = {
+        "timestamp": time.time(),
+        "overall_status": "healthy",
+        "services": {}
+    }
+    
+    # Check Suno API
+    try:
+        if os.environ.get("SUNO_SESSION_ID") and os.environ.get("SUNO_COOKIE"):
+            health_data["services"]["suno"] = {
+                "status": "configured",
+                "credentials_present": True
+            }
+        else:
+            health_data["services"]["suno"] = {
+                "status": "not_configured",
+                "credentials_present": False
+            }
+    except Exception as e:
+        health_data["services"]["suno"] = {
+            "status": "error",
+            "error": str(e)
+        }
+    
+    # Check Ollama
+    try:
+        if AI_AVAILABLE:
+            health_data["services"]["ollama"] = {
+                "status": "available",
+                "ai_features": "enabled"
+            }
+        else:
+            health_data["services"]["ollama"] = {
+                "status": "not_available",
+                "ai_features": "disabled"
+            }
+    except Exception as e:
+        health_data["services"]["ollama"] = {
+            "status": "error",
+            "error": str(e)
+        }
+    
+    # Check Ghost Studio
+    try:
+        health_data["services"]["ghost_studio"] = {
+            "status": "available",
+            "audio_storage": os.path.exists(AUDIO_STORAGE_PATH),
+            "waves_plugins": os.path.exists(WAVES_PLUGINS_PATH),
+            "postproduction": "waves" if os.path.exists(WAVES_PLUGINS_PATH) else "ffmpeg"
+        }
+    except Exception as e:
+        health_data["services"]["ghost_studio"] = {
+            "status": "error",
+            "error": str(e)
+        }
+    
+    # Check auto-renewal
+    if AUTO_RENEWAL_AVAILABLE:
+        try:
+            renewal_status = credential_manager.get_system_status()
+            health_data["services"]["auto_renewal"] = {
+                "status": "active" if renewal_status["monitoring_active"] else "inactive",
+                "monitoring": renewal_status["monitoring_active"],
+                "last_check": renewal_status["last_check"]
+            }
+        except Exception as e:
+            health_data["services"]["auto_renewal"] = {
+                "status": "error",
+                "error": str(e)
+            }
+    else:
+        health_data["services"]["auto_renewal"] = {
+            "status": "not_available"
+        }
+    
+    # Determine overall status
+    error_services = [k for k, v in health_data["services"].items() if v.get("status") == "error"]
+    if error_services:
+        health_data["overall_status"] = "degraded"
+        health_data["errors"] = error_services
+    
+    return health_data
+
+@app.post("/api/system/notify")
+async def send_system_notification(
+    message: str,
+    severity: str = "info",
+    service: str = "system"
+):
+    """
+    Send system notification (for testing notification system)
+    """
+    if not AUTO_RENEWAL_AVAILABLE:
+        raise HTTPException(
+            status_code=503, 
+            detail="Notification system not available"
+        )
+    
+    try:
+        notification_data = {
+            "type": "manual_notification",
+            "service": service,
+            "severity": severity,
+            "message": message,
+            "timestamp": time.time()
+        }
+        
+        await credential_manager._send_notification(notification_data)
+        
+        return {
+            "success": True,
+            "message": "Notification sent successfully",
+            "data": notification_data
+        }
+    except Exception as e:
+        logger.error(f"❌ Error sending notification: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send notification: {str(e)}")
+
+def _get_credential_recommendations(status: Dict[str, Any]) -> List[str]:
+    """Generate recommendations based on credential status"""
+    recommendations = []
+    
+    suno_status = status["services"]["suno"]
+    ollama_status = status["services"]["ollama"]
+    
+    if not suno_status["valid"]:
+        recommendations.append("🔧 Update Suno credentials (SUNO_SESSION_ID and SUNO_COOKIE)")
+    
+    if suno_status["error_count"] > 2:
+        recommendations.append("⚠️ Consider setting up backup Suno credentials")
+    
+    if not ollama_status["valid"]:
+        recommendations.append("🤖 Set up Ollama connection for AI features")
+    
+    if not status["environment"]["backup_credentials"]:
+        recommendations.append("💾 Create credential backups for failover")
+    
+    if not status["monitoring_active"]:
+        recommendations.append("🔄 Enable automatic monitoring")
+    
+    return recommendations
 
 # ===== GHOST STUDIO PROCESSING FUNCTIONS =====
 
