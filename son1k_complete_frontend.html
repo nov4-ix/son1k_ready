@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Son1k - Professional AI Music Generation Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 25%, #2d1b3d 50%, #1a1a1a 75%, #0a0a0a 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid #333;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+        }
+        
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 40px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            padding: 10px 20px;
+            border-radius: 25px;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: #000;
+        }
+        
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .tier-badge {
+            background: linear-gradient(45deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .credits-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+        
+        /* Auth Modal */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .auth-form {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            padding: 40px;
+            border-radius: 20px;
+            width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .auth-form h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #555;
+            border-radius: 10px;
+            background: #333;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #555;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-top: 100px;
+            padding: 50px 30px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 100px 0;
+            background: radial-gradient(circle at center, rgba(255, 107, 107, 0.1) 0%, transparent 70%);
+        }
+        
+        .hero h1 {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 3s infinite;
+        }
+        
+        .hero p {
+            font-size: 1.8rem;
+            margin-bottom: 50px;
+            color: #ccc;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .cta-btn {
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 700;
+        }
+        
+        .cta-btn.primary {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+        }
+        
+        .cta-btn.secondary {
+            background: transparent;
+            border: 3px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            padding: 40px 0;
+        }
+        
+        .dashboard.active {
+            display: block;
+        }
+        
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .dashboard-header h2 {
+            font-size: 3rem;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #ccc;
+            font-size: 1.1rem;
+        }
+        
+        /* Generation Section */
+        .generation-section {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9), rgba(45, 45, 45, 0.9));
+            border-radius: 25px;
+            padding: 50px;
+            margin: 50px 0;
+            border: 1px solid #333;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .generation-form {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group textarea {
+            height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .advanced-options {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .advanced-options h4 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .option-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .option-group select {
+            padding: 12px;
+            border: 2px solid #555;
+            border-radius: 8px;
+            background: #333;
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .option-group select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+        }
+        
+        /* Pro Features */
+        .pro-features {
+            background: linear-gradient(45deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+            border: 2px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .pro-badge {
+            background: linear-gradient(45deg, #ffd700, #ff8c00);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        .pro-features h4 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+        
+        .pro-features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .pro-features li {
+            padding: 8px 0;
+            color: #ccc;
+        }
+        
+        .pro-features li::before {
+            content: "✨ ";
+            color: #ffd700;
+        }
+        
+        /* Results */
+        .results-section {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.1), rgba(69, 183, 209, 0.1));
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            display: none;
+            border: 1px solid #4ecdc4;
+        }
+        
+        .results-section.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid #333;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .action-btn.download {
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            color: white;
+        }
+        
+        .action-btn.share {
+            background: transparent;
+            border: 2px solid #4ecdc4;
+            color: #4ecdc4;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(78, 205, 196, 0.3);
+        }
+        
+        /* Store Section */
+        .store-section {
+            display: none;
+            padding: 40px 0;
+        }
+        
+        .store-section.active {
+            display: block;
+        }
+        
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin: 50px 0;
+        }
+        
+        .plan-card {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9), rgba(45, 45, 45, 0.9));
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            border: 2px solid #333;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .plan-card.popular {
+            border-color: #ff6b6b;
+            transform: scale(1.05);
+        }
+        
+        .plan-card.popular::before {
+            content: "MÁS POPULAR";
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: #ff6b6b;
+            color: white;
+            padding: 8px 40px;
+            transform: rotate(45deg);
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .plan-name {
+            font-size: 2rem;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .plan-price {
+            font-size: 3rem;
+            color: #4ecdc4;
+            margin-bottom: 30px;
+            font-weight: 900;
+        }
+        
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 40px;
+        }
+        
+        .plan-features li {
+            padding: 12px 0;
+            color: #ccc;
+            border-bottom: 1px solid #333;
+        }
+        
+        .plan-features li::before {
+            content: "✓ ";
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid #ff6b6b;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 30px;
+        }
+        
+        /* Animations */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3rem; }
+            .hero p { font-size: 1.3rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .plans-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .main-content { padding: 20px; }
+        }
+        
+        /* Hidden state */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="logo">🎵 Son1k</a>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link active" data-section="home">Inicio</a></li>
+                <li><a href="#generate" class="nav-link" data-section="dashboard">Generar</a></li>
+                <li><a href="#store" class="nav-link" data-section="store">Tienda</a></li>
+                <li><a href="#support" class="nav-link">Soporte</a></li>
+            </ul>
+            <div class="user-section">
+                <div class="login-section">
+                    <button class="btn btn-primary" onclick="showLogin()">Iniciar Sesión</button>
+                </div>
+                <div class="user-info hidden">
+                    <span class="tier-badge">PRO</span>
+                    <span class="credits-display">1000 créditos</span>
+                    <button class="btn btn-secondary" onclick="logout()">Salir</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Auth Modal -->
+    <div class="auth-modal hidden" id="authModal">
+        <div class="auth-form">
+            <h2>Iniciar Sesión - Tester Account</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" placeholder="tester1@son1k.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" placeholder="Premium123!" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                <button type="button" class="btn btn-secondary" onclick="hideLogin()">Cancelar</button>
+            </form>
+            <div style="margin-top: 20px; padding: 15px; background: rgba(78, 205, 196, 0.1); border-radius: 10px;">
+                <h4 style="color: #4ecdc4; margin-bottom: 10px;">Cuentas de Testing:</h4>
+                <p style="color: #ccc; font-size: 0.9rem;">
+                    Email: tester1@son1k.com hasta tester10@son1k.com<br>
+                    Contraseña: Premium123!<br>
+                    Todas las cuentas tienen acceso PRO completo
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Home Section -->
+        <section id="homeSection" class="section active">
+            <div class="hero">
+                <h1>🎵 Son1k</h1>
+                <p>La plataforma más avanzada de generación musical con IA profesional</p>
+                <div class="cta-buttons">
+                    <button class="cta-btn primary" onclick="showSection('dashboard')">Comenzar a Crear</button>
+                    <button class="cta-btn secondary" onclick="showSection('store')">Ver Planes</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboardSection" class="section">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>Panel de Generación Musical</h2>
+                    <p>Crea música profesional con tecnología IA avanzada</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="creditsCount">1000</div>
+                        <div class="stat-label">Créditos Disponibles</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="songsGenerated">0</div>
+                        <div class="stat-label">Canciones Generadas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">PRO</div>
+                        <div class="stat-label">Plan Actual</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">∞</div>
+                        <div class="stat-label">Descargas</div>
+                    </div>
+                </div>
+
+                <div class="generation-section">
+                    <h3 style="text-align: center; margin-bottom: 40px; color: #ff6b6b; font-size: 2.5rem;">Generador Musical IA</h3>
+                    
+                    <form id="musicForm" class="generation-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="prompt">🎯 Descripción Musical:</label>
+                                <input type="text" id="prompt" placeholder="Ej: upbeat electronic dance music with strong bass and catchy melody" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="style">🎨 Estilo Musical:</label>
+                                <input type="text" id="style" placeholder="Ej: electronic, pop, rock, hip-hop, jazz">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lyrics">📝 Letras (opcional):</label>
+                            <textarea id="lyrics" placeholder="Escribe las letras de tu canción aquí... O déjalo vacío para que la IA genere letras automáticamente"></textarea>
+                        </div>
+
+                        <div class="pro-features">
+                            <span class="pro-badge">✨ FUNCIONES PRO</span>
+                            <h4>Opciones Avanzadas Disponibles</h4>
+                            <ul>
+                                <li>Generación de alta calidad (320kbps)</li>
+                                <li>Descargas sin marca de agua</li>
+                                <li>Múltiples formatos (MP3, WAV, FLAC)</li>
+                                <li>Soporte prioritario</li>
+                                <li>Historial ilimitado</li>
+                            </ul>
+                        </div>
+
+                        <div class="advanced-options">
+                            <h4>🔧 Configuración Avanzada</h4>
+                            <div class="options-grid">
+                                <div class="option-group">
+                                    <label>Duración:</label>
+                                    <select id="duration">
+                                        <option value="short">Corta (30s)</option>
+                                        <option value="medium" selected>Media (2-3min)</option>
+                                        <option value="long">Larga (4-5min)</option>
+                                    </select>
+                                </div>
+                                <div class="option-group">
+                                    <label>Calidad:</label>
+                                    <select id="quality">
+                                        <option value="standard">Estándar (128kbps)</option>
+                                        <option value="high" selected>Alta (320kbps)</option>
+                                        <option value="studio">Estudio (WAV)</option>
+                                    </select>
+                                </div>
+                                <div class="option-group">
+                                    <label>Instrumental:</label>
+                                    <select id="instrumental">
+                                        <option value="false" selected>Con Voz</option>
+                                        <option value="true">Solo Instrumental</option>
+                                    </select>
+                                </div>
+                                <div class="option-group">
+                                    <label>Versiones:</label>
+                                    <select id="versions">
+                                        <option value="1">1 Versión</option>
+                                        <option value="2" selected>2 Versiones</option>
+                                        <option value="3">3 Versiones</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="generateBtn" style="width: 100%; padding: 20px; font-size: 1.3rem; margin-top: 30px;">
+                            🎵 Generar Música Profesional
+                        </button>
+                    </form>
+                    
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <h3>Generando tu música profesional...</h3>
+                        <p>Esto puede tomar 30-60 segundos. ¡La calidad PRO vale la espera!</p>
+                    </div>
+                </div>
+
+                <div class="results-section" id="resultSection">
+                    <h3 style="color: #4ecdc4; margin-bottom: 30px; font-size: 2rem;">🎉 ¡Música Generada Exitosamente!</h3>
+                    <div id="musicResults"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Store Section -->
+        <section id="storeSection" class="section">
+            <div class="store-section">
+                <div class="dashboard-header">
+                    <h2>Planes y Precios</h2>
+                    <p>Elige el plan perfecto para tus necesidades musicales</p>
+                </div>
+
+                <div class="plans-grid">
+                    <div class="plan-card">
+                        <div class="plan-name">FREE</div>
+                        <div class="plan-price">$0<span style="font-size: 1rem; color: #666;">/mes</span></div>
+                        <ul class="plan-features">
+                            <li>5 generaciones por mes</li>
+                            <li>Calidad estándar (128kbps)</li>
+                            <li>Duración máxima: 30 segundos</li>
+                            <li>Marca de agua incluida</li>
+                            <li>Soporte básico</li>
+                        </ul>
+                        <button class="btn btn-secondary">Plan Actual</button>
+                    </div>
+
+                    <div class="plan-card popular">
+                        <div class="plan-name">PRO</div>
+                        <div class="plan-price">$29<span style="font-size: 1rem; color: #666;">/mes</span></div>
+                        <ul class="plan-features">
+                            <li>1000 créditos mensuales</li>
+                            <li>Calidad alta (320kbps)</li>
+                            <li>Canciones completas (hasta 5min)</li>
+                            <li>Sin marca de agua</li>
+                            <li>Múltiples formatos de descarga</li>
+                            <li>Soporte prioritario</li>
+                            <li>Historial ilimitado</li>
+                        </ul>
+                        <button class="btn btn-primary">Plan Activo</button>
+                    </div>
+
+                    <div class="plan-card">
+                        <div class="plan-name">ENTERPRISE</div>
+                        <div class="plan-price">$99<span style="font-size: 1rem; color: #666;">/mes</span></div>
+                        <ul class="plan-features">
+                            <li>Créditos ilimitados</li>
+                            <li>Calidad estudio (WAV, FLAC)</li>
+                            <li>API access completo</li>
+                            <li>Licencias comerciales incluidas</li>
+                            <li>Soporte 24/7 dedicado</li>
+                            <li>Integraciones personalizadas</li>
+                            <li>Análisis y reportes avanzados</li>
+                        </ul>
+                        <button class="btn btn-primary">Contactar Ventas</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let currentSection = 'home';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for saved session
+            const savedUser = localStorage.getItem('son1k_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateUserInterface();
+            }
+
+            // Form submission
+            document.getElementById('musicForm').addEventListener('submit', handleMusicGeneration);
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    if (section) {
+                        showSection(section);
+                    }
+                });
+            });
+        });
+
+        // Authentication
+        function showLogin() {
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function hideLogin() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentUser = result.user;
+                    localStorage.setItem('son1k_user', JSON.stringify(currentUser));
+                    updateUserInterface();
+                    hideLogin();
+                    showSection('dashboard');
+                    
+                    // Show success message
+                    alert(`¡Bienvenido! Sesión iniciada como ${currentUser.tier.toUpperCase()}`);
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error de conexión: ' + error.message);
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('son1k_user');
+            updateUserInterface();
+            showSection('home');
+        }
+
+        function updateUserInterface() {
+            const loginSection = document.querySelector('.login-section');
+            const userInfo = document.querySelector('.user-info');
+
+            if (currentUser) {
+                loginSection.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                
+                // Update credits display
+                document.getElementById('creditsCount').textContent = currentUser.credits;
+                
+                // Update tier badge
+                document.querySelector('.tier-badge').textContent = currentUser.tier.toUpperCase();
+                document.querySelector('.credits-display').textContent = `${currentUser.credits} créditos`;
+            } else {
+                loginSection.classList.remove('hidden');
+                userInfo.classList.add('hidden');
+            }
+        }
+
+        // Navigation
+        function showSection(sectionName) {
+            currentSection = sectionName;
+            
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show target section
+            const targetSection = document.getElementById(sectionName + 'Section');
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === sectionName) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Music generation
+        async function handleMusicGeneration(e) {
+            e.preventDefault();
+
+            if (!currentUser) {
+                alert('Por favor inicia sesión para generar música');
+                showLogin();
+                return;
+            }
+
+            const prompt = document.getElementById('prompt').value;
+            const lyrics = document.getElementById('lyrics').value;
+            const style = document.getElementById('style').value;
+            const duration = document.getElementById('duration').value;
+            const quality = document.getElementById('quality').value;
+            const instrumental = document.getElementById('instrumental').value === 'true';
+            const versions = parseInt(document.getElementById('versions').value);
+
+            if (!prompt) {
+                alert('Por favor ingresa una descripción musical');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('generateBtn').textContent = 'Generando...';
+            document.getElementById('resultSection').classList.remove('show');
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentUser.email}`
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        lyrics: lyrics,
+                        style: style,
+                        options: {
+                            duration: duration,
+                            quality: quality,
+                            instrumental: instrumental,
+                            versions: versions
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error HTTP: ' + response.status);
+                }
+
+                const result = await response.json();
+
+                // Update credits
+                if (currentUser.credits > 0) {
+                    currentUser.credits -= 10;
+                    localStorage.setItem('son1k_user', JSON.stringify(currentUser));
+                    updateUserInterface();
+                }
+
+                // Update stats
+                const songsCount = parseInt(document.getElementById('songsGenerated').textContent);
+                document.getElementById('songsGenerated').textContent = songsCount + 1;
+
+                // Show results
+                displayResults(result);
+
+            } catch (error) {
+                alert('Error generando música: ' + error.message);
+                console.error('Error:', error);
+            } finally {
+                // Hide loading
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').textContent = '🎵 Generar Música Profesional';
+            }
+        }
+
+        function displayResults(result) {
+            const resultsHTML = `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">🎵 ${result.prompt.substring(0, 50)}...</div>
+                        <div class="result-actions">
+                            <a href="${result.suno_response.audio_url}" target="_blank" class="action-btn download">
+                                🎵 Escuchar
+                            </a>
+                            <a href="${result.suno_response.video_url}" target="_blank" class="action-btn download">
+                                🎬 Ver Video
+                            </a>
+                            <button class="action-btn share" onclick="shareMusic('${result.job_id}')">
+                                📤 Compartir
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #222; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #ff6b6b; margin-bottom: 15px;">Detalles de la Generación:</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div><strong>Job ID:</strong> ${result.job_id}</div>
+                            <div><strong>Duración:</strong> ${result.suno_response.duration || '02:30'}</div>
+                            <div><strong>Modelo:</strong> ${result.suno_response.model_name || 'chirp-v3-5'}</div>
+                            <div><strong>Calidad:</strong> PRO (320kbps)</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(78, 205, 196, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #4ecdc4;">
+                        <p style="margin: 0; color: #4ecdc4;">
+                            ✅ ${result.suno_response.message || 'Música generada exitosamente con calidad PRO'}
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('musicResults').innerHTML = resultsHTML;
+            document.getElementById('resultSection').classList.add('show');
+
+            // Scroll to results
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function shareMusic(jobId) {
+            const shareUrl = `${window.location.origin}/song/${jobId}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('¡Enlace copiado al portapapeles!');
+            }).catch(() => {
+                alert(`Enlace para compartir: ${shareUrl}`);
+            });
+        }
+
+        // Utility functions
+        function formatNumber(num) {
+            return num.toLocaleString();
+        }
+
+        // Initialize with demo data if needed
+        if (window.location.hash === '#demo') {
+            // Auto-login for demo
+            currentUser = {
+                email: 'demo@son1k.com',
+                tier: 'pro',
+                credits: 1000,
+                features: ['music_generation', 'pro_features', 'priority_support']
+            };
+            updateUserInterface();
+            showSection('dashboard');
+        }
+    </script>
+</body>
+</html>

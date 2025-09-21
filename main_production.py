@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import os
 import requests
@@ -7,6 +7,7 @@ import time
 import json
 from datetime import datetime
 from typing import Optional, Dict, Any
+import hashlib
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,6 +25,30 @@ class CredentialStatus:
 suno_status = CredentialStatus()
 ollama_status = CredentialStatus()
 
+# Pro tester accounts database
+PRO_TESTER_ACCOUNTS = {
+    "tester1@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester2@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester3@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester4@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester5@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester6@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester7@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester8@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester9@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True},
+    "tester10@son1k.com": {"password": "Premium123!", "tier": "pro", "credits": 1000, "active": True}
+}
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class AuthResponse(BaseModel):
+    success: bool
+    message: str
+    user: Optional[Dict] = None
+    token: Optional[str] = None
+
 app = FastAPI(
     title="Son1k Auto-Renewal API",
     description="Music generation API with automatic credential renewal",
@@ -38,399 +63,97 @@ class GenerateRequest(BaseModel):
 
 from fastapi.responses import HTMLResponse
 
+@app.post("/api/auth/login", response_model=AuthResponse)
+def login(request: LoginRequest):
+    """Login endpoint for tester accounts"""
+    email = request.email.lower().strip()
+    
+    if email in PRO_TESTER_ACCOUNTS:
+        account = PRO_TESTER_ACCOUNTS[email]
+        if account["password"] == request.password and account["active"]:
+            # Generate simple token
+            token = hashlib.md5(f"{email}:{request.password}:{int(time.time())}".encode()).hexdigest()
+            
+            return AuthResponse(
+                success=True,
+                message="Login successful",
+                user={
+                    "email": email,
+                    "tier": account["tier"],
+                    "credits": account["credits"],
+                    "features": ["music_generation", "pro_features", "priority_support"]
+                },
+                token=token
+            )
+    
+    return AuthResponse(
+        success=False,
+        message="Invalid credentials"
+    )
+
+@app.get("/api/auth/tester-accounts")
+def get_tester_accounts():
+    """Get list of available tester accounts"""
+    return {
+        "accounts": [
+            {
+                "email": email,
+                "tier": data["tier"],
+                "credits": data["credits"],
+                "active": data["active"]
+            }
+            for email, data in PRO_TESTER_ACCOUNTS.items()
+        ],
+        "instructions": "Use password: Premium123! for all accounts"
+    }
+
 @app.get("/", response_class=HTMLResponse)
 def root():
-    return """
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Son1k - AI Music Generation</title>
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            
-            body {
-                font-family: 'Arial', sans-serif;
-                background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-                color: #fff;
-                min-height: 100vh;
-                overflow-x: hidden;
-            }
-            
-            .header {
-                background: rgba(26, 26, 26, 0.9);
-                backdrop-filter: blur(10px);
-                padding: 20px 0;
-                position: fixed;
-                width: 100%;
-                top: 0;
-                z-index: 1000;
-                border-bottom: 1px solid #333;
-            }
-            
-            .nav {
-                max-width: 1200px;
-                margin: 0 auto;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0 20px;
-            }
-            
-            .logo {
-                font-size: 2rem;
-                font-weight: bold;
-                color: #ff6b6b;
-                text-decoration: none;
-            }
-            
-            .nav-links {
-                display: flex;
-                list-style: none;
-                gap: 30px;
-            }
-            
-            .nav-links a {
-                color: #fff;
-                text-decoration: none;
-                transition: color 0.3s;
-            }
-            
-            .nav-links a:hover {
-                color: #ff6b6b;
-            }
-            
-            .hero {
-                margin-top: 100px;
-                padding: 100px 20px;
-                text-align: center;
-                max-width: 1200px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            
-            .hero h1 {
-                font-size: 4rem;
-                margin-bottom: 20px;
-                background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                animation: pulse 2s infinite;
-            }
-            
-            .hero p {
-                font-size: 1.5rem;
-                margin-bottom: 50px;
-                color: #ccc;
-            }
-            
-            .generate-section {
-                background: rgba(45, 45, 45, 0.8);
-                border-radius: 20px;
-                padding: 40px;
-                margin: 50px auto;
-                max-width: 800px;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            }
-            
-            .form-group {
-                margin-bottom: 30px;
-                text-align: left;
-            }
-            
-            .form-group label {
-                display: block;
-                margin-bottom: 10px;
-                color: #ff6b6b;
-                font-weight: bold;
-            }
-            
-            .form-group input,
-            .form-group textarea {
-                width: 100%;
-                padding: 15px;
-                border: 2px solid #555;
-                border-radius: 10px;
-                background: #333;
-                color: #fff;
-                font-size: 1rem;
-                transition: border-color 0.3s;
-            }
-            
-            .form-group input:focus,
-            .form-group textarea:focus {
-                outline: none;
-                border-color: #ff6b6b;
-            }
-            
-            .form-group textarea {
-                height: 120px;
-                resize: vertical;
-            }
-            
-            .generate-btn {
-                background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-                color: white;
-                border: none;
-                padding: 20px 40px;
-                font-size: 1.2rem;
-                border-radius: 50px;
-                cursor: pointer;
-                transition: transform 0.3s, box-shadow 0.3s;
-                width: 100%;
-                margin-top: 20px;
-            }
-            
-            .generate-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
-            }
-            
-            .generate-btn:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-                transform: none;
-            }
-            
-            .result-section {
-                background: rgba(45, 45, 45, 0.8);
-                border-radius: 20px;
-                padding: 40px;
-                margin: 30px auto;
-                max-width: 800px;
-                display: none;
-            }
-            
-            .result-section.show {
-                display: block;
-                animation: fadeIn 0.5s;
-            }
-            
-            .audio-player {
-                width: 100%;
-                margin: 20px 0;
-            }
-            
-            .loading {
-                text-align: center;
-                padding: 20px;
-                display: none;
-            }
-            
-            .loading.show {
-                display: block;
-            }
-            
-            .spinner {
-                border: 4px solid #333;
-                border-top: 4px solid #ff6b6b;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 20px;
-            }
-            
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-            
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            
-            .footer {
-                text-align: center;
-                padding: 50px 20px;
-                color: #666;
-                border-top: 1px solid #333;
-                margin-top: 100px;
-            }
-            
-            @media (max-width: 768px) {
-                .hero h1 {
-                    font-size: 2.5rem;
-                }
-                
-                .hero p {
-                    font-size: 1.2rem;
-                }
-                
-                .generate-section {
-                    margin: 20px;
-                    padding: 20px;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <header class="header">
-            <nav class="nav">
-                <a href="/" class="logo">🎵 Son1k</a>
-                <ul class="nav-links">
-                    <li><a href="#home">Inicio</a></li>
-                    <li><a href="#generate">Generar</a></li>
-                    <li><a href="/docs-api">API</a></li>
-                </ul>
-            </nav>
-        </header>
-
-        <main>
-            <section class="hero" id="home">
-                <h1>🎵 Son1k</h1>
-                <p>Crea música increíble con Inteligencia Artificial</p>
-                <p style="font-size: 1rem; color: #999;">Generación de música profesional usando tecnología AI avanzada</p>
-            </section>
-
-            <section class="generate-section" id="generate">
-                <h2 style="text-align: center; margin-bottom: 30px; color: #ff6b6b;">Generar Música</h2>
-                
-                <form id="musicForm">
-                    <div class="form-group">
-                        <label for="prompt">Descripción Musical:</label>
-                        <input type="text" id="prompt" placeholder="Ej: upbeat electronic dance music with strong bass" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="lyrics">Letras (opcional):</label>
-                        <textarea id="lyrics" placeholder="Escribe las letras de tu canción aquí..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="style">Estilo Musical:</label>
-                        <input type="text" id="style" placeholder="Ej: electronic, pop, rock, hip-hop">
-                    </div>
-                    
-                    <button type="submit" class="generate-btn" id="generateBtn">
-                        🎵 Generar Música
-                    </button>
-                </form>
-                
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p>Generando tu música... ⏱️ ~30 segundos</p>
-                </div>
-            </section>
-
-            <section class="result-section" id="resultSection">
-                <h3 style="color: #4ecdc4; margin-bottom: 20px;">🎉 ¡Música Generada!</h3>
-                <div id="musicResult"></div>
-            </section>
-        </main>
-
-        <footer class="footer">
-            <p>&copy; 2025 Son1k - AI Music Generation Platform</p>
-            <p>Powered by advanced AI technology</p>
-        </footer>
-
-        <script>
-            document.getElementById('musicForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const prompt = document.getElementById('prompt').value;
-                const lyrics = document.getElementById('lyrics').value;
-                const style = document.getElementById('style').value;
-                
-                if (!prompt) {
-                    alert('Por favor ingresa una descripción musical');
-                    return;
-                }
-                
-                // Show loading
-                document.getElementById('loading').classList.add('show');
-                document.getElementById('generateBtn').disabled = true;
-                document.getElementById('generateBtn').textContent = 'Generando...';
-                document.getElementById('resultSection').classList.remove('show');
-                
-                try {
-                    const response = await fetch('/api/generate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            prompt: prompt,
-                            lyrics: lyrics,
-                            style: style
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Error HTTP: ' + response.status);
-                    }
-                    
-                    const result = await response.json();
-                    
-                    // Show result
-                    document.getElementById('musicResult').innerHTML = `
-                        <div style="background: #333; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                            <h4 style="color: #ff6b6b;">Detalles de la Generación:</h4>
-                            <p><strong>Job ID:</strong> ${result.job_id}</p>
-                            <p><strong>Prompt:</strong> ${result.prompt}</p>
-                            <p><strong>Duración:</strong> ${result.suno_response.duration || '02:30'}</p>
-                            <p><strong>Modelo:</strong> ${result.suno_response.model_name || 'chirp-v3-5'}</p>
-                        </div>
-                        
-                        <div style="background: #333; padding: 20px; border-radius: 10px;">
-                            <h4 style="color: #4ecdc4;">Enlaces de Descarga:</h4>
-                            <p style="margin: 10px 0;">
-                                <a href="${result.suno_response.audio_url}" target="_blank" 
-                                   style="color: #ff6b6b; text-decoration: none; font-weight: bold;">
-                                   🎵 Escuchar Audio
-                                </a>
-                            </p>
-                            <p style="margin: 10px 0;">
-                                <a href="${result.suno_response.video_url}" target="_blank" 
-                                   style="color: #4ecdc4; text-decoration: none; font-weight: bold;">
-                                   🎬 Ver Video
-                                </a>
-                            </p>
-                            ${result.suno_response.image_url ? `
-                            <p style="margin: 10px 0;">
-                                <a href="${result.suno_response.image_url}" target="_blank" 
-                                   style="color: #fff; text-decoration: none; font-weight: bold;">
-                                   🖼️ Ver Imagen
-                                </a>
-                            </p>` : ''}
-                        </div>
-                        
-                        <div style="margin-top: 20px; padding: 15px; background: rgba(76, 175, 80, 0.1); border-left: 4px solid #4CAF50; border-radius: 5px;">
-                            <p style="color: #4CAF50; margin: 0;">
-                                ✅ ${result.suno_response.message || 'Música generada exitosamente'}
-                            </p>
-                        </div>
-                    `;
-                    
-                    document.getElementById('resultSection').classList.add('show');
-                    
-                } catch (error) {
-                    alert('Error generando música: ' + error.message);
-                    console.error('Error:', error);
-                } finally {
-                    // Hide loading
-                    document.getElementById('loading').classList.remove('show');
-                    document.getElementById('generateBtn').disabled = false;
-                    document.getElementById('generateBtn').textContent = '🎵 Generar Música';
-                }
-            });
-        </script>
-    </body>
-    </html>
-    """
+    """Serve the complete Son1k frontend"""
+    # Read the complete frontend HTML
+    try:
+        with open("son1k_complete_frontend.html", "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content, status_code=200)
+    except FileNotFoundError:
+        # Fallback to API info if HTML file not found
+        return HTMLResponse(content="""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Son1k - Complete Frontend Loading...</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #1a1a1a; 
+            color: #fff; 
+            text-align: center; 
+            padding: 100px 20px; 
+        }
+        .logo { 
+            font-size: 3rem; 
+            color: #ff6b6b; 
+            margin-bottom: 30px; 
+        }
+        .message { 
+            font-size: 1.2rem; 
+            color: #ccc; 
+            max-width: 600px; 
+            margin: 0 auto; 
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">🎵 Son1k</div>
+    <div class="message">
+        Complete frontend HTML file not found. <br>
+        Please ensure son1k_complete_frontend.html is in the root directory.
+        <br><br>
+        <a href="/api" style="color: #ff6b6b;">View API Documentation</a>
+    </div>
+</body>
+</html>
+""", status_code=200)
 
 @app.get("/api")
 def api_root():
