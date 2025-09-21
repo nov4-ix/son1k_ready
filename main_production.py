@@ -44,57 +44,89 @@ def root():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Son1k - Music Generation API</title>
+        <title>Son1k - Redirigiendo...</title>
+        <meta http-equiv="refresh" content="0; url=https://son1k.com">
         <style>
-            body { font-family: Arial, sans-serif; margin: 40px; background: #1a1a1a; color: #fff; }
-            .container { max-width: 800px; margin: 0 auto; }
-            h1 { color: #ff6b6b; }
-            .status { background: #2d2d2d; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .endpoint { background: #333; padding: 10px; margin: 10px 0; border-radius: 4px; }
-            .success { color: #4CAF50; }
-            a { color: #ff6b6b; text-decoration: none; }
+            body { 
+                font-family: Arial, sans-serif; 
+                margin: 0; 
+                padding: 0; 
+                background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); 
+                color: #fff; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                min-height: 100vh;
+            }
+            .redirect-container { 
+                text-align: center; 
+                max-width: 500px; 
+                padding: 40px;
+            }
+            h1 { 
+                color: #ff6b6b; 
+                font-size: 2.5em; 
+                margin-bottom: 20px;
+                animation: pulse 2s infinite;
+            }
+            .loading { 
+                font-size: 1.2em; 
+                margin: 20px 0; 
+            }
+            .spinner {
+                border: 4px solid #333;
+                border-top: 4px solid #ff6b6b;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 20px auto;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.7; }
+                100% { opacity: 1; }
+            }
+            .manual-link {
+                margin-top: 30px;
+            }
+            .manual-link a {
+                color: #ff6b6b;
+                text-decoration: none;
+                font-weight: bold;
+                padding: 10px 20px;
+                border: 2px solid #ff6b6b;
+                border-radius: 5px;
+                transition: all 0.3s;
+            }
+            .manual-link a:hover {
+                background: #ff6b6b;
+                color: #1a1a1a;
+            }
         </style>
+        <script>
+            // Redirección automática a Son1k
+            setTimeout(() => {
+                window.location.href = 'https://son1k.com';
+            }, 2000);
+        </script>
     </head>
     <body>
-        <div class="container">
-            <h1>🎵 Son1k Music Generation API</h1>
-            <div class="status">
-                <h3>System Status: <span class="success">ONLINE</span></h3>
-                <p>Auto-Renewal System: <span class="success">ACTIVE</span></p>
-                <p>Version: 1.0.0</p>
+        <div class="redirect-container">
+            <h1>🎵 Son1k</h1>
+            <div class="loading">Redirigiendo a Son1k...</div>
+            <div class="spinner"></div>
+            <p>Te estamos llevando al frontend de Son1k</p>
+            <div class="manual-link">
+                <a href="https://son1k.com">Ir a Son1k ahora</a>
             </div>
-            
-            <h3>Available Endpoints:</h3>
-            <div class="endpoint">
-                <strong>POST /api/generate</strong> - Generate music with real Suno API integration
-            </div>
-            <div class="endpoint">
-                <strong>GET /api/generate/{job_id}/status</strong> - Check music generation status
-            </div>
-            <div class="endpoint">
-                <strong>GET /api/system/health</strong> - <a href="/api/system/health">System health</a>
-            </div>
-            <div class="endpoint">
-                <strong>GET /api/system/credentials/status</strong> - <a href="/api/system/credentials/status">Credentials status</a>
-            </div>
-            <div class="endpoint">
-                <strong>POST /api/system/credentials/refresh</strong> - Refresh credentials
-            </div>
-            
-            <h3>🎵 Real Suno Integration:</h3>
-            <div class="status">
-                <p>✅ Connected to Suno Studio API</p>
-                <p>✅ Automatic credential management</p>
-                <p>✅ Real music generation with your prompts</p>
-                <p>✅ Job status tracking</p>
-            </div>
-            
-            <h3>Documentation:</h3>
-            <p><a href="/docs">API Documentation (Swagger)</a></p>
-            
-            <footer style="margin-top: 40px; text-align: center; color: #666;">
-                <p>Son1k Auto-Renewal API - Powered by Railway</p>
-            </footer>
+            <p style="margin-top: 30px; font-size: 0.9em; color: #666;">
+                API funcionando en: <strong>son1kvers3.com/api/generate</strong>
+            </p>
         </div>
     </body>
     </html>
@@ -111,6 +143,85 @@ def api_root():
             "music_generation": "available"
         }
     }
+
+@app.get("/docs-api", response_class=HTMLResponse)
+def api_docs():
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Son1k API - Código JavaScript</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #1a1a1a; color: #fff; }
+            .container { max-width: 800px; margin: 0 auto; }
+            h1 { color: #ff6b6b; }
+            .code-block { background: #2d2d2d; padding: 20px; border-radius: 8px; margin: 20px 0; overflow-x: auto; }
+            .copy-btn { background: #ff6b6b; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px 0; }
+            .copy-btn:hover { background: #e55555; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🎵 Código JavaScript para Son1k</h1>
+            
+            <h3>Código Limpio - Copia exactamente esto:</h3>
+            
+            <button class="copy-btn" onclick="copyCode()">📋 Copiar Código</button>
+            
+            <div class="code-block" id="jsCode">
+async function generateMusic(prompt, lyrics, style) {
+  try {
+    const response = await fetch('https://son1kvers3.com/api/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        lyrics: lyrics,
+        style: style
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Error HTTP: ' + response.status);
+    }
+
+    const result = await response.json();
+    
+    console.log('Música generada:', result);
+    console.log('Job ID:', result.job_id);
+    console.log('Audio URL:', result.suno_response.audio_url);
+    
+    return result;
+    
+  } catch (error) {
+    console.error('Error generando música:', error);
+    throw error;
+  }
+}
+
+generateMusic("electronic music", "test lyrics", "electronic").then(result => {
+  console.log('Música lista:', result.suno_response.audio_url);
+});
+            </div>
+            
+            <script>
+            function copyCode() {
+              const code = document.getElementById('jsCode').innerText;
+              navigator.clipboard.writeText(code).then(() => {
+                alert('Código copiado al portapapeles');
+              });
+            }
+            </script>
+            
+            <p style="margin-top: 40px; text-align: center; color: #666;">
+                <a href="https://son1k.com" style="color: #ff6b6b;">← Volver a Son1k</a>
+            </p>
+        </div>
+    </body>
+    </html>
+    """
 
 @app.get("/health")  
 def health():
