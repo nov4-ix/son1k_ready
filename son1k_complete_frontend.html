@@ -599,6 +599,242 @@
             .main-content { padding: 20px; }
         }
         
+        /* Ghost Studio Styles */
+        .ghost-studio {
+            display: none;
+            padding: 40px 0;
+        }
+        
+        .ghost-studio.active {
+            display: block;
+        }
+        
+        .ghost-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .ghost-feature-card {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.2), rgba(160, 82, 45, 0.2));
+            border: 2px solid #8B4513;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .ghost-feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(139, 69, 19, 0.4);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .upload-area {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px dashed #8B4513;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .upload-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .upload-status.success {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+        }
+        
+        .ghost-select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            background: #333;
+            color: #fff;
+            font-size: 1rem;
+            margin-top: 15px;
+        }
+        
+        .ghost-generation-section {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(160, 82, 45, 0.1));
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid #8B4513;
+        }
+        
+        .ghost-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .ghost-controls label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        
+        .ghost-generate-btn {
+            background: linear-gradient(45deg, #8B4513, #D2691E);
+            width: 100%;
+            padding: 20px;
+            font-size: 1.3rem;
+            margin-top: 30px;
+        }
+        
+        /* Preprocessing Styles */
+        .preprocess-studio {
+            display: none;
+            padding: 40px 0;
+        }
+        
+        .preprocess-studio.active {
+            display: block;
+        }
+        
+        .preprocess-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .preprocess-card {
+            background: linear-gradient(135deg, rgba(75, 0, 130, 0.2), rgba(138, 43, 226, 0.2));
+            border: 2px solid #4B0082;
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+        
+        .preprocess-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(75, 0, 130, 0.4);
+        }
+        
+        .analyzer-section textarea {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 15px;
+        }
+        
+        .enhanced-output {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #4B0082;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            min-height: 100px;
+            font-family: monospace;
+            color: #ccc;
+        }
+        
+        .optimization-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .optimization-controls label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        
+        .analysis-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .analysis-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .analysis-label {
+            color: #4B0082;
+            font-weight: bold;
+        }
+        
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .template-card {
+            background: linear-gradient(135deg, rgba(75, 0, 130, 0.3), rgba(138, 43, 226, 0.3));
+            border: 1px solid #4B0082;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .template-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(75, 0, 130, 0.4);
+            border-color: #8A2BE2;
+        }
+        
+        .template-card h4 {
+            color: #8A2BE2;
+            margin-bottom: 10px;
+        }
+        
+        .preprocess-final {
+            background: linear-gradient(135deg, rgba(75, 0, 130, 0.1), rgba(138, 43, 226, 0.1));
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid #4B0082;
+        }
+        
+        .final-output textarea {
+            height: 120px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #4B0082;
+        }
+        
+        .config-display {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #4B0082;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 10px;
+            font-family: monospace;
+            color: #ccc;
+        }
+        
         /* Hidden state */
         .hidden { display: none !important; }
     </style>
@@ -611,6 +847,8 @@
             <ul class="nav-links">
                 <li><a href="#home" class="nav-link active" data-section="home">Inicio</a></li>
                 <li><a href="#generate" class="nav-link" data-section="dashboard">Generar</a></li>
+                <li><a href="#ghost" class="nav-link" data-section="ghost">Ghost Studio</a></li>
+                <li><a href="#preprocess" class="nav-link" data-section="preprocess">Preprocesos</a></li>
                 <li><a href="#store" class="nav-link" data-section="store">Tienda</a></li>
                 <li><a href="#support" class="nav-link">Soporte</a></li>
             </ul>
@@ -833,6 +1071,172 @@
                             <li>Análisis y reportes avanzados</li>
                         </ul>
                         <button class="btn btn-primary">Contactar Ventas</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ghost Studio Section -->
+        <section id="ghostSection" class="section">
+            <div class="ghost-studio">
+                <div class="dashboard-header">
+                    <h2>👻 Ghost Studio</h2>
+                    <p>Tecnología fantasma para recrear voces y estilos musicales</p>
+                </div>
+
+                <div class="ghost-features-grid">
+                    <div class="ghost-feature-card">
+                        <div class="feature-icon">🎤</div>
+                        <h3>Clonación de Voz</h3>
+                        <p>Sube una muestra de voz y recrea el estilo vocal en nuevas canciones</p>
+                        <div class="upload-area" onclick="document.getElementById('voiceUpload').click()">
+                            <input type="file" id="voiceUpload" accept="audio/*" style="display:none" onchange="handleVoiceUpload(this)">
+                            📁 Subir Muestra de Voz (MP3, WAV)
+                        </div>
+                        <div id="voiceStatus" class="upload-status"></div>
+                    </div>
+
+                    <div class="ghost-feature-card">
+                        <div class="feature-icon">🎵</div>
+                        <h3>Estilo Musical Ghost</h3>
+                        <p>Analiza y replica el estilo de cualquier canción subida</p>
+                        <div class="upload-area" onclick="document.getElementById('styleUpload').click()">
+                            <input type="file" id="styleUpload" accept="audio/*" style="display:none" onchange="handleStyleUpload(this)">
+                            📁 Subir Referencia Musical
+                        </div>
+                        <div id="styleStatus" class="upload-status"></div>
+                    </div>
+
+                    <div class="ghost-feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3>IA Compositora</h3>
+                        <p>Genera música en el estilo de compositores famosos o estilos personalizados</p>
+                        <select id="composerStyle" class="ghost-select">
+                            <option value="">Seleccionar Estilo</option>
+                            <option value="beethoven">Beethoven - Clásico</option>
+                            <option value="mozart">Mozart - Elegante</option>
+                            <option value="bach">Bach - Barroco</option>
+                            <option value="chopin">Chopin - Romántico</option>
+                            <option value="deadmau5">Deadmau5 - Electronic</option>
+                            <option value="skrillex">Skrillex - Dubstep</option>
+                            <option value="custom">Estilo Personalizado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="ghost-generation-section">
+                    <h3>🎭 Generación Ghost</h3>
+                    <div class="ghost-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>👻 Prompt Ghost:</label>
+                                <textarea id="ghostPrompt" placeholder="Describe la música que quieres generar usando los elementos Ghost subidos..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>🔧 Configuración Ghost:</label>
+                                <div class="ghost-controls">
+                                    <label><input type="checkbox" id="useVoiceClone"> Usar voz clonada</label>
+                                    <label><input type="checkbox" id="useStyleClone"> Usar estilo musical</label>
+                                    <label><input type="checkbox" id="useComposerStyle"> Usar estilo de compositor</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary ghost-generate-btn" onclick="generateGhostMusic()">
+                            👻 Generar con Ghost Studio
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Preprocessing Section -->
+        <section id="preprocessSection" class="section">
+            <div class="preprocess-studio">
+                <div class="dashboard-header">
+                    <h2>⚙️ Preprocesos IA</h2>
+                    <p>Optimización inteligente de prompts y configuraciones avanzadas</p>
+                </div>
+
+                <div class="preprocess-grid">
+                    <div class="preprocess-card">
+                        <h3>🧠 Analizador de Prompts</h3>
+                        <div class="analyzer-section">
+                            <textarea id="rawPrompt" placeholder="Escribe tu idea musical básica..." onchange="analyzePrompt()"></textarea>
+                            <button class="btn btn-secondary" onclick="enhancePrompt()">✨ Mejorar Prompt</button>
+                            <div id="enhancedPrompt" class="enhanced-output"></div>
+                        </div>
+                    </div>
+
+                    <div class="preprocess-card">
+                        <h3>🎯 Optimización Automática</h3>
+                        <div class="optimization-controls">
+                            <label><input type="checkbox" id="autoGenre" checked> Auto-detectar género</label>
+                            <label><input type="checkbox" id="autoTempo" checked> Optimizar tempo</label>
+                            <label><input type="checkbox" id="autoMood" checked> Análisis de mood</label>
+                            <label><input type="checkbox" id="autoInstruments" checked> Sugerir instrumentos</label>
+                            <label><input type="checkbox" id="autoStructure" checked> Estructura musical</label>
+                        </div>
+                    </div>
+
+                    <div class="preprocess-card">
+                        <h3>📊 Análisis Musical</h3>
+                        <div id="analysisResults" class="analysis-display">
+                            <div class="analysis-item">
+                                <span class="analysis-label">Género Detectado:</span>
+                                <span id="detectedGenre">-</span>
+                            </div>
+                            <div class="analysis-item">
+                                <span class="analysis-label">Tempo Sugerido:</span>
+                                <span id="suggestedTempo">-</span>
+                            </div>
+                            <div class="analysis-item">
+                                <span class="analysis-label">Mood:</span>
+                                <span id="detectedMood">-</span>
+                            </div>
+                            <div class="analysis-item">
+                                <span class="analysis-label">Instrumentos:</span>
+                                <span id="suggestedInstruments">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preprocess-templates">
+                    <h3>📋 Templates de Preproceso</h3>
+                    <div class="template-grid">
+                        <div class="template-card" onclick="loadTemplate('pop')">
+                            <h4>🎤 Pop Comercial</h4>
+                            <p>Optimizado para radio y streaming</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('electronic')">
+                            <h4>🎛️ Electronic Dance</h4>
+                            <p>Beats potentes y sintetizadores</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('cinematic')">
+                            <h4>🎬 Cinemático</h4>
+                            <p>Para películas y videos</p>
+                        </div>
+                        <div class="template-card" onclick="loadTemplate('ambient')">
+                            <h4>🌙 Ambient</h4>
+                            <p>Relajante y atmosférico</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preprocess-final">
+                    <h3>🚀 Resultado Final del Preproceso</h3>
+                    <div class="final-output">
+                        <div class="form-group">
+                            <label>Prompt Optimizado:</label>
+                            <textarea id="finalPrompt" readonly></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Configuración Recomendada:</label>
+                            <div id="finalConfig" class="config-display"></div>
+                        </div>
+                        <button class="btn btn-primary" onclick="usePreprocessedData()">
+                            ⚡ Usar en Generador Principal
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1098,6 +1502,294 @@
         // Utility functions
         function formatNumber(num) {
             return num.toLocaleString();
+        }
+
+        // Ghost Studio Functions
+        let ghostData = {
+            voiceFile: null,
+            styleFile: null,
+            composerStyle: null
+        };
+
+        function handleVoiceUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                ghostData.voiceFile = file;
+                document.getElementById('voiceStatus').innerHTML = `
+                    <div class="upload-status success">
+                        ✅ Voz cargada: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </div>
+                `;
+            }
+        }
+
+        function handleStyleUpload(input) {
+            const file = input.files[0];
+            if (file) {
+                ghostData.styleFile = file;
+                document.getElementById('styleStatus').innerHTML = `
+                    <div class="upload-status success">
+                        ✅ Estilo cargado: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </div>
+                `;
+            }
+        }
+
+        async function generateGhostMusic() {
+            if (!currentUser) {
+                alert('Por favor inicia sesión para usar Ghost Studio');
+                showLogin();
+                return;
+            }
+
+            const prompt = document.getElementById('ghostPrompt').value;
+            const useVoice = document.getElementById('useVoiceClone').checked;
+            const useStyle = document.getElementById('useStyleClone').checked;
+            const useComposer = document.getElementById('useComposerStyle').checked;
+            const composerStyle = document.getElementById('composerStyle').value;
+
+            if (!prompt) {
+                alert('Por favor ingresa un prompt para Ghost Studio');
+                return;
+            }
+
+            const ghostBtn = document.querySelector('.ghost-generate-btn');
+            ghostBtn.disabled = true;
+            ghostBtn.textContent = '👻 Procesando con Ghost...';
+
+            try {
+                // Prepare ghost options
+                const ghostOptions = {
+                    prompt: prompt,
+                    use_voice_clone: useVoice && ghostData.voiceFile,
+                    use_style_clone: useStyle && ghostData.styleFile,
+                    use_composer_style: useComposer && composerStyle,
+                    composer_style: composerStyle
+                };
+
+                // Create enhanced prompt with ghost features
+                let enhancedPrompt = prompt;
+                if (useComposer && composerStyle) {
+                    enhancedPrompt += ` in the style of ${composerStyle}`;
+                }
+                if (useVoice && ghostData.voiceFile) {
+                    enhancedPrompt += ` with custom voice characteristics`;
+                }
+                if (useStyle && ghostData.styleFile) {
+                    enhancedPrompt += ` mimicking uploaded musical style`;
+                }
+
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentUser.email}`
+                    },
+                    body: JSON.stringify({
+                        prompt: enhancedPrompt,
+                        style: 'ghost_studio',
+                        ghost_options: ghostOptions
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    // Show results in the main results section
+                    displayResults(result);
+                    document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+                    
+                    alert('🎉 ¡Música Ghost generada exitosamente! Revisa los resultados abajo.');
+                } else {
+                    throw new Error(result.message || 'Error en Ghost Studio');
+                }
+
+            } catch (error) {
+                alert('Error en Ghost Studio: ' + error.message);
+                console.error('Ghost Studio Error:', error);
+            } finally {
+                ghostBtn.disabled = false;
+                ghostBtn.textContent = '👻 Generar con Ghost Studio';
+            }
+        }
+
+        // Preprocessing Functions
+        let preprocessData = {
+            rawPrompt: '',
+            enhancedPrompt: '',
+            analysis: {},
+            config: {}
+        };
+
+        function analyzePrompt() {
+            const prompt = document.getElementById('rawPrompt').value;
+            if (!prompt) return;
+
+            preprocessData.rawPrompt = prompt;
+
+            // Simulate AI analysis
+            const genres = ['pop', 'electronic', 'rock', 'hip-hop', 'classical', 'jazz', 'ambient'];
+            const moods = ['happy', 'sad', 'energetic', 'calm', 'mysterious', 'uplifting', 'dark'];
+            const instruments = ['piano', 'guitar', 'drums', 'synthesizer', 'violin', 'bass', 'vocals'];
+
+            const detectedGenre = genres[Math.floor(Math.random() * genres.length)];
+            const detectedMood = moods[Math.floor(Math.random() * moods.length)];
+            const suggestedTempo = Math.floor(Math.random() * 100) + 80; // 80-180 BPM
+            const suggestedInstruments = instruments.slice(0, Math.floor(Math.random() * 3) + 2).join(', ');
+
+            document.getElementById('detectedGenre').textContent = detectedGenre;
+            document.getElementById('detectedMood').textContent = detectedMood;
+            document.getElementById('suggestedTempo').textContent = suggestedTempo + ' BPM';
+            document.getElementById('suggestedInstruments').textContent = suggestedInstruments;
+
+            preprocessData.analysis = {
+                genre: detectedGenre,
+                mood: detectedMood,
+                tempo: suggestedTempo,
+                instruments: suggestedInstruments
+            };
+        }
+
+        function enhancePrompt() {
+            const rawPrompt = document.getElementById('rawPrompt').value;
+            if (!rawPrompt) {
+                alert('Por favor ingresa un prompt para analizar');
+                return;
+            }
+
+            analyzePrompt();
+
+            // Generate enhanced prompt
+            const { genre, mood, tempo, instruments } = preprocessData.analysis;
+            
+            let enhanced = `${rawPrompt}, ${genre} style, ${mood} mood, ${tempo} BPM tempo`;
+            if (document.getElementById('autoInstruments').checked) {
+                enhanced += `, featuring ${instruments}`;
+            }
+            if (document.getElementById('autoStructure').checked) {
+                enhanced += `, with verse-chorus structure`;
+            }
+
+            preprocessData.enhancedPrompt = enhanced;
+            document.getElementById('enhancedPrompt').textContent = enhanced;
+            document.getElementById('finalPrompt').value = enhanced;
+
+            // Update final config
+            const config = {
+                genre: genre,
+                tempo: tempo,
+                mood: mood,
+                instruments: instruments,
+                quality: 'high',
+                duration: 'medium'
+            };
+
+            document.getElementById('finalConfig').innerHTML = `
+                <div><strong>Género:</strong> ${config.genre}</div>
+                <div><strong>Tempo:</strong> ${config.tempo} BPM</div>
+                <div><strong>Mood:</strong> ${config.mood}</div>
+                <div><strong>Instrumentos:</strong> ${config.instruments}</div>
+                <div><strong>Calidad:</strong> ${config.quality}</div>
+                <div><strong>Duración:</strong> ${config.duration}</div>
+            `;
+
+            preprocessData.config = config;
+        }
+
+        function loadTemplate(templateName) {
+            const templates = {
+                pop: {
+                    prompt: "catchy pop song with memorable hooks and radio-friendly sound",
+                    config: { genre: 'pop', tempo: 120, mood: 'uplifting', instruments: 'vocals, guitar, drums, bass' }
+                },
+                electronic: {
+                    prompt: "energetic electronic dance music with strong beats and synthesizers",
+                    config: { genre: 'electronic', tempo: 128, mood: 'energetic', instruments: 'synthesizer, drums, bass' }
+                },
+                cinematic: {
+                    prompt: "epic cinematic orchestral music with dramatic crescendos",
+                    config: { genre: 'orchestral', tempo: 90, mood: 'dramatic', instruments: 'orchestra, strings, brass' }
+                },
+                ambient: {
+                    prompt: "relaxing ambient soundscape with atmospheric textures",
+                    config: { genre: 'ambient', tempo: 60, mood: 'calm', instruments: 'synthesizer, pads, ambient sounds' }
+                }
+            };
+
+            const template = templates[templateName];
+            if (template) {
+                document.getElementById('rawPrompt').value = template.prompt;
+                preprocessData.analysis = template.config;
+                
+                // Update display
+                document.getElementById('detectedGenre').textContent = template.config.genre;
+                document.getElementById('detectedMood').textContent = template.config.mood;
+                document.getElementById('suggestedTempo').textContent = template.config.tempo + ' BPM';
+                document.getElementById('suggestedInstruments').textContent = template.config.instruments;
+                
+                enhancePrompt();
+            }
+        }
+
+        function usePreprocessedData() {
+            if (!preprocessData.enhancedPrompt) {
+                alert('Por favor ejecuta el preproceso primero');
+                return;
+            }
+
+            // Switch to main generator and fill data
+            showSection('dashboard');
+            
+            // Fill the main form with preprocessed data
+            document.getElementById('prompt').value = preprocessData.enhancedPrompt;
+            document.getElementById('style').value = preprocessData.analysis.genre || '';
+            
+            // Set advanced options based on preprocessing
+            if (preprocessData.config.tempo) {
+                const tempoSelect = document.getElementById('duration');
+                if (preprocessData.config.tempo > 140) {
+                    tempoSelect.value = 'short';
+                } else if (preprocessData.config.tempo < 80) {
+                    tempoSelect.value = 'long';
+                } else {
+                    tempoSelect.value = 'medium';
+                }
+            }
+
+            alert('✅ Datos del preproceso aplicados al generador principal. ¡Listo para generar!');
+        }
+
+        // Update showSection function to handle new sections
+        const originalShowSection = showSection;
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Handle special section displays
+            if (sectionName === 'ghost') {
+                document.getElementById('ghostSection').classList.add('active');
+                document.querySelector('.ghost-studio').classList.add('active');
+            } else if (sectionName === 'preprocess') {
+                document.getElementById('preprocessSection').classList.add('active');
+                document.querySelector('.preprocess-studio').classList.add('active');
+            } else {
+                // Use original function for other sections
+                originalShowSection(sectionName);
+                
+                // Hide ghost and preprocess studios
+                document.querySelector('.ghost-studio')?.classList.remove('active');
+                document.querySelector('.preprocess-studio')?.classList.remove('active');
+            }
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.section === sectionName) {
+                    link.classList.add('active');
+                }
+            });
         }
 
         // Initialize with demo data if needed
