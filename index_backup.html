@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00FFE7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Son1kVers3" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>Son1kVers3 — La Resistencia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+          colors: { 
+            neon: '#00FFE7', 
+            coal: '#0B0B0F', 
+            haze: '#0f111a',
+            'neon-purple': '#8b5cf6',
+            'neon-blue': '#06b6d4' 
+          },
+          boxShadow: { glow: '0 0 40px rgba(0,255,231,.25)' }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #0f111a !important; height: 100%; }
+    body { background: #0f111a !important; color: #e4e4e7 !important; font-family: Inter, ui-sans-serif, system-ui !important; min-height: 100vh; }
+    
+    /* Layout Grid System */
+    .main-container {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: 2rem;
+      padding: 2rem 0;
+      align-items: start;
+    }
+    
+    .left-panel, .right-panel {
+      background: rgba(15, 17, 26, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .center-panel {
+      background: rgba(15, 17, 26, 0.9);
+      border: 1px solid rgba(0, 255, 231, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 30px rgba(0, 255, 231, 0.1);
+    }
+    
+    .controls-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .control-group {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .left-panel, .right-panel {
+        order: 2;
+      }
+      .center-panel {
+        order: 1;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .controls-section {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .main-container {
+        padding: 0 0.5rem;
+      }
+    }
+    
+    .glitch { position: relative; }
+    .glitch::before, .glitch::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; }
+    .glitch::before { left: 2px; text-shadow: -2px 0 #f0f; clip-path: inset(10% 0 30% 0); }
+    .glitch::after { left: -2px; text-shadow: -2px 0 #0ff; clip-path: inset(60% 0 5% 0); }
+    
+    .knob { 
+      width: 80px; height: 80px; border-radius: 50%; position: relative; 
+      background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+      cursor: pointer; transition: all 0.2s ease;
+      border: 3px solid #333;
+      margin: 0 auto;
+    }
+    .knob:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0,255,231,.3); }
+    .knob::after { 
+      content: ''; position: absolute; left: 50%; top: 10px; 
+      width: 4px; height: 20px; background: #00FFE7; border-radius: 2px; 
+      transform: translateX(-50%) rotate(var(--rotation, 0deg)); 
+      box-shadow: 0 0 8px rgba(0,255,231,.8); 
+      transition: transform 0.1s ease;
+    }
+    
+    .knob-small { 
+      width: 60px; height: 60px; 
+    }
+    .knob-small::after { 
+      top: 8px; 
+      width: 3px; height: 16px; 
+    }
+    
+    .slider-container {
+      position: relative;
+      margin: 20px 0;
+    }
+    
+    .custom-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #333 0%, #00FFE7 var(--value, 50%), #333 var(--value, 50%));
+      outline: none;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .custom-slider:hover {
+      opacity: 1;
+    }
+    
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #00FFE7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,255,231,.5);
+    }
+    
+    .custom-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #00FFE7;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 10px rgba(0,255,231,.5);
+    }
+    
+    .text-neon { color: #00FFE7 !important; }
+    .bg-neon { background-color: #00FFE7 !important; }
+    .border-neon { border-color: #00FFE7 !important; }
+    .shadow-glow { box-shadow: 0 0 40px rgba(0,255,231,.25) !important; }
+    .bg-haze { background-color: #0f111a !important; }
+    
+    .tab-active { 
+      background: linear-gradient(45deg, #00FFE7, #8b5cf6);
+      color: #000;
+    }
+    
+    .section-hidden { display: none; }
+    
+    @keyframes pulse-neon {
+      0%, 100% { box-shadow: 0 0 5px rgba(0,255,231,.5); }
+      50% { box-shadow: 0 0 20px rgba(0,255,231,.8); }
+    }
+    
+    .pulse-neon { animation: pulse-neon 2s infinite; }
+  </style>
+</head>
+
+<body class="antialiased overflow-x-hidden bg-haze">
+  <div class="main-container">
+    <!-- NAVEGACIÓN -->
+    <nav class="bg-zinc-950/90 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+      <div class="flex items-center justify-between h-16 px-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-neon to-neon-purple flex items-center justify-center">
+          <span class="text-xs font-bold text-black">S3</span>
+        </div>
+        <span class="text-xl font-bold text-neon">SON1KVERS3</span>
+      </div>
+      
+      <div class="flex space-x-6">
+        <button class="nav-tab tab-active px-4 py-2 rounded-lg transition" data-section="home">Historia</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition" data-section="ghost-studio">Ghost Studio</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition" data-section="generacion">Generación</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition" data-section="archivo">Archivo</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition" data-section="santuario">Santuario</button>
+        <button class="nav-tab px-4 py-2 rounded-lg transition" data-section="planes">Planes</button>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <div class="text-xs text-zinc-400">Plan: <span id="userPlan" class="text-neon">Free</span></div>
+          <div class="text-xs text-zinc-400">Pistas: <span id="userTracks" class="text-white">0</span>/<span id="userLimit" class="text-neon">3</span></div>
+        </div>
+        <button id="entrarEstudio" class="bg-neon text-black px-6 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+          Entrar al Estudio
+        </button>
+      </div>
+      </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="content-grid">
+      <!-- PANEL IZQUIERDO - Info y Estado -->
+      <div class="left-panel">
+        <div class="space-y-4">
+          <h3 class="text-neon font-bold text-lg">LA RESISTENCIA</h3>
+          <div class="text-sm space-y-2">
+            <p class="text-zinc-300">Plan: <span class="text-neon" id="userPlanDisplay">Free</span></p>
+            <p class="text-zinc-300">Pistas: <span class="text-white" id="userTracksDisplay">0</span>/<span class="text-neon" id="userLimitDisplay">3</span></p>
+          </div>
+          
+          <!-- Visualizador de Audio -->
+          <div id="audioVisualizer" class="mt-6">
+            <canvas id="visualizerCanvas" width="200" height="100" style="width: 100%; height: 100px; background: rgba(0,0,0,0.3); border-radius: 8px;"></canvas>
+          </div>
+          
+          <!-- Estado del Sistema -->
+          <div class="mt-6 p-3 bg-black/30 rounded-lg">
+            <h4 class="text-neon text-sm font-semibold mb-2">Estado del Sistema</h4>
+            <div class="space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span>Suno API:</span>
+                <span class="text-green-400">●</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Ollama AI:</span>
+                <span class="text-green-400">●</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL CENTRAL - Secciones Principales -->
+      <div class="center-panel">
+        <!-- SECCIÓN HOME -->
+        <section id="home" class="content-section">
+          <div class="space-y-6 text-center">
+            <div class="space-y-2">
+              <p class="text-sm font-medium text-zinc-400 tracking-widest uppercase">LA RESISTENCIA</p>
+              <h1 class="text-3xl md:text-5xl font-bold leading-tight">
+                Lo imperfecto también<br>
+                <span class="text-neon">es sagrado</span>
+              </h1>
+              <h2 class="text-lg md:text-xl text-zinc-300 mt-2">
+                Componer con alma en un mundo de máquinas.
+              </h2>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <button id="entrarEstudioMain" class="bg-neon text-black px-6 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+                Entrar al Estudio
+              </button>
+              <button id="conocerUniverso" class="border border-white/20 px-6 py-2 rounded-lg hover:bg-white/5 transition">
+                Conocer el Universo
+              </button>
+            </div>
+            
+            <p class="text-zinc-400 text-sm leading-relaxed max-w-md mx-auto">
+              Genera música, clona voces cantadas, mezcla con calidad de estudio y guarda tu proceso en un archivo vivo. Bienvenido al Estudio Fantasma.
+            </p>
+          </div>
+      
+      <div class="relative">
+        <div class="absolute -inset-10 -z-10 blur-3xl opacity-30" style="background: conic-gradient(from 45deg, rgba(0,255,231,.2), transparent, rgba(99,102,241,.2))"></div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl">
+          <div class="text-center mb-6">
+            <h3 class="text-xl font-semibold mb-2">Controles de Expresividad</h3>
+            <p class="text-sm text-zinc-400">Ajusta los parámetros para crear tu sonido único</p>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-6 mb-8">
+            <div class="text-center">
+              <div class="knob" data-knob="expresividad" data-value="75"></div>
+              <p class="text-sm mt-2 text-zinc-400">Expresividad</p>
+              <p class="text-xs text-neon font-mono" id="expresividadDisplay">75%</p>
+            </div>
+            <div class="text-center">
+              <div class="knob" data-knob="creatividad" data-value="60"></div>
+              <p class="text-sm mt-2 text-zinc-400">Creatividad</p>
+              <p class="text-xs text-neon font-mono" id="creatividadDisplay">60%</p>
+            </div>
+            <div class="text-center">
+              <div class="knob" data-knob="precision" data-value="85"></div>
+              <p class="text-sm mt-2 text-zinc-400">Precisión</p>
+              <p class="text-xs text-neon font-mono" id="precisionDisplay">85%</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <button id="testRapido" class="rounded-lg border border-neon/30 text-neon px-4 py-3 hover:bg-neon/10 transition font-medium">
+              Test Rápido
+            </button>
+            <button id="generarPreview" class="rounded-lg bg-neon/10 border border-neon text-neon px-4 py-3 hover:bg-neon/20 transition font-medium">
+              Generar Preview
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN GENERACIÓN -->
+  <section id="generacion" class="content-section section-hidden min-h-screen pt-20 pb-10">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Generación Musical</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Beats, letras, voces cantadas clonadas y mezcla con calidad de estudio. Todo en un flujo.</p>
+        <div class="flex justify-center space-x-4 mt-6">
+          <button class="bg-neon/10 text-neon px-4 py-2 rounded-lg border border-neon">API</button>
+          <button class="bg-white/5 text-white px-4 py-2 rounded-lg border border-white/20">Docs</button>
+        </div>
+      </div>
+      
+      <div class="grid lg:grid-cols-3 gap-8 mb-12">
+        <!-- Voces APLIO -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+          <h3 class="text-xl font-semibold mb-4 text-center">Voces APLIO</h3>
+          <p class="text-sm text-zinc-400 mb-6 text-center">Luz, Sombra, Eco, Raíz, Nova, Banda y la Perla (expresividad extrema).</p>
+          <div class="space-y-4">
+            <select class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white">
+              <option>Seleccionar voz APLIO</option>
+              <option>Luz - Claridad cristalina</option>
+              <option>Sombra - Profundidad oscura</option>
+              <option>Eco - Reverb natural</option>
+              <option>Raíz - Textura orgánica</option>
+              <option>Nova - Energía explosiva</option>
+              <option>Banda - Conjunto armónico</option>
+              <option>La Perla - Expresividad extrema</option>
+            </select>
+            <button class="w-full bg-neon/10 text-neon border border-neon rounded-lg py-3 hover:bg-neon/20 transition">
+              Clonar Voz
+            </button>
+          </div>
+        </div>
+        
+        <!-- Perilla de Expresividad -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+          <h3 class="text-xl font-semibold mb-4 text-center">Perilla de Expresividad</h3>
+          <p class="text-sm text-zinc-400 mb-6 text-center">Controla vulnerabilidad, intensidad y matices para la interpretación.</p>
+          <div class="space-y-6">
+            <div class="text-center">
+              <div class="knob" data-knob="expresividad-main" data-value="50"></div>
+              <p class="text-sm mt-2 text-zinc-400">Nivel de Expresividad</p>
+              <p class="text-xs text-neon font-mono" id="expresividadMainDisplay">50%</p>
+            </div>
+            <div class="space-y-3">
+              <div>
+                <label class="text-xs text-zinc-400">Vulnerabilidad</label>
+                <input type="range" class="custom-slider w-full" value="40" min="0" max="100" id="vulnerabilidad">
+              </div>
+              <div>
+                <label class="text-xs text-zinc-400">Intensidad</label>
+                <input type="range" class="custom-slider w-full" value="70" min="0" max="100" id="intensidad">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pre-producción guiada -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+          <h3 class="text-xl font-semibold mb-4 text-center">Pre-producción guiada</h3>
+          <p class="text-sm text-zinc-400 mb-6 text-center">Sube voz + guitarra/piano y pide estilo; el sistema produce una propuesta completa.</p>
+          <div class="space-y-4">
+            <div class="border-2 border-dashed border-white/20 rounded-lg p-6 text-center">
+              <p class="text-sm text-zinc-400 mb-2">Arrastra archivos aquí</p>
+              <p class="text-xs text-zinc-500">MP3, WAV, M4A</p>
+              <input type="file" class="hidden" id="fileUpload" accept="audio/*" multiple>
+              <button class="mt-2 bg-white/5 text-white px-4 py-2 rounded-lg text-sm border border-white/10" onclick="document.getElementById('fileUpload').click()">
+                Seleccionar Archivos
+              </button>
+            </div>
+            <button class="w-full bg-neon text-black rounded-lg py-3 font-semibold hover:bg-neon/90 transition">
+              Procesar Maqueta
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Generación Musical Simple -->
+      <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
+        <h3 class="text-2xl font-semibold mb-6 text-center">Generación Musical Simple</h3>
+        <div class="grid lg:grid-cols-2 gap-8">
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Letra de la canción</label>
+              <div class="relative">
+                <textarea 
+                  class="w-full h-32 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                  placeholder="Escribe aquí la letra de tu canción..."
+                  id="letraCancion"
+                ></textarea>
+                <button onclick="generarLetraIA()" class="absolute top-2 right-2 bg-neon/10 text-neon px-3 py-1 rounded text-xs border border-neon hover:bg-neon/20 transition">
+                  🤖 Letra IA
+                </button>
+              </div>
+              <div class="mt-2">
+                <input 
+                  type="text" 
+                  class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-3 py-2 text-white text-sm"
+                  placeholder="Palabras clave para la letra (ej: amor, nostalgia, libertad)"
+                  id="palabrasClave"
+                >
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Prompt de estilo musical</label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
+                  placeholder="Ej: una balada emotiva con piano y cuerdas, estilo neo-soul, tempo 70 BPM"
+                  id="promptEstilo"
+                >
+                <button onclick="generarPromptIA()" class="absolute top-2 right-2 bg-neon/10 text-neon px-3 py-1 rounded text-xs border border-neon hover:bg-neon/20 transition">
+                  🧠 Prompt Inteligente
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Preset de generación</label>
+              <select class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white" id="presetGeneracion">
+                <option>Profesional</option>
+                <option>Experimental</option>
+                <option>Vintage</option>
+                <option>Moderno</option>
+                <option>Cinematográfico</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="space-y-6">
+            <div>
+              <h4 class="text-lg font-medium mb-4">Controles de Expresividad</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="text-center">
+                  <div class="knob knob-small" data-knob="afinacion" data-value="60"></div>
+                  <p class="text-xs mt-1 text-zinc-400">Afinación</p>
+                  <p class="text-xs text-neon" id="afinacionDisplay">60%</p>
+                </div>
+                <div class="text-center">
+                  <div class="knob knob-small" data-knob="expresividad-gen" data-value="75"></div>
+                  <p class="text-xs mt-1 text-zinc-400">Expresividad</p>
+                  <p class="text-xs text-neon" id="expresividadGenDisplay">75%</p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="text-lg font-medium mb-4">Postprocesamiento</h4>
+              <div class="space-y-3">
+                <div>
+                  <label class="text-xs text-zinc-400">EQ (SSL-style)</label>
+                  <input type="range" class="custom-slider w-full" value="50" min="0" max="100" id="eq">
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                  <div class="text-center">
+                    <div class="knob knob-small" data-knob="low" data-value="50"></div>
+                    <p class="text-xs text-zinc-400">Low</p>
+                  </div>
+                  <div class="text-center">
+                    <div class="knob knob-small" data-knob="mid" data-value="50"></div>
+                    <p class="text-xs text-zinc-400">Mid</p>
+                  </div>
+                  <div class="text-center">
+                    <div class="knob knob-small" data-knob="high" data-value="50"></div>
+                    <p class="text-xs text-zinc-400">High</p>
+                  </div>
+                  <div class="text-center">
+                    <div class="knob knob-small" data-knob="air" data-value="50"></div>
+                    <p class="text-xs text-zinc-400">Air</p>
+                  </div>
+                </div>
+                <div>
+                  <label class="text-xs text-zinc-400">Saturación (Rupert-style)</label>
+                  <input type="range" class="custom-slider w-full" value="30" min="0" max="100" id="saturacion">
+                </div>
+              </div>
+            </div>
+            
+            <button id="generarMusica" class="w-full bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition shadow-glow">
+              Generar Música
+            </button>
+          </div>
+        </div>
+        
+        <!-- Asistente de IA -->
+        <div class="mt-8 rounded-2xl border border-neon/30 bg-gradient-to-br from-neon/5 to-neon-purple/5 p-6 backdrop-blur-xl">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-semibold">🤖 Asistente de IA</h4>
+            <button onclick="toggleAsistente()" id="toggleAsistenteBtn" class="text-neon hover:text-neon/80 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+          </div>
+          <div id="asistenteContent" class="space-y-4">
+            <div class="bg-zinc-900/50 rounded-lg p-4 max-h-40 overflow-y-auto" id="chatMessages">
+              <div class="text-sm text-zinc-400">
+                ¡Hola! Soy tu asistente de IA. Puedo ayudarte con letras, ideas musicales, géneros, y cualquier duda sobre producción. ¿En qué puedo ayudarte?
+              </div>
+            </div>
+            <div class="flex space-x-2">
+              <input 
+                type="text" 
+                class="flex-1 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-2 text-white text-sm"
+                placeholder="Pregunta algo al asistente..."
+                id="mensajeAsistente"
+                onkeypress="if(event.key==='Enter') enviarMensajeAsistente()"
+              >
+              <button onclick="enviarMensajeAsistente()" class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+                Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN GHOST STUDIO -->
+  <section id="ghost-studio" class="content-section section-hidden min-h-screen pt-20 pb-10">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Ghost Studio</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Sube tu demo o escribe un prompt. El Estudio Fantasma devuelve una maqueta con mezcla y carácter.</p>
+        <div class="inline-flex items-center space-x-2 mt-4">
+          <div class="w-3 h-3 bg-neon rounded-full pulse-neon"></div>
+          <span class="text-sm text-neon">online</span>
+        </div>
+      </div>
+      
+      <div class="max-w-4xl mx-auto">
+        <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8">
+          <div class="mb-8">
+            <label class="block text-lg font-medium text-zinc-300 mb-4">Prompt de Generación Musical</label>
+            <textarea 
+              class="w-full h-24 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+              placeholder="Ej: una balada emotiva con piano y cuerdas, estilo neo-soul, tempo 70 BPM, voz masculina expresiva"
+              id="promptGhostStudio"
+            ></textarea>
+          </div>
+          
+          <div class="mb-8">
+            <label class="block text-lg font-medium text-zinc-300 mb-4">Preset</label>
+            <select class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white" id="presetGhost">
+              <option>Profesional</option>
+              <option>Experimental</option>
+              <option>Vintage</option>
+              <option>Crudo</option>
+              <option>Cinematográfico</option>
+            </select>
+          </div>
+          
+          <div class="mb-8">
+            <label class="block text-lg font-medium text-zinc-300 mb-4">Tags/Estilo</label>
+            <input 
+              type="text" 
+              class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
+              placeholder="pop, ballad, emotional, piano"
+              id="tagsEstilo"
+            >
+          </div>
+          
+          <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h4 class="text-lg font-medium mb-4">Afinación</h4>
+              <div class="slider-container">
+                <input type="range" class="custom-slider w-full" value="60" min="0" max="100" id="afinacionGhost">
+                <p class="text-center text-sm text-zinc-400 mt-2">60%</p>
+              </div>
+            </div>
+            
+            <div>
+              <h4 class="text-lg font-medium mb-4">Expresividad</h4>
+              <div class="slider-container">
+                <input type="range" class="custom-slider w-full" value="75" min="0" max="100" id="expresividadGhost">
+                <p class="text-center text-sm text-zinc-400 mt-2">75%</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <button id="generarMusicaGhost" class="bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition">
+              Generar Música
+            </button>
+            <button id="verificarAPIs" class="border border-white/20 rounded-lg py-4 font-semibold hover:bg-white/5 transition">
+              Verificar APIs
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN ARCHIVO -->
+  <section id="archivo" class="content-section section-hidden min-h-screen pt-20 pb-10">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">El Archivo</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Tu memoria creativa: canciones, presets y sesiones guardadas.</p>
+        <button class="mt-4 text-neon hover:underline">Ver todo →</button>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Ejemplo de archivo -->
+        <div class="rounded-xl border border-white/10 bg-white/5 p-6 hover:bg-white/10 transition cursor-pointer">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold">Mi Canción Demo</h3>
+            <span class="text-xs text-zinc-400">Hace 2 horas</span>
+          </div>
+          <p class="text-sm text-zinc-400 mb-4">Balada neo-soul con piano y cuerdas</p>
+          <div class="flex space-x-2">
+            <button class="text-xs bg-neon/10 text-neon px-3 py-1 rounded-full">Reproducir</button>
+            <button class="text-xs bg-white/5 text-white px-3 py-1 rounded-full">Descargar</button>
+          </div>
+        </div>
+        
+        <!-- Más archivos -->
+        <div class="rounded-xl border border-white/10 bg-white/5 p-6 hover:bg-white/10 transition cursor-pointer">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold">Preset Experimental #1</h3>
+            <span class="text-xs text-zinc-400">Ayer</span>
+          </div>
+          <p class="text-sm text-zinc-400 mb-4">Configuración para trap melódico</p>
+          <div class="flex space-x-2">
+            <button class="text-xs bg-neon/10 text-neon px-3 py-1 rounded-full">Cargar</button>
+            <button class="text-xs bg-white/5 text-white px-3 py-1 rounded-full">Duplicar</button>
+          </div>
+        </div>
+        
+        <div class="rounded-xl border border-white/10 bg-white/5 p-6 hover:bg-white/10 transition cursor-pointer">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold">Sesión de voz clonada</h3>
+            <span class="text-xs text-zinc-400">Hace 3 días</span>
+          </div>
+          <p class="text-sm text-zinc-400 mb-4">Voz APLIO "Nova" - expresividad alta</p>
+          <div class="flex space-x-2">
+            <button class="text-xs bg-neon/10 text-neon px-3 py-1 rounded-full">Reproducir</button>
+            <button class="text-xs bg-white/5 text-white px-3 py-1 rounded-full">Reutilizar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN SANTUARIO -->
+  <section id="santuario" class="content-section section-hidden min-h-screen pt-20 pb-10">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">El Santuario — Modo Premium</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">La red secreta de la Divina Liga: colaboración, misiones poéticas y ritual de entrada al Estudio Fantasma.</p>
+        <div class="flex justify-center space-x-4 mt-6">
+          <button class="bg-neon text-black px-6 py-3 rounded-lg font-semibold hover:bg-neon/90 transition">
+            Activar Premium
+          </button>
+          <button class="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/5 transition">
+            Ver ritual
+          </button>
+        </div>
+      </div>
+      
+      <div class="max-w-4xl mx-auto">
+        <div class="rounded-2xl border border-neon/30 bg-gradient-to-br from-neon/5 to-neon-purple/5 p-8 backdrop-blur-xl">
+          <div class="text-center mb-8">
+            <h3 class="text-2xl font-semibold mb-4">Funciones Premium</h3>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-neon rounded-full"></div>
+                <span>Voces APLIO completas</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-neon rounded-full"></div>
+                <span>Knobs pro (afinación, EQ SSL, saturación)</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-neon rounded-full"></div>
+                <span>Archivo ilimitado + presets</span>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-neon rounded-full"></div>
+                <span>Acceso al Santuario</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-neon rounded-full"></div>
+                <span>Colaboraciones exclusivas</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-neon rounded-full"></div>
+                <span>Soporte prioritario</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN PLANES -->
+  <section id="planes" class="content-section section-hidden min-h-screen pt-20 pb-10">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Planes de Acceso</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Comienza gratis. Desbloquea la potencia total con Premium.</p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <!-- Plan Tester/Free -->
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-8">
+          <div class="text-center mb-6">
+            <h3 class="text-2xl font-semibold mb-2">Tester / Free</h3>
+            <p class="text-zinc-400">Para probar el flujo esencial.</p>
+          </div>
+          
+          <div class="space-y-4 mb-8">
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-white rounded-full"></div>
+              <span>Ghost Studio básico</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-white rounded-full"></div>
+              <span>3 pistas/mes</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-white rounded-full"></div>
+              <span>Archivo limitado</span>
+            </div>
+          </div>
+          
+          <button class="w-full bg-white/10 text-white border border-white/20 rounded-lg py-3 font-semibold hover:bg-white/15 transition">
+            Comenzar
+          </button>
+        </div>
+        
+        <!-- Plan Premium -->
+        <div class="rounded-2xl border border-neon/30 bg-gradient-to-br from-neon/10 to-neon-purple/10 p-8 relative">
+          <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+            <span class="bg-neon text-black px-4 py-1 rounded-full text-sm font-semibold">BETA TOTAL</span>
+          </div>
+          
+          <div class="text-center mb-6">
+            <h3 class="text-2xl font-semibold mb-2">Premium</h3>
+            <p class="text-zinc-400">Todo desbloqueado + Santuario.</p>
+          </div>
+          
+          <div class="space-y-4 mb-8">
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-neon rounded-full"></div>
+              <span>Voces APLIO completas</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-neon rounded-full"></div>
+              <span>Knobs pro (afinación, EQ SSL, saturación)</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-neon rounded-full"></div>
+              <span>Archivo ilimitado + presets</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="w-2 h-2 bg-neon rounded-full"></div>
+              <span>Acceso al Santuario</span>
+            </div>
+          </div>
+          
+          <button class="w-full bg-neon text-black rounded-lg py-3 font-semibold hover:bg-neon/90 transition shadow-glow">
+            Activar Premium
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/10 py-8 mt-20">
+    <div class="mx-auto max-w-7xl px-4 flex items-center justify-between">
+      <div class="flex items-center space-x-6">
+        <span class="text-sm text-zinc-400">© Son1kVers3 — CTRL + ALT + HUMANIDAD</span>
+      </div>
+      <div class="flex space-x-6">
+        <a href="#" class="text-sm text-zinc-400 hover:text-white transition">Códex</a>
+        <a href="#" class="text-sm text-zinc-400 hover:text-white transition">FAQ</a>
+        <a href="#" class="text-sm text-zinc-400 hover:text-white transition">Contacto</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Variables globales
+    let currentSection = 'home';
+    const API_BASE_URL = window.location.origin;
+    let userSession = {
+      plan: 'free',
+      tracksUsed: 0,
+      limits: {
+        free: 3,
+        pro: 50,
+        enterprise: 500
+      }
+    };
+    
+    // Configuración de knobs
+    function setupKnobs() {
+      document.querySelectorAll('.knob').forEach(knob => {
+        let isDragging = false;
+        let startY = 0;
+        let startValue = parseInt(knob.dataset.value) || 50;
+        
+        // Establecer rotación inicial
+        knob.style.setProperty('--rotation', `${(startValue - 50) * 2.7}deg`);
+        
+        knob.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startY = e.clientY;
+          startValue = parseInt(knob.dataset.value) || 50;
+          knob.style.cursor = 'grabbing';
+          e.preventDefault();
+        });
+
+      // Botones de generación musical
+      document.getElementById('generarMusica').addEventListener('click', generarMusica);
+      document.getElementById('generarMusicaGhost').addEventListener('click', generarMusicaGhost);
+        
+        document.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          
+          const deltaY = startY - e.clientY;
+          const sensitivity = 1;
+          const newValue = Math.min(100, Math.max(0, startValue + deltaY * sensitivity));
+          
+          knob.dataset.value = newValue;
+          knob.style.setProperty('--rotation', `${(newValue - 50) * 2.7}deg`);
+          
+          // Actualizar displays
+          updateKnobDisplay(knob.dataset.knob, newValue);
+        });
+        
+        document.addEventListener('mouseup', () => {
+          if (isDragging) {
+            isDragging = false;
+            knob.style.cursor = 'pointer';
+          }
+        });
+      });
+    }
+    
+    // Configuración de sliders
+    function setupSliders() {
+      document.querySelectorAll('.custom-slider').forEach(slider => {
+        const updateSlider = () => {
+          const value = slider.value;
+          slider.style.setProperty('--value', value + '%');
+          
+          // Actualizar display si existe
+          const nextSibling = slider.parentNode.querySelector('p');
+          if (nextSibling) {
+            nextSibling.textContent = value + '%';
+          }
+        };
+        
+        slider.addEventListener('input', updateSlider);
+        updateSlider(); // Inicializar
+      });
+    }
+    
+    // Actualizar displays de knobs
+    function updateKnobDisplay(knobType, value) {
+      const displays = {
+        'expresividad': 'expresividadDisplay',
+        'creatividad': 'creatividadDisplay',
+        'precision': 'precisionDisplay',
+        'expresividad-main': 'expresividadMainDisplay',
+        'expresividad-gen': 'expresividadGenDisplay',
+        'afinacion': 'afinacionDisplay'
+      };
+      
+      const displayId = displays[knobType];
+      if (displayId) {
+        const display = document.getElementById(displayId);
+        if (display) {
+          display.textContent = Math.round(value) + '%';
+        }
+      }
+    }
+    
+    // Navegación entre secciones
+    function setupNavigation() {
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          const targetSection = e.target.dataset.section;
+          showSection(targetSection);
+          
+          // Actualizar tabs
+          document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('tab-active'));
+          e.target.classList.add('tab-active');
+        });
+      });
+    }
+    
+    function showSection(sectionName) {
+      // Ocultar todas las secciones
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.add('section-hidden');
+      });
+      
+      // Mostrar la sección seleccionada
+      const targetSection = document.getElementById(sectionName);
+      if (targetSection) {
+        targetSection.classList.remove('section-hidden');
+        currentSection = sectionName;
+      }
+    }
+    
+    // Funciones de generación musical
+    async function generarMusica() {
+      // Verificar límites del usuario
+      if (!checkUserLimits()) {
+        return;
+      }
+      
+      const letra = document.getElementById('letraCancion').value;
+      const estilo = document.getElementById('promptEstilo').value;
+      const preset = document.getElementById('presetGeneracion').value;
+      
+      if (!letra && !estilo) {
+        showToast('Por favor ingresa una letra o prompt de estilo', 'warning');
+        return;
+      }
+      
+      const btn = document.getElementById('generarMusica');
+      btn.disabled = true;
+      btn.textContent = 'Generando música...';
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: estilo || 'canción con letra personalizada',
+            lyrics: letra || '',
+            style: preset || 'Profesional',
+            user_plan: userSession.plan
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.tracks && data.tracks.length > 0) {
+          const track = data.tracks[0];
+          showToast('¡Música generada con éxito!', 'success');
+          
+          // Actualizar contador de uso
+          userSession.tracksUsed++;
+          updateUserStats();
+          
+          // Crear cuenta de usuario y transacción
+          await crearCuentaYTransaccion(track);
+          
+          mostrarReproductor(track);
+        } else {
+          showToast('Error al generar música: ' + (data.error || 'Error desconocido'), 'error');
+        }
+      } catch (error) {
+        showToast('Error al generar música: ' + error.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generar Música';
+      }
+    }
+    
+    async function generarMusicaGhost() {
+      const prompt = document.getElementById('promptGhostStudio').value;
+      const preset = document.getElementById('presetGhost').value;
+      const tags = document.getElementById('tagsEstilo').value;
+      
+      if (!prompt) {
+        showToast('Por favor ingresa un prompt para Ghost Studio', 'warning');
+        return;
+      }
+      
+      const btn = document.getElementById('generarMusicaGhost');
+      btn.disabled = true;
+      btn.textContent = 'Procesando en Ghost Studio...';
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: prompt,
+            lyrics: '',
+            style: tags || preset,
+            user_plan: 'free'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.tracks && data.tracks.length > 0) {
+          const track = data.tracks[0];
+          showToast('¡Maqueta procesada por Ghost Studio!', 'success');
+          mostrarReproductor(track);
+        } else {
+          showToast('Error en Ghost Studio: ' + (data.error || 'Error desconocido'), 'error');
+        }
+      } catch (error) {
+        showToast('Error en Ghost Studio: ' + error.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generar Música';
+      }
+    }
+    
+    // Función para mostrar el reproductor de audio
+    function mostrarReproductor(track) {
+      // Crear elemento del reproductor si no existe
+      let reproductor = document.getElementById('musicPlayer');
+      if (!reproductor) {
+        reproductor = document.createElement('div');
+        reproductor.id = 'musicPlayer';
+        reproductor.className = 'fixed bottom-4 left-4 right-4 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl z-50';
+        reproductor.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold text-white">${track.title || 'Canción Generada'}</h4>
+              <p class="text-sm text-zinc-400">${track.tags || 'Son1kVers3 AI'}</p>
+            </div>
+            <button onclick="cerrarReproductor()" class="text-zinc-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="flex items-center space-x-4">
+            <audio controls class="flex-1 w-full" id="audioPlayer">
+              <source src="${track.audio_url}" type="audio/mpeg">
+              Tu navegador no soporta audio HTML5.
+            </audio>
+            <a href="${track.audio_url}" download="${track.title || 'cancion'}.mp3" 
+               class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+              Descargar
+            </a>
+          </div>
+        `;
+        document.body.appendChild(reproductor);
+      } else {
+        // Actualizar reproductor existente
+        const audio = reproductor.querySelector('#audioPlayer');
+        const title = reproductor.querySelector('h4');
+        const tags = reproductor.querySelector('p');
+        const downloadLink = reproductor.querySelector('a[download]');
+        
+        audio.src = track.audio_url;
+        title.textContent = track.title || 'Canción Generada';
+        tags.textContent = track.tags || 'Son1kVers3 AI';
+        downloadLink.href = track.audio_url;
+        downloadLink.download = (track.title || 'cancion') + '.mp3';
+      }
+    }
+    
+    // Función para cerrar el reproductor
+    function cerrarReproductor() {
+      const reproductor = document.getElementById('musicPlayer');
+      if (reproductor) {
+        reproductor.remove();
+      }
+    }
+    
+    // Funciones de IA con Ollama
+    async function generarLetraIA() {
+      const palabrasClave = document.getElementById('palabrasClave').value;
+      if (!palabrasClave) {
+        showToast('Ingresa algunas palabras clave para generar la letra', 'warning');
+        return;
+      }
+      
+      showToast('Generando letra con IA...', 'info');
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/ollama/lyrics`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            keywords: palabrasClave,
+            style: 'narrativa coherente'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('letraCancion').value = data.lyrics;
+          showToast('¡Letra generada con IA!', 'success');
+        } else {
+          showToast('Error al generar letra: ' + data.error, 'error');
+        }
+      } catch (error) {
+        showToast('Error al conectar con IA: ' + error.message, 'error');
+      }
+    }
+    
+    async function generarPromptIA() {
+      const letra = document.getElementById('letraCancion').value;
+      const palabras = document.getElementById('palabrasClave').value;
+      
+      showToast('Generando prompt inteligente...', 'info');
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/ollama/prompt`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            lyrics: letra,
+            keywords: palabras,
+            context: 'estilo musical inteligente'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('promptEstilo').value = data.prompt;
+          showToast('¡Prompt inteligente generado!', 'success');
+        } else {
+          showToast('Error al generar prompt: ' + data.error, 'error');
+        }
+      } catch (error) {
+        showToast('Error al conectar con IA: ' + error.message, 'error');
+      }
+    }
+    
+    // Funciones del asistente de IA
+    function toggleAsistente() {
+      const content = document.getElementById('asistenteContent');
+      const btn = document.getElementById('toggleAsistenteBtn');
+      const isHidden = content.style.display === 'none';
+      
+      content.style.display = isHidden ? 'block' : 'none';
+      btn.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+    
+    async function enviarMensajeAsistente() {
+      const input = document.getElementById('mensajeAsistente');
+      const mensaje = input.value.trim();
+      if (!mensaje) return;
+      
+      const chatMessages = document.getElementById('chatMessages');
+      
+      // Agregar mensaje del usuario
+      const userMessage = document.createElement('div');
+      userMessage.className = 'text-sm text-white mb-2 text-right';
+      userMessage.innerHTML = `<span class="bg-neon text-black px-3 py-1 rounded-lg">${mensaje}</span>`;
+      chatMessages.appendChild(userMessage);
+      
+      input.value = '';
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/ollama/assistant`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: mensaje,
+            context: 'asistente musical'
+          })
+        });
+        
+        const data = await response.json();
+        
+        // Agregar respuesta del asistente
+        const assistantMessage = document.createElement('div');
+        assistantMessage.className = 'text-sm text-zinc-300 mb-2';
+        assistantMessage.innerHTML = `<span class="bg-zinc-800 px-3 py-1 rounded-lg">🤖 ${data.response || 'Error al procesar tu mensaje'}</span>`;
+        chatMessages.appendChild(assistantMessage);
+        
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } catch (error) {
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'text-sm text-red-400 mb-2';
+        errorMessage.innerHTML = `<span class="bg-red-900/30 px-3 py-1 rounded-lg">❌ Error: ${error.message}</span>`;
+        chatMessages.appendChild(errorMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    }
+    
+    // Sistema de límites de usuario
+    function checkUserLimits() {
+      const currentLimit = userSession.limits[userSession.plan];
+      if (userSession.tracksUsed >= currentLimit) {
+        showToast('Has alcanzado el límite de tu plan. Mejora a Pro para más pistas.', 'warning');
+        return false;
+      }
+      return true;
+    }
+    
+    function updateUserStats() {
+      document.getElementById('userPlan').textContent = userSession.plan.charAt(0).toUpperCase() + userSession.plan.slice(1);
+      document.getElementById('userTracks').textContent = userSession.tracksUsed;
+      document.getElementById('userLimit').textContent = userSession.limits[userSession.plan];
+    }
+    
+    async function loadUserSession() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/user/session`);
+        const data = await response.json();
+        if (data.success) {
+          userSession = { ...userSession, ...data.session };
+          updateUserStats();
+        }
+      } catch (error) {
+        console.log('No user session found, using default');
+      }
+    }
+    
+    // Sistema de tracking y revenue
+    async function crearCuentaYTransaccion(track) {
+      try {
+        // Crear cuenta de usuario si no existe
+        const accountResponse = await fetch(`${API_BASE_URL}/api/tracker/account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: 'user@son1kvers3.com', // En producción usar email real
+            full_name: 'Usuario Son1kVers3',
+            plan: userSession.plan.toUpperCase()
+          })
+        });
+        
+        if (accountResponse.ok) {
+          const accountData = await accountResponse.json();
+          
+          // Crear transacción por la generación
+          const transactionResponse = await fetch(`${API_BASE_URL}/api/tracker/transaction`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              account_id: accountData.account_id,
+              source: 'music_generation',
+              amount: userSession.plan === 'free' ? 0 : (userSession.plan === 'pro' ? 999 : 2499),
+              currency: 'USD',
+              meta: {
+                track_title: track.title,
+                track_id: track.id,
+                plan: userSession.plan
+              }
+            })
+          });
+          
+          if (transactionResponse.ok) {
+            console.log('Transaction recorded successfully');
+          }
+        }
+      } catch (error) {
+        console.error('Error tracking user activity:', error);
+      }
+    }
+    
+    // Dashboard Widget (React-style)
+    async function loadDashboardWidget() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/tracker/stats`);
+        const stats = await response.json();
+        
+        if (stats.success) {
+          updateDashboardDisplay(stats.data);
+        }
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+    
+    function updateDashboardDisplay(stats) {
+      // En una implementación real, esto sería un widget React
+      console.log('📊 Dashboard Stats:', {
+        'Total Accounts': stats.total_accounts,
+        'Revenue (USD)': stats.total_revenue_usd,
+        'Revenue (MXN)': stats.total_revenue_mxn,
+        'Plan Distribution': stats.plan_distribution,
+        'Recent Activity': stats.recent_transactions
+      });
+      
+      // Mostrar stats en consola para debug
+      showToast(`📊 Total cuentas: ${stats.total_accounts} | Revenue: $${stats.total_revenue_usd} USD`, 'info');
+    }
+    
+    // Sistema de notificaciones
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-24 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium max-w-sm transform transition-all duration-300 translate-x-full`;
+      
+      const colors = {
+        'success': 'bg-green-600',
+        'error': 'bg-red-600',
+        'warning': 'bg-yellow-600',
+        'info': 'bg-blue-600'
+      };
+      
+      toast.classList.add(colors[type] || colors.info);
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+      }, 100);
+      
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+    
+    // Verificar estado del backend
+    async function checkBackendStatus() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/health`);
+        if (response.ok) {
+          console.log('Backend conectado');
+        }
+      } catch (error) {
+        console.log('Backend no disponible - modo demo');
+      }
+    }
+    
+    // Event listeners principales
+    function setupEventListeners() {
+      // Botones principales
+      document.getElementById('testRapido').addEventListener('click', () => {
+        showToast('Test Rápido iniciado - Modo demo', 'info');
+      });
+      
+      document.getElementById('generarPreview').addEventListener('click', () => {
+        showToast('Generando preview...', 'info');
+      });
+      
+      document.getElementById('entrarEstudio').addEventListener('click', () => {
+        showSection('generacion');
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('tab-active'));
+        document.querySelector('[data-section="generacion"]').classList.add('tab-active');
+      });
+      
+      document.getElementById('entrarEstudioMain').addEventListener('click', () => {
+        showSection('generacion');
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('tab-active'));
+        document.querySelector('[data-section="generacion"]').classList.add('tab-active');
+      });
+      
+      document.getElementById('conocerUniverso').addEventListener('click', () => {
+        showSection('home');
+        window.scrollTo({ top: document.getElementById('home').offsetHeight, behavior: 'smooth' });
+      });
+      
+      // Botones de generación
+      document.getElementById('generarMusica').addEventListener('click', generarMusica);
+      document.getElementById('generarMusicaGhost').addEventListener('click', generarMusicaGhost);
+      
+      document.getElementById('verificarAPIs').addEventListener('click', async () => {
+        showToast('Verificando conexiones de API...', 'info');
+        await checkBackendStatus();
+      });
+    }
+    
+    // PWA Service Worker Registration
+    async function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('✅ Service Worker registered:', registration);
+          
+          // Handle updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showToast('Nueva versión disponible. Actualizando...', 'info');
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+          
+        } catch (error) {
+          console.error('Service Worker registration failed:', error);
+        }
+      }
+    }
+    
+    // Audio Visualization System
+    class AudioVisualizer {
+      constructor() {
+        this.audioContext = null;
+        this.analyser = null;
+        this.canvas = null;
+        this.canvasContext = null;
+        this.dataArray = null;
+        this.isVisualizingActive = false;
+      }
+      
+      async setupAudioContext(audioElement) {
+        try {
+          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          this.analyser = this.audioContext.createAnalyser();
+          
+          const source = this.audioContext.createMediaElementSource(audioElement);
+          source.connect(this.analyser);
+          this.analyser.connect(this.audioContext.destination);
+          
+          this.analyser.fftSize = 256;
+          const bufferLength = this.analyser.frequencyBinCount;
+          this.dataArray = new Uint8Array(bufferLength);
+          
+          return true;
+        } catch (error) {
+          console.error('Audio context setup failed:', error);
+          return false;
+        }
+      }
+      
+      createVisualizationCanvas(container) {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = 400;
+        this.canvas.height = 100;
+        this.canvas.className = 'w-full h-20 bg-zinc-900/50 rounded-lg';
+        this.canvasContext = this.canvas.getContext('2d');
+        
+        container.appendChild(this.canvas);
+        return this.canvas;
+      }
+      
+      startVisualization() {
+        if (!this.analyser || !this.canvasContext) return;
+        
+        this.isVisualizingActive = true;
+        this.draw();
+      }
+      
+      stopVisualization() {
+        this.isVisualizingActive = false;
+      }
+      
+      draw() {
+        if (!this.isVisualizingActive) return;
+        
+        requestAnimationFrame(() => this.draw());
+        
+        this.analyser.getByteFrequencyData(this.dataArray);
+        
+        const { width, height } = this.canvas;
+        this.canvasContext.fillStyle = 'rgba(15, 17, 26, 0.8)';
+        this.canvasContext.fillRect(0, 0, width, height);
+        
+        const barWidth = width / this.dataArray.length * 2;
+        let x = 0;
+        
+        for (let i = 0; i < this.dataArray.length; i++) {
+          const barHeight = (this.dataArray[i] / 255) * height;
+          
+          // Neon gradient effect
+          const gradient = this.canvasContext.createLinearGradient(0, height - barHeight, 0, height);
+          gradient.addColorStop(0, '#00FFE7');
+          gradient.addColorStop(1, '#8b5cf6');
+          
+          this.canvasContext.fillStyle = gradient;
+          this.canvasContext.fillRect(x, height - barHeight, barWidth, barHeight);
+          
+          x += barWidth + 1;
+        }
+      }
+    }
+    
+    // Global audio visualizer instance
+    const audioVisualizer = new AudioVisualizer();
+    
+    // Enhanced music player with visualization
+    function mostrarReproductor(track) {
+      // Crear elemento del reproductor si no existe
+      let reproductor = document.getElementById('musicPlayer');
+      if (!reproductor) {
+        reproductor = document.createElement('div');
+        reproductor.id = 'musicPlayer';
+        reproductor.className = 'fixed bottom-4 left-4 right-4 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl z-50';
+        reproductor.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold text-white">${track.title || 'Canción Generada'}</h4>
+              <p class="text-sm text-zinc-400">${track.tags || 'Son1kVers3 AI'}</p>
+            </div>
+            <button onclick="cerrarReproductor()" class="text-zinc-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div id="audioVisualization" class="mb-4"></div>
+          <div class="flex items-center space-x-4">
+            <audio controls class="flex-1 w-full" id="audioPlayer">
+              <source src="${track.audio_url}" type="audio/mpeg">
+              Tu navegador no soporta audio HTML5.
+            </audio>
+            <a href="${track.audio_url}" download="${track.title || 'cancion'}.mp3" 
+               class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+              Descargar
+            </a>
+          </div>
+        `;
+        document.body.appendChild(reproductor);
+        
+        // Setup audio visualization
+        const audioElement = reproductor.querySelector('#audioPlayer');
+        const visualizationContainer = reproductor.querySelector('#audioVisualization');
+        
+        audioElement.addEventListener('loadedmetadata', async () => {
+          if (await audioVisualizer.setupAudioContext(audioElement)) {
+            audioVisualizer.createVisualizationCanvas(visualizationContainer);
+          }
+        });
+        
+        audioElement.addEventListener('play', () => {
+          audioVisualizer.startVisualization();
+        });
+        
+        audioElement.addEventListener('pause', () => {
+          audioVisualizer.stopVisualization();
+        });
+        
+        // Cache audio for offline playback
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'CACHE_AUDIO',
+            data: { url: track.audio_url }
+          });
+        }
+        
+      } else {
+        // Actualizar reproductor existente
+        const audio = reproductor.querySelector('#audioPlayer');
+        const title = reproductor.querySelector('h4');
+        const tags = reproductor.querySelector('p');
+        const downloadLink = reproductor.querySelector('a[download]');
+        
+        audio.src = track.audio_url;
+        title.textContent = track.title || 'Canción Generada';
+        tags.textContent = track.tags || 'Son1kVers3 AI';
+        downloadLink.href = track.audio_url;
+        downloadLink.download = (track.title || 'cancion') + '.mp3';
+      }
+    }
+    
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', async () => {
+      setupKnobs();
+      setupSliders();
+      setupNavigation();
+      setupEventListeners();
+      
+      // Registrar Service Worker para PWA
+      await registerServiceWorker();
+      
+      // Cargar sesión de usuario y dashboard
+      await loadUserSession();
+      await checkBackendStatus();
+      await loadDashboardWidget();
+      
+      // Mensaje de bienvenida
+      setTimeout(() => {
+        showToast('Bienvenido a Son1kVers3 - La Resistencia Sonora', 'success');
+      }, 1000);
+      
+      // Actualizar dashboard cada 30 segundos
+      setInterval(loadDashboardWidget, 30000);
+    });
+  </script>
+</body>
+</html>
