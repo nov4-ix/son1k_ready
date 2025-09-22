@@ -2,7 +2,3 @@
 NIXPACKS_NODE_VERSION = ""
 NIXPACKS_PYTHON_VERSION = "3.9"
 PYTHONPATH = "/app"
-
-[providers]
-node = false
-python = true
