@@ -1,0 +1,5 @@
+[providers]
+python = true
+
+[variables]
+PYTHONPATH = "/app"
