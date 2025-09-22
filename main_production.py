@@ -1,7 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import requests
+import httpx
 import logging
 import time
 import json
@@ -61,11 +64,116 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# User limits and tracking
+user_usage = {}
+user_limits = {
+    "free": {"monthly_tracks": 3, "features": ["basic_generation"]},
+    "pro": {"monthly_tracks": 50, "features": ["basic_generation", "voice_cloning", "advanced_eq", "ghost_studio"]},
+    "enterprise": {"monthly_tracks": 500, "features": ["basic_generation", "voice_cloning", "advanced_eq", "api_access", "priority_support", "ghost_studio", "unlimited_downloads"]}
+}
+
+def check_user_limits(user_plan: str) -> bool:
+    """Check if user has remaining credits"""
+    if user_plan not in user_limits:
+        return False
+    
+    current_month = datetime.now().strftime("%Y-%m")
+    user_key = f"{user_plan}_{current_month}"
+    
+    current_usage = user_usage.get(user_key, 0)
+    monthly_limit = user_limits[user_plan]["monthly_tracks"]
+    
+    return current_usage < monthly_limit
+
+def increment_user_usage(user_plan: str):
+    """Increment user usage count"""
+    current_month = datetime.now().strftime("%Y-%m")
+    user_key = f"{user_plan}_{current_month}"
+    
+    user_usage[user_key] = user_usage.get(user_key, 0) + 1
+
+def get_remaining_credits(user_plan: str) -> int:
+    """Get remaining credits for user"""
+    if user_plan not in user_limits:
+        return 0
+    
+    current_month = datetime.now().strftime("%Y-%m")
+    user_key = f"{user_plan}_{current_month}"
+    
+    current_usage = user_usage.get(user_key, 0)
+    monthly_limit = user_limits[user_plan]["monthly_tracks"]
+    
+    return max(0, monthly_limit - current_usage)
+
+def get_track_info(track_id: str):
+    """Get track information from storage"""
+    # In a real implementation, this would query a database
+    # For now, return mock data
+    return {
+        "track_id": track_id,
+        "audio_url": f"https://example.com/audio/{track_id}.mp3",
+        "title": f"Generated Track {track_id[:8]}"
+    }
+
+async def download_audio_stream(audio_url: str):
+    """Stream audio file for download"""
+    async with httpx.AsyncClient() as client:
+        async with client.stream("GET", audio_url) as response:
+            async for chunk in response.aiter_bytes():
+                yield chunk
+
+def create_fallback_lyrics(user_words: str, mood: str) -> str:
+    """Create simple fallback lyrics"""
+    return f"""[Verse 1]
+{user_words} in my heart
+Feeling {mood} from the start
+Looking for a brand new way
+To make it through another day
+
+[Chorus]
+This is our moment
+This is our time
+{user_words} in rhythm
+{user_words} in rhyme
+
+[Verse 2]
+Walking down this winding road
+Carrying this heavy load
+But {user_words} light the way
+To a brighter, better day
+
+[Chorus]
+This is our moment
+This is our time
+{user_words} in rhythm
+{user_words} in rhyme"""
+
 # Models
 class GenerateRequest(BaseModel):
     prompt: str
     lyrics: Optional[str] = None
     style: Optional[str] = None
+    user_plan: Optional[str] = "free"
+
+class PromptGenerationRequest(BaseModel):
+    user_input: str
+    genre: Optional[str] = None
+    mood: Optional[str] = None
+
+class LyricsGenerationRequest(BaseModel):
+    user_words: str
+    structure: Optional[str] = "verse-chorus-verse-chorus-bridge-chorus"
+    genre: Optional[str] = "pop"
+    mood: Optional[str] = "emotional"
 
 from fastapi.responses import HTMLResponse
 
@@ -115,30 +223,163 @@ def get_tester_accounts():
 
 @app.get("/", response_class=HTMLResponse)
 def root():
-    """Serve the complete Son1k frontend"""
-    # Read the complete frontend HTML
+    """Serve the real Son1kVers3 frontend"""
+    # Read the real Son1kVers3 frontend HTML from Desktop
     try:
-        with open("son1k_complete_frontend.html", "r", encoding="utf-8") as f:
+        with open("/Users/nov4-ix/Desktop/sonikverse_complete_interfaz.html", "r", encoding="utf-8") as f:
             html_content = f.read()
+        
+        # Replace localhost API with production API
+        html_content = html_content.replace("http://localhost:3001", "")
+        html_content = html_content.replace("localhost:3001", "")
+        
+        # Set Ollama URL from ngrok 
+        ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+        html_content = html_content.replace(
+            "const API_BASE_URL = 'http://localhost:3001';",
+            f"const API_BASE_URL = '';\n    const OLLAMA_URL = '{ollama_url}';"
+        )
+        
+        # Add music player integration and API calls
+        html_content = html_content.replace(
+            "// Simular llamada a API\n        await new Promise(resolve => setTimeout(resolve, 3000));",
+            """// REAL API call to Son1kVers3 backend
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: estilo,
+            lyrics: letra,
+            style: preset,
+            postprocess: {
+              eq: document.getElementById('eq')?.value || 50,
+              saturacion: document.getElementById('saturacion')?.value || 30,
+              expresividad: document.querySelector('[data-knob="expresividad-gen"]')?.dataset.value || 75
+            }
+          })
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          // Show music player with real Suno track
+          showMusicPlayer(result.suno_response);
+        } else {
+          throw new Error(result.message || 'Error en generación');
+        }"""
+        )
+        
+        # Add Ghost Studio API integration
+        html_content = html_content.replace(
+            "// Simular llamada a API\n        await new Promise(resolve => setTimeout(resolve, 4000));",
+            """// REAL Ghost Studio API call
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: prompt,
+            style: tags,
+            ghost_options: {
+              preset: preset,
+              afinacion: document.getElementById('afinacionGhost')?.value || 60,
+              expresividad: document.getElementById('expresividadGhost')?.value || 75
+            }
+          })
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          showMusicPlayer(result.suno_response);
+        } else {
+          throw new Error(result.message || 'Error en Ghost Studio');
+        }"""
+        )
+        
+        # Add music player function before the closing script tag
+        html_content = html_content.replace(
+            "    });",
+            """    });
+    
+    // Music Player for Suno tracks
+    function showMusicPlayer(sunoResponse) {
+      const playerHTML = `
+        <div id="musicPlayer" class="fixed bottom-4 right-4 z-50 bg-zinc-950/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="font-semibold text-neon">🎵 Track Generado</h4>
+            <button onclick="closeMusicPlayer()" class="text-zinc-400 hover:text-white">✕</button>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="text-sm text-zinc-400">
+              <p><strong>ID:</strong> ${sunoResponse.id}</p>
+              <p><strong>Método:</strong> ${sunoResponse.method}</p>
+              <p><strong>Duración:</strong> ${sunoResponse.duration || '02:30'}</p>
+            </div>
+            
+            ${sunoResponse.audio_url ? `
+              <audio controls class="w-full">
+                <source src="${sunoResponse.audio_url}" type="audio/mpeg">
+                Tu navegador no soporta audio.
+              </audio>
+            ` : ''}
+            
+            <div class="flex space-x-2">
+              ${sunoResponse.audio_url ? `
+                <a href="${sunoResponse.audio_url}" target="_blank" class="flex-1 bg-neon text-black text-center py-2 rounded-lg text-sm font-semibold hover:bg-neon/90 transition">
+                  🎵 Escuchar
+                </a>
+              ` : ''}
+              ${sunoResponse.download_url ? `
+                <a href="${sunoResponse.download_url}" download class="flex-1 bg-white/10 text-white text-center py-2 rounded-lg text-sm font-semibold hover:bg-white/20 transition">
+                  💾 Descargar
+                </a>
+              ` : ''}
+            </div>
+            
+            <div class="text-xs text-zinc-500">
+              ${sunoResponse.note || 'Generado con Son1kVers3'}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Remove existing player
+      const existingPlayer = document.getElementById('musicPlayer');
+      if (existingPlayer) {
+        existingPlayer.remove();
+      }
+      
+      // Add new player
+      document.body.insertAdjacentHTML('beforeend', playerHTML);
+    }
+    
+    function closeMusicPlayer() {
+      const player = document.getElementById('musicPlayer');
+      if (player) {
+        player.remove();
+      }
+    }"""
+        )
+        
         return HTMLResponse(content=html_content, status_code=200)
+        
     except FileNotFoundError:
         # Fallback to API info if HTML file not found
         return HTMLResponse(content="""
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Son1k - Complete Frontend Loading...</title>
+    <title>Son1kVers3 - La Resistencia</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
-            background: #1a1a1a; 
-            color: #fff; 
+            background: #0f111a; 
+            color: #00FFE7; 
             text-align: center; 
             padding: 100px 20px; 
         }
         .logo { 
             font-size: 3rem; 
-            color: #ff6b6b; 
+            color: #00FFE7; 
             margin-bottom: 30px; 
         }
         .message { 
@@ -150,12 +391,12 @@ def root():
     </style>
 </head>
 <body>
-    <div class="logo">🎵 Son1k</div>
+    <div class="logo">Son1kVers3</div>
     <div class="message">
-        Complete frontend HTML file not found. <br>
-        Please ensure son1k_complete_frontend.html is in the root directory.
+        Frontend real no encontrado. <br>
+        Buscando: /Users/nov4-ix/Desktop/sonikverse_complete_interfaz.html
         <br><br>
-        <a href="/api" style="color: #ff6b6b;">View API Documentation</a>
+        <a href="/api/system/health" style="color: #00FFE7;">Ver Estado del Sistema</a>
     </div>
 </body>
 </html>
@@ -385,7 +626,7 @@ def get_system_health():
         }
     }
 
-async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None):
+async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None, user_plan: Optional[str] = "free"):
     """REAL Suno automation using direct API calls"""
     
     logger.info(f"🎵 Starting REAL Suno API generation: {prompt[:50]}...")
@@ -456,6 +697,7 @@ async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style:
                     "method": "suno_direct_api_real",
                     "message": "Music generation started via REAL Suno API",
                     "audio_url": clip.get("audio_url") or f"https://cdn1.suno.ai/{clip_id}.mp3",
+                    "download_url": f"/api/download/{clip_id}",
                     "video_url": clip.get("video_url") or f"https://cdn1.suno.ai/{clip_id}.mp4",
                     "image_url": clip.get("image_url") or f"https://cdn1.suno.ai/{clip_id}.png",
                     "title": clip.get("title", "Generated Song"),
@@ -683,3 +925,199 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
+# Additional API endpoints for Son1kVers3
+
+@app.post("/api/generate-music")
+async def generate_music_with_limits(request: GenerateRequest):
+    """
+    API endpoint for music generation with download support and user limits
+    """
+    try:
+        # Apply user limits based on plan
+        if not check_user_limits(request.user_plan):
+            raise HTTPException(status_code=429, detail="Monthly limit exceeded")
+        
+        # Generate music using real Suno API
+        result = await call_suno_direct_api(
+            prompt=request.prompt,
+            lyrics=request.lyrics,
+            style=request.style,
+            user_plan=request.user_plan
+        )
+        
+        if result and result.get("status") != "api_error_fallback":
+            # Increment user usage count
+            increment_user_usage(request.user_plan)
+            
+            return {
+                "status": "success",
+                "track_id": result["id"],
+                "audio_url": result["audio_url"],
+                "download_url": result.get("download_url", f"/api/download/{result['id']}"),
+                "title": result.get("title", "Generated Track"),
+                "duration": result.get("duration", "0:00"),
+                "remaining_credits": get_remaining_credits(request.user_plan)
+            }
+        else:
+            raise HTTPException(status_code=500, detail=result.get("message", "Generation failed"))
+            
+    except Exception as e:
+        logger.error(f"Music generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/download/{track_id}")
+async def download_track(track_id: str):
+    """
+    Download endpoint for generated tracks
+    """
+    try:
+        # Get track info from database or cache
+        track_info = get_track_info(track_id)
+        if not track_info:
+            raise HTTPException(status_code=404, detail="Track not found")
+        
+        # Stream the audio file for download
+        return StreamingResponse(
+            download_audio_stream(track_info["audio_url"]),
+            media_type="audio/mpeg",
+            headers={"Content-Disposition": f"attachment; filename={track_id}.mp3"}
+        )
+    except Exception as e:
+        logger.error(f"Download error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/generate-prompt")
+async def generate_prompt_with_ollama(request: PromptGenerationRequest):
+    """
+    Generate intelligent prompts using Ollama
+    """
+    try:
+        # Get Ollama URL from environment or ngrok
+        ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+        
+        # Create prompt for Ollama
+        system_prompt = f"""
+You are a music prompt engineer. Generate creative and detailed music prompts for AI music generation.
+User input: {request.user_input}
+Genre preference: {request.genre or 'any'}
+Mood: {request.mood or 'any'}
+
+Generate a concise but descriptive prompt for music generation that includes:
+- Musical style and genre
+- Tempo and rhythm
+- Instrumentation
+- Mood and atmosphere
+- Production style
+
+Keep it under 100 words and make it specific enough for AI music generation.
+"""
+        
+        # Call Ollama API
+        ollama_response = requests.post(
+            f"{ollama_url}/api/generate",
+            json={
+                "model": "llama3.2",
+                "prompt": system_prompt,
+                "stream": False
+            },
+            timeout=30
+        )
+        
+        if ollama_response.status_code == 200:
+            generated_prompt = ollama_response.json()["response"]
+            return {
+                "status": "success",
+                "generated_prompt": generated_prompt.strip()
+            }
+        else:
+            return {
+                "status": "error",
+                "error": "Ollama service unavailable",
+                "fallback_prompt": f"Create a {request.genre or 'modern'} song with {request.mood or 'emotional'} vibes"
+            }
+            
+    except Exception as e:
+        logger.error(f"Ollama prompt generation error: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "fallback_prompt": f"Create a {request.genre or 'modern'} song with {request.mood or 'emotional'} vibes"
+        }
+
+@app.post("/api/generate-lyrics")
+async def generate_lyrics_with_ollama(request: LyricsGenerationRequest):
+    """
+    Generate narrative coherent lyrics using Ollama
+    """
+    try:
+        ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+        
+        system_prompt = f"""
+You are a professional songwriter. Create lyrics with narrative coherence based on the user's words.
+User words/theme: {request.user_words}
+Song structure: {request.structure or 'verse-chorus-verse-chorus-bridge-chorus'}
+Genre: {request.genre or 'pop'}
+Mood: {request.mood or 'emotional'}
+
+Create complete song lyrics that:
+- Have a clear narrative thread
+- Use the user's words/theme meaningfully
+- Follow the requested structure
+- Match the genre and mood
+- Are singable and rhythmic
+
+Format with clear [Verse], [Chorus], [Bridge] labels.
+"""
+        
+        ollama_response = requests.post(
+            f"{ollama_url}/api/generate",
+            json={
+                "model": "llama3.2",
+                "prompt": system_prompt,
+                "stream": False
+            },
+            timeout=45
+        )
+        
+        if ollama_response.status_code == 200:
+            generated_lyrics = ollama_response.json()["response"]
+            return {
+                "status": "success",
+                "generated_lyrics": generated_lyrics.strip()
+            }
+        else:
+            return {
+                "status": "error",
+                "error": "Ollama service unavailable",
+                "fallback_lyrics": create_fallback_lyrics(request.user_words, request.mood)
+            }
+            
+    except Exception as e:
+        logger.error(f"Ollama lyrics generation error: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "fallback_lyrics": create_fallback_lyrics(request.user_words, request.mood)
+        }
+
+@app.get("/api/user-limits/{user_plan}")
+async def get_user_limits(user_plan: str):
+    """
+    Get user limits and current usage
+    """
+    if user_plan not in user_limits:
+        raise HTTPException(status_code=404, detail="Invalid user plan")
+    
+    current_month = datetime.now().strftime("%Y-%m")
+    user_key = f"{user_plan}_{current_month}"
+    current_usage = user_usage.get(user_key, 0)
+    
+    return {
+        "plan": user_plan,
+        "monthly_limit": user_limits[user_plan]["monthly_tracks"],
+        "current_usage": current_usage,
+        "remaining_credits": get_remaining_credits(user_plan),
+        "features": user_limits[user_plan]["features"],
+        "month": current_month
+    }
