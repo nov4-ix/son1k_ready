@@ -12,6 +12,15 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import hashlib
 
+# Import tracker system
+from tracker_system import (
+    create_user_account, create_transaction, get_stats, 
+    create_payout_account, select_payout_account, get_active_payout_account,
+    route_payment, track_music_generation, tracker_storage,
+    CreateAccountRequest, CreateTransactionRequest, CreatePayoutAccountRequest,
+    SelectPayoutAccountRequest, PlanType, Currency, PaymentProvider
+)
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -949,6 +958,8 @@ async def generate_music_with_limits(request: GenerateRequest):
         if result and result.get("status") != "api_error_fallback":
             # Increment user usage count
             increment_user_usage(request.user_plan)
+            # Track music generation in revenue system
+            track_music_generation(request.user_plan, amount_charged=0)  # Free for now
             
             return {
                 "status": "success",
@@ -1121,3 +1132,158 @@ async def get_user_limits(user_plan: str):
         "features": user_limits[user_plan]["features"],
         "month": current_month
     }
+
+# ==========================================
+# TRACKER SYSTEM API ENDPOINTS
+# ==========================================
+
+@app.post("/api/tracker/accounts")
+async def create_account_tracker(request: CreateAccountRequest):
+    """Create new user account in tracking system"""
+    try:
+        result = create_user_account(
+            email=request.email,
+            full_name=request.full_name,
+            plan=request.plan
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error creating account: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tracker/transactions")
+async def create_transaction_tracker(request: CreateTransactionRequest):
+    """Create new transaction in tracking system"""
+    try:
+        transaction = create_transaction(
+            account_id=request.account_id,
+            source=request.source,
+            amount=request.amount,
+            currency=request.currency,
+            description=request.description,
+            provider_ref=request.provider_ref
+        )
+        return transaction.dict()
+    except Exception as e:
+        logger.error(f"Error creating transaction: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/tracker/stats")
+async def get_tracker_stats():
+    """Get summary statistics from tracking system"""
+    try:
+        return get_stats()
+    except Exception as e:
+        logger.error(f"Error getting stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tracker/payout-accounts")
+async def create_payout_account_tracker(request: CreatePayoutAccountRequest):
+    """Create new payout account"""
+    try:
+        payout_account = create_payout_account(
+            name=request.name,
+            provider=request.provider,
+            config=request.config,
+            active=request.active
+        )
+        return payout_account.dict()
+    except Exception as e:
+        logger.error(f"Error creating payout account: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/tracker/payout-accounts")
+async def list_payout_accounts():
+    """List all payout accounts"""
+    try:
+        accounts = [account.dict() for account in tracker_storage.payout_accounts.values()]
+        return accounts
+    except Exception as e:
+        logger.error(f"Error listing payout accounts: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tracker/payout/select")
+async def select_payout_account_tracker(request: SelectPayoutAccountRequest):
+    """Select active payout account"""
+    try:
+        success = select_payout_account(request.payout_account_id)
+        return {"ok": success}
+    except Exception as e:
+        logger.error(f"Error selecting payout account: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/tracker/payout/active")
+async def get_active_payout():
+    """Get currently active payout account"""
+    try:
+        active_payout = get_active_payout_account()
+        return {
+            "active_payout_account_id": tracker_storage.settings.active_payout_account_id,
+            "active_payout_account": active_payout.dict() if active_payout else None
+        }
+    except Exception as e:
+        logger.error(f"Error getting active payout: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tracker/payment/route")
+async def route_payment_tracker(request: dict):
+    """Route payment through active payout account"""
+    try:
+        result = route_payment(
+            amount=request.get("amount"),
+            currency=Currency(request.get("currency", "USD")),
+            meta=request.get("meta", {})
+        )
+        return result
+    except Exception as e:
+        logger.error(f"Error routing payment: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/tracker/webhooks/store")
+async def store_webhook_tracker(request: dict):
+    """Webhook endpoint for store transactions"""
+    try:
+        # TODO: Validate webhook signature from payment provider
+        transaction = create_transaction(
+            account_id=request.get("account_id"),
+            source="store",
+            amount=request.get("amount"),
+            currency=Currency(request.get("currency", "USD")),
+            description=request.get("description"),
+            provider_ref=request.get("provider_ref")
+        )
+        return {"received": True, "transaction_id": transaction.id}
+    except Exception as e:
+        logger.error(f"Error processing store webhook: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Dashboard widget endpoint
+@app.get("/api/tracker/dashboard")
+async def get_dashboard_data():
+    """Get comprehensive dashboard data"""
+    try:
+        stats = get_stats()
+        active_payout = get_active_payout_account()
+        
+        # Get recent transactions (last 10)
+        recent_transactions = sorted(
+            [tx.dict() for tx in tracker_storage.transactions.values()],
+            key=lambda x: x["created_at"],
+            reverse=True
+        )[:10]
+        
+        # Get user count
+        user_count = len(tracker_storage.users)
+        account_count = len(tracker_storage.accounts)
+        
+        return {
+            "stats": stats,
+            "active_payout_account": active_payout.dict() if active_payout else None,
+            "recent_transactions": recent_transactions,
+            "user_count": user_count,
+            "account_count": account_count,
+            "last_updated": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting dashboard data: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
