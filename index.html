@@ -327,9 +327,12 @@
           <button class="nav-tab" data-section="planes">Planes</button>
         </div>
         
-        <div class="text-sm">
-          <div class="text-zinc">Plan: <span class="text-neon" id="userPlan">Free</span></div>
-          <div class="text-zinc">Pistas: <span id="userTracks">0</span>/<span class="text-neon" id="userLimit">3</span></div>
+        <div class="flex items-center gap-3">
+          <div class="text-sm">
+            <div class="text-zinc">Plan: <span class="text-neon" id="userPlan">Free</span></div>
+            <div class="text-zinc">Pistas: <span id="userTracks">0</span>/<span class="text-neon" id="userLimit">3</span></div>
+          </div>
+          <button id="loginBtn" class="btn btn-primary text-sm">Iniciar Sesión</button>
         </div>
       </div>
     </nav>
@@ -360,11 +363,11 @@
             <h4 class="text-neon text-sm font-bold mb-2">Sistema</h4>
             <div class="space-y-1 text-xs">
               <div class="flex justify-between">
-                <span>Suno API:</span>
+                <span>NOV4-IX Engine:</span>
                 <span class="text-green-400">●</span>
               </div>
               <div class="flex justify-between">
-                <span>Ollama AI:</span>
+                <span>Resistencia AI:</span>
                 <span class="text-green-400">●</span>
               </div>
               <div class="flex justify-between">
@@ -394,7 +397,7 @@
             
             <div class="flex flex-col sm:flex-row gap-3 justify-center mt-6">
               <button id="entrarEstudio" class="btn btn-primary">Entrar al Estudio</button>
-              <button class="btn btn-secondary">Conocer el Universo</button>
+              <button id="conocerUniverso" class="btn btn-secondary" data-clicks="0">Conocer el Universo</button>
             </div>
             
             <p class="text-sm text-zinc max-w-lg mx-auto mt-4">
@@ -644,9 +647,12 @@
     // Global variables
     let currentSection = 'home';
     let userSession = {
+      isLoggedIn: false,
+      username: null,
       plan: 'Free',
       tracksUsed: 0,
-      tracksLimit: 3
+      tracksLimit: 3,
+      token: null
     };
     
     const API_BASE_URL = window.location.origin;
@@ -815,6 +821,12 @@
       // Studio entry buttons
       document.getElementById('entrarEstudio')?.addEventListener('click', () => showSection('generacion'));
       
+      // Easter egg portal to son1k-ready terminal universe
+      document.getElementById('conocerUniverso')?.addEventListener('click', activatePortal);
+      
+      // Login functionality
+      document.getElementById('loginBtn')?.addEventListener('click', showLoginModal);
+      
       // Chat functionality
       document.getElementById('sendChat')?.addEventListener('click', sendChatMessage);
       document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
@@ -847,7 +859,8 @@
             prompt: estilo || 'canción con letra personalizada',
             lyrics: letra || '',
             style: preset || 'profesional',
-            user_plan: userSession.plan
+            user_plan: userSession.plan,
+            engine: 'nov4ix-ai'
           })
         });
         
@@ -949,6 +962,421 @@
       setTimeout(() => {
         toast.remove();
       }, 5000);
+    }
+    
+    // Easter egg portal activation
+    function activatePortal() {
+      const btn = document.getElementById('conocerUniverso');
+      let clicks = parseInt(btn.getAttribute('data-clicks') || '0');
+      clicks++;
+      btn.setAttribute('data-clicks', clicks.toString());
+      
+      const portalSequence = [
+        'Conocer el Universo',
+        '◯ Grietas se abren ◯',
+        '⚡ Descifrando... ⚡',
+        '△ Portal activado △',
+        '🌌 Ingresando... 🌌'
+      ];
+      
+      if (clicks <= portalSequence.length) {
+        btn.textContent = portalSequence[clicks - 1];
+        
+        if (clicks === 3) {
+          // Start glitch effect
+          btn.style.animation = 'glitch 0.5s infinite';
+          document.body.style.filter = 'hue-rotate(180deg) contrast(1.2)';
+        }
+        
+        if (clicks === 5) {
+          // Portal activation sequence
+          showToast('🌌 Portal de la Resistencia activado...', 'info');
+          setTimeout(() => {
+            // Redirect to son1k-ready terminal universe
+            createTerminalPortal();
+          }, 2000);
+        }
+      }
+    }
+    
+    // Create terminal portal overlay
+    function createTerminalPortal() {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(45deg, #020304, #0a1a17);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: #00ff95;
+        font-family: monospace;
+        animation: fadeIn 2s ease-in-out;
+      `;
+      
+      overlay.innerHTML = `
+        <div style="text-align: center; max-width: 600px; padding: 2rem;">
+          <div style="font-size: 2rem; margin-bottom: 1rem;">
+            ◯⚡ SON1KVERS3 — TERMINAL ◯⚡
+          </div>
+          <div style="margin-bottom: 2rem; color: #cde6e0; line-height: 1.6;">
+            <div>[BOOTING] Accessing NODE // RESISTENCIA …</div>
+            <div>> Mensaje entrante: <span style="color: #00f6ff;">BELLA.exe</span></div>
+            <div style="color: #ffcc00; margin-top: 1rem;">
+              "Tu glitch es la chispa de la Liga del No Silencio."
+            </div>
+          </div>
+          <div style="margin-bottom: 2rem; border: 1px dashed #135345; padding: 1rem; border-radius: 8px;">
+            <div>La puerta solo se abre con una <span style="border: 1px solid #00f6ff; padding: 2px 8px; border-radius: 4px; color: #00f6ff;">demo real</span>.</div>
+            <div style="margin-top: 1rem;">> ALMA_HIBRIDA — elige un arquetipo:</div>
+            <div style="margin-top: 0.5rem; color: #ff49c3;">[1] PIXEL [2] BELLA [3] NOVA [4] CIPHER</div>
+          </div>
+          <div style="color: #ffcc00; margin-bottom: 2rem;">
+            "Lo imperfecto también es sagrado."
+          </div>
+          <button id="portalEnter" style="
+            background: linear-gradient(45deg, #00ff95, #00f6ff);
+            color: #020304;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1rem;
+          ">
+            ◯⚡ DESPERTAR
+          </button>
+          <div style="margin-top: 1rem;">
+            <button id="portalBack" style="
+              background: transparent;
+              color: #8fb3a9;
+              border: 1px solid #0d3c31;
+              padding: 8px 16px;
+              border-radius: 4px;
+              font-family: monospace;
+              cursor: pointer;
+            ">
+              Regresar al Estudio
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      
+      // Portal actions
+      document.getElementById('portalEnter').addEventListener('click', () => {
+        showToast('🌌 Preparando acceso al Terminal...', 'info');
+        // Here you would redirect to the son1k-ready terminal experience
+        // window.location.href = 'https://son1k-ready.railway.app';
+        overlay.innerHTML = `
+          <div style="text-align: center; color: #00ff95;">
+            <div style="font-size: 1.5rem; margin-bottom: 1rem;">
+              ◯⚡ PRONTO DISPONIBLE ◯⚡
+            </div>
+            <div style="color: #cde6e0; margin-bottom: 2rem;">
+              El Terminal de la Resistencia está siendo construido...<br>
+              Son1k-Ready se desplegará próximamente.
+            </div>
+            <div style="color: #ffcc00;">
+              "La revolución musical viene en código."
+            </div>
+          </div>
+        `;
+        setTimeout(() => overlay.remove(), 3000);
+      });
+      
+      document.getElementById('portalBack').addEventListener('click', () => {
+        overlay.remove();
+        document.body.style.filter = '';
+        const btn = document.getElementById('conocerUniverso');
+        btn.textContent = 'Conocer el Universo';
+        btn.setAttribute('data-clicks', '0');
+        btn.style.animation = '';
+      });
+    }
+    
+    // Login system
+    function showLoginModal() {
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+      `;
+      
+      modal.innerHTML = `
+        <div style="
+          background: rgba(15, 17, 26, 0.95);
+          border: 1px solid rgba(0, 255, 231, 0.3);
+          border-radius: 16px;
+          padding: 2rem;
+          max-width: 400px;
+          width: 90%;
+          box-shadow: 0 0 30px rgba(0, 255, 231, 0.2);
+        ">
+          <h2 style="color: #00FFE7; text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem;">
+            Acceso a la Resistencia
+          </h2>
+          
+          <div id="loginTabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <button id="loginTab" class="btn btn-primary" style="flex: 1;">Iniciar Sesión</button>
+            <button id="registerTab" class="btn btn-secondary" style="flex: 1;">Registrarse</button>
+          </div>
+          
+          <form id="authForm">
+            <div class="input-group">
+              <label for="authUsername">Usuario</label>
+              <input type="text" id="authUsername" placeholder="Tu nombre de resistente" required>
+            </div>
+            
+            <div class="input-group">
+              <label for="authEmail">Email</label>
+              <input type="email" id="authEmail" placeholder="resistente@son1kvers3.com" required>
+            </div>
+            
+            <div class="input-group">
+              <label for="authPassword">Contraseña</label>
+              <input type="password" id="authPassword" placeholder="••••••••" required>
+            </div>
+            
+            <div id="registerFields" style="display: none;">
+              <div class="input-group">
+                <label for="authConfirmPassword">Confirmar Contraseña</label>
+                <input type="password" id="authConfirmPassword" placeholder="••••••••">
+              </div>
+              
+              <div class="input-group">
+                <label for="authArchetype">Arquetipo de la Resistencia</label>
+                <select id="authArchetype">
+                  <option value="pixel">PIXEL - Artista Digital</option>
+                  <option value="bella">BELLA - Alma Híbrida</option>
+                  <option value="nova">NOVA - Innovador Sónico</option>
+                  <option value="cipher">CIPHER - Descifrador</option>
+                </select>
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+              <button type="submit" id="authSubmit" class="btn btn-primary" style="flex: 1;">
+                Iniciar Sesión
+              </button>
+              <button type="button" id="closeAuth" class="btn btn-secondary">
+                Cancelar
+              </button>
+            </div>
+          </form>
+          
+          <div style="text-align: center; margin-top: 1rem; color: #a1a1aa; font-size: 0.875rem;">
+            "Lo imperfecto también es sagrado"
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      let isRegisterMode = false;
+      
+      // Tab switching
+      document.getElementById('loginTab').addEventListener('click', () => {
+        isRegisterMode = false;
+        document.getElementById('loginTab').className = 'btn btn-primary';
+        document.getElementById('registerTab').className = 'btn btn-secondary';
+        document.getElementById('registerFields').style.display = 'none';
+        document.getElementById('authSubmit').textContent = 'Iniciar Sesión';
+      });
+      
+      document.getElementById('registerTab').addEventListener('click', () => {
+        isRegisterMode = true;
+        document.getElementById('loginTab').className = 'btn btn-secondary';
+        document.getElementById('registerTab').className = 'btn btn-primary';
+        document.getElementById('registerFields').style.display = 'block';
+        document.getElementById('authSubmit').textContent = 'Registrarse';
+      });
+      
+      // Form submission
+      document.getElementById('authForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('authUsername').value;
+        const email = document.getElementById('authEmail').value;
+        const password = document.getElementById('authPassword').value;
+        
+        if (isRegisterMode) {
+          const confirmPassword = document.getElementById('authConfirmPassword').value;
+          const archetype = document.getElementById('authArchetype').value;
+          
+          if (password !== confirmPassword) {
+            showToast('Las contraseñas no coinciden', 'error');
+            return;
+          }
+          
+          await performRegistration(username, email, password, archetype);
+        } else {
+          await performLogin(email, password);
+        }
+        
+        modal.remove();
+      });
+      
+      // Close modal
+      document.getElementById('closeAuth').addEventListener('click', () => {
+        modal.remove();
+      });
+      
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+    }
+    
+    async function performLogin(email, password) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          userSession.isLoggedIn = true;
+          userSession.username = data.user.username;
+          userSession.token = data.token;
+          userSession.plan = data.user.plan || 'Free';
+          userSession.tracksUsed = data.user.tracksUsed || 0;
+          userSession.tracksLimit = data.user.tracksLimit || 3;
+          
+          updateUserInterface();
+          showToast(`¡Bienvenido de vuelta, ${data.user.username}!`, 'success');
+        } else {
+          showToast('Credenciales incorrectas', 'error');
+        }
+      } catch (error) {
+        // Mock login for demo
+        userSession.isLoggedIn = true;
+        userSession.username = email.split('@')[0];
+        userSession.token = 'demo_token_' + Math.random().toString(36).substr(2, 9);
+        
+        updateUserInterface();
+        showToast(`¡Bienvenido, ${userSession.username}!`, 'success');
+      }
+    }
+    
+    async function performRegistration(username, email, password, archetype) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password, archetype })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showToast('¡Registro exitoso! Iniciando sesión...', 'success');
+          await performLogin(email, password);
+        } else {
+          showToast('Error en el registro: ' + data.message, 'error');
+        }
+      } catch (error) {
+        // Mock registration for demo
+        showToast('¡Registro exitoso! Iniciando sesión...', 'success');
+        setTimeout(() => {
+          userSession.isLoggedIn = true;
+          userSession.username = username;
+          userSession.token = 'demo_token_' + Math.random().toString(36).substr(2, 9);
+          
+          updateUserInterface();
+          showToast(`¡Bienvenido a la Resistencia, ${username}!`, 'success');
+        }, 1000);
+      }
+    }
+    
+    function updateUserInterface() {
+      const loginBtn = document.getElementById('loginBtn');
+      
+      if (userSession.isLoggedIn) {
+        loginBtn.textContent = userSession.username;
+        loginBtn.onclick = showUserMenu;
+        loginBtn.classList.remove('btn-primary');
+        loginBtn.classList.add('btn-secondary');
+      } else {
+        loginBtn.textContent = 'Iniciar Sesión';
+        loginBtn.onclick = showLoginModal;
+        loginBtn.classList.remove('btn-secondary');
+        loginBtn.classList.add('btn-primary');
+      }
+      
+      updateUserStats();
+    }
+    
+    function showUserMenu() {
+      const menu = document.createElement('div');
+      menu.style.cssText = `
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        background: rgba(15, 17, 26, 0.95);
+        border: 1px solid rgba(0, 255, 231, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        z-index: 9999;
+        min-width: 200px;
+        box-shadow: 0 0 20px rgba(0, 255, 231, 0.2);
+      `;
+      
+      menu.innerHTML = `
+        <div style="color: #00FFE7; font-weight: bold; margin-bottom: 0.5rem;">
+          ${userSession.username}
+        </div>
+        <div style="color: #a1a1aa; font-size: 0.875rem; margin-bottom: 1rem;">
+          Plan: ${userSession.plan}
+        </div>
+        <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 0.5rem 0;"></div>
+        <button id="profileBtn" class="btn btn-secondary w-full mb-2">Mi Perfil</button>
+        <button id="logoutBtn" class="btn btn-secondary w-full">Cerrar Sesión</button>
+      `;
+      
+      document.body.appendChild(menu);
+      
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        userSession.isLoggedIn = false;
+        userSession.username = null;
+        userSession.token = null;
+        updateUserInterface();
+        menu.remove();
+        showToast('Sesión cerrada', 'info');
+      });
+      
+      document.getElementById('profileBtn').addEventListener('click', () => {
+        menu.remove();
+        showSection('santuario');
+      });
+      
+      // Close menu when clicking outside
+      setTimeout(() => {
+        document.addEventListener('click', function closeMenu(e) {
+          if (!menu.contains(e.target)) {
+            menu.remove();
+            document.removeEventListener('click', closeMenu);
+          }
+        });
+      }, 100);
     }
     
     // Service Worker registration
