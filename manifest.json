@@ -1,0 +1,84 @@
+{
+  "name": "Son1kVers3 - La Resistencia Sonora",
+  "short_name": "Son1kVers3",
+  "description": "AI-powered music generation platform with advanced features",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f111a",
+  "theme_color": "#00FFE7",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "categories": ["music", "entertainment", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMwZjExMWEiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDk2IDk2IiBmaWxsPSJub25lIj4KICA8Y2lyY2xlIGN4PSI0OCIgY3k9IjQ4IiByPSI0MCIgc3Ryb2tlPSIjMDBGRkU3IiBzdHJva2Utd2lkdGg9IjQiLz4KICA8cGF0aCBkPSJNMzIgNDhMMzggNDJMMzggNTRaIiBmaWxsPSIjMDBGRkU3Ii8+CiAgPHBhdGggZD0iTTU0IDQySDYyVjU0SDU0WiIgZmlsbD0iIzAwRkZFNyIvPgo8L3N2Zz4KPC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiMwZjExMWEiLz4KPHN2ZyB4PSIxMjgiIHk9IjEyOCIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiBmaWxsPSJub25lIj4KICA8Y2lyY2xlIGN4PSIxMjgiIGN5PSIxMjgiIHI9IjEwNCIgc3Ryb2tlPSIjMDBGRkU3IiBzdHJva2Utd2lkdGg9IjEwIi8+CiAgPHBhdGggZD0iTTg4IDEyOEwxMDAgMTE2TDEwMCAxNDBaIiBmaWxsPSIjMDBGRkU3Ii8+CiAgPHBhdGggZD0iTTE0NCAxMTZIMTY4VjE0MEgxNDRaIiBmaWxsPSIjMDBGRkU3Ii8+CiAgPHRleHQgeD0iMTI4IiB5PSIyMDAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzAwRkZFNyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UzM8L3RleHQ+Cjwvc3ZnPgo8L3N2Zz4=",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjY0MCIgdmlld0JveD0iMCAwIDMyMCA2NDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iNjQwIiBmaWxsPSIjMGYxMTFhIi8+Cjx0ZXh0IHg9IjE2MCIgeT0iMzIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMwMEZGRTciIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNvbjFrVmVyczM8L3RleHQ+CjwvcnZnPg==",
+      "sizes": "320x640",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAyNCIgaGVpZ2h0PSI3NjgiIHZpZXdCb3g9IjAgMCAxMDI0IDc2OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjEwMjQiIGhlaWdodD0iNzY4IiBmaWxsPSIjMGYxMTFhIi8+Cjx0ZXh0IHg9IjUxMiIgeT0iMzg0IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IiMwMEZGRTciIHRleHQtYW5jaG9yPSJtaWRkbGUiPlNvbjFrVmVyczMgLSBEZXNrdG9wPC90ZXh0Pgo8L3N2Zz4=",
+      "sizes": "1024x768",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "features": [
+    "cross-origin-isolated"
+  ],
+  "shortcuts": [
+    {
+      "name": "Generación Musical",
+      "short_name": "Generar",
+      "description": "Crear música con IA",
+      "url": "/#generacion",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHN2ZyB4PSIyNCIgeT0iMjQiIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj4KICA8cGF0aCBkPSJNMTYgMjRMMjQgMTZWMzJaIiBmaWxsPSIjMDBGRkU3Ii8+CiAgPHBhdGggZD0iTTI4IDE2SDM2VjMySDI4WiIgZmlsbD0iIzAwRkZFNyIvPgo8L3N2Zz4KPC9zdmc+",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Ghost Studio",
+      "short_name": "Ghost",
+      "description": "Estudio fantasma avanzado",
+      "url": "/#ghost-studio",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHN2ZyB4PSIyNCIgeT0iMjQiIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj4KICA8Y2lyY2xlIGN4PSIyNCIgY3k9IjI0IiByPSIyMCIgc3Ryb2tlPSIjOGI1Y2Y2IiBzdHJva2Utd2lkdGg9IjIiLz4KICA8Y2lyY2xlIGN4PSIyNCIgY3k9IjI0IiByPSI4IiBmaWxsPSIjOGI1Y2Y2Ii8+Cjwvc3ZnPgo8L3N2Zz4=",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "El Archivo",
+      "short_name": "Archivo",
+      "description": "Tu música generada",
+      "url": "/#archivo",
+      "icons": [
+        {
+          "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHN2ZyB4PSIyNCIgeT0iMjQiIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIj4KICA8cmVjdCB4PSIxMiIgeT0iOCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjMyIiBzdHJva2U9IiMwMEZGRTciIHN0cm9rZS13aWR0aD0iMiIvPgogIDxsaW5lIHgxPSIxNiIgeTE9IjE2IiB4Mj0iMzIiIHkyPSIxNiIgc3Ryb2tlPSIjMDBGRkU3Ii8+CiAgPGxpbmUgeDE9IjE2IiB5MT0iMjQiIHgyPSIzMiIgeTI9IjI0IiBzdHJva2U9IiMwMEZGRTciLz4KPC9zdmc+Cjwvc3ZnPg==",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}

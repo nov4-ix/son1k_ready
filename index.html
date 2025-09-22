@@ -2,7 +2,12 @@
 <html lang="es" class="scroll-smooth">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#00FFE7" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Son1kVers3" />
+  <link rel="manifest" href="/manifest.json" />
   <title>Son1kVers3 — La Resistencia</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -1304,12 +1309,200 @@
       });
     }
     
+    // PWA Service Worker Registration
+    async function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('✅ Service Worker registered:', registration);
+          
+          // Handle updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showToast('Nueva versión disponible. Actualizando...', 'info');
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+          
+        } catch (error) {
+          console.error('Service Worker registration failed:', error);
+        }
+      }
+    }
+    
+    // Audio Visualization System
+    class AudioVisualizer {
+      constructor() {
+        this.audioContext = null;
+        this.analyser = null;
+        this.canvas = null;
+        this.canvasContext = null;
+        this.dataArray = null;
+        this.isVisualizingActive = false;
+      }
+      
+      async setupAudioContext(audioElement) {
+        try {
+          this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          this.analyser = this.audioContext.createAnalyser();
+          
+          const source = this.audioContext.createMediaElementSource(audioElement);
+          source.connect(this.analyser);
+          this.analyser.connect(this.audioContext.destination);
+          
+          this.analyser.fftSize = 256;
+          const bufferLength = this.analyser.frequencyBinCount;
+          this.dataArray = new Uint8Array(bufferLength);
+          
+          return true;
+        } catch (error) {
+          console.error('Audio context setup failed:', error);
+          return false;
+        }
+      }
+      
+      createVisualizationCanvas(container) {
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = 400;
+        this.canvas.height = 100;
+        this.canvas.className = 'w-full h-20 bg-zinc-900/50 rounded-lg';
+        this.canvasContext = this.canvas.getContext('2d');
+        
+        container.appendChild(this.canvas);
+        return this.canvas;
+      }
+      
+      startVisualization() {
+        if (!this.analyser || !this.canvasContext) return;
+        
+        this.isVisualizingActive = true;
+        this.draw();
+      }
+      
+      stopVisualization() {
+        this.isVisualizingActive = false;
+      }
+      
+      draw() {
+        if (!this.isVisualizingActive) return;
+        
+        requestAnimationFrame(() => this.draw());
+        
+        this.analyser.getByteFrequencyData(this.dataArray);
+        
+        const { width, height } = this.canvas;
+        this.canvasContext.fillStyle = 'rgba(15, 17, 26, 0.8)';
+        this.canvasContext.fillRect(0, 0, width, height);
+        
+        const barWidth = width / this.dataArray.length * 2;
+        let x = 0;
+        
+        for (let i = 0; i < this.dataArray.length; i++) {
+          const barHeight = (this.dataArray[i] / 255) * height;
+          
+          // Neon gradient effect
+          const gradient = this.canvasContext.createLinearGradient(0, height - barHeight, 0, height);
+          gradient.addColorStop(0, '#00FFE7');
+          gradient.addColorStop(1, '#8b5cf6');
+          
+          this.canvasContext.fillStyle = gradient;
+          this.canvasContext.fillRect(x, height - barHeight, barWidth, barHeight);
+          
+          x += barWidth + 1;
+        }
+      }
+    }
+    
+    // Global audio visualizer instance
+    const audioVisualizer = new AudioVisualizer();
+    
+    // Enhanced music player with visualization
+    function mostrarReproductor(track) {
+      // Crear elemento del reproductor si no existe
+      let reproductor = document.getElementById('musicPlayer');
+      if (!reproductor) {
+        reproductor = document.createElement('div');
+        reproductor.id = 'musicPlayer';
+        reproductor.className = 'fixed bottom-4 left-4 right-4 bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl z-50';
+        reproductor.innerHTML = `
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold text-white">${track.title || 'Canción Generada'}</h4>
+              <p class="text-sm text-zinc-400">${track.tags || 'Son1kVers3 AI'}</p>
+            </div>
+            <button onclick="cerrarReproductor()" class="text-zinc-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div id="audioVisualization" class="mb-4"></div>
+          <div class="flex items-center space-x-4">
+            <audio controls class="flex-1 w-full" id="audioPlayer">
+              <source src="${track.audio_url}" type="audio/mpeg">
+              Tu navegador no soporta audio HTML5.
+            </audio>
+            <a href="${track.audio_url}" download="${track.title || 'cancion'}.mp3" 
+               class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+              Descargar
+            </a>
+          </div>
+        `;
+        document.body.appendChild(reproductor);
+        
+        // Setup audio visualization
+        const audioElement = reproductor.querySelector('#audioPlayer');
+        const visualizationContainer = reproductor.querySelector('#audioVisualization');
+        
+        audioElement.addEventListener('loadedmetadata', async () => {
+          if (await audioVisualizer.setupAudioContext(audioElement)) {
+            audioVisualizer.createVisualizationCanvas(visualizationContainer);
+          }
+        });
+        
+        audioElement.addEventListener('play', () => {
+          audioVisualizer.startVisualization();
+        });
+        
+        audioElement.addEventListener('pause', () => {
+          audioVisualizer.stopVisualization();
+        });
+        
+        // Cache audio for offline playback
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'CACHE_AUDIO',
+            data: { url: track.audio_url }
+          });
+        }
+        
+      } else {
+        // Actualizar reproductor existente
+        const audio = reproductor.querySelector('#audioPlayer');
+        const title = reproductor.querySelector('h4');
+        const tags = reproductor.querySelector('p');
+        const downloadLink = reproductor.querySelector('a[download]');
+        
+        audio.src = track.audio_url;
+        title.textContent = track.title || 'Canción Generada';
+        tags.textContent = track.tags || 'Son1kVers3 AI';
+        downloadLink.href = track.audio_url;
+        downloadLink.download = (track.title || 'cancion') + '.mp3';
+      }
+    }
+    
     // Inicialización
     document.addEventListener('DOMContentLoaded', async () => {
       setupKnobs();
       setupSliders();
       setupNavigation();
       setupEventListeners();
+      
+      // Registrar Service Worker para PWA
+      await registerServiceWorker();
       
       // Cargar sesión de usuario y dashboard
       await loadUserSession();

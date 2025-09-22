@@ -11,6 +11,7 @@ import json
 from datetime import datetime
 from typing import Optional, Dict, Any
 import hashlib
+from advanced_suno_wrapper import create_suno_wrapper, AdvancedSunoWrapper, SunoTrack, GenerationStatus
 
 # Import tracker system
 from tracker_system import (
@@ -42,6 +43,9 @@ class CredentialStatus:
 # Global status objects
 suno_status = CredentialStatus()
 ollama_status = CredentialStatus()
+
+# Global Suno wrapper instance
+suno_wrapper: Optional[AdvancedSunoWrapper] = None
 
 # Pro tester accounts database
 PRO_TESTER_ACCOUNTS = {
@@ -636,24 +640,100 @@ def get_system_health():
     }
 
 async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None, user_plan: Optional[str] = "free"):
-    """REAL Suno automation using direct API calls"""
+    """REAL Suno automation using advanced wrapper with session management"""
     
     logger.info(f"🎵 Starting REAL Suno API generation: {prompt[:50]}...")
     
+    global suno_wrapper
+    
     try:
-        # Get credentials from environment
+        # Initialize wrapper if not already done
+        if not suno_wrapper:
+            suno_wrapper = await create_suno_wrapper()
+        
+        # Ensure session is valid
+        if not await suno_wrapper.auto_renew_session():
+            logger.warning("Failed to validate/renew Suno session, attempting fallback...")
+            return await call_suno_fallback(prompt, lyrics, style, ghost_options, user_plan)
+        
+        # Generate music using advanced wrapper
+        enhanced_prompt = f"{prompt} {style}".strip()
+        
+        # Add ghost options if provided
+        if ghost_options:
+            logger.info(f"🎭 Using Ghost Studio options: {ghost_options}")
+            if ghost_options.get("use_composer_style"):
+                enhanced_prompt += f" in the style of {ghost_options.get('composer_style', '')}"
+        
+        logger.info(f"🚀 Generating music with enhanced wrapper...")
+        
+        tracks = await suno_wrapper.generate_music(
+            prompt=enhanced_prompt,
+            lyrics=lyrics or "",
+            style=style or "electronic",
+            model="chirp-v3-5",
+            wait_for_completion=True
+        )
+        
+        if not tracks:
+            raise Exception("No tracks generated")
+        
+        # Convert SunoTrack objects to API response format
+        result_tracks = []
+        for track in tracks:
+            if track.status == GenerationStatus.COMPLETED and track.audio_url:
+                result_tracks.append({
+                    "id": track.id,
+                    "title": track.title,
+                    "audio_url": track.audio_url,
+                    "video_url": track.video_url,
+                    "image_url": track.image_url,
+                    "tags": track.tags,
+                    "duration": track.duration,
+                    "created_at": track.created_at.isoformat(),
+                    "model_name": track.model_name,
+                    "lyrics": track.lyrics
+                })
+        
+        if result_tracks:
+            logger.info(f"✅ Successfully generated {len(result_tracks)} tracks")
+            suno_status.valid = True
+            suno_status.last_checked = datetime.now()
+            suno_status.error_count = 0
+            
+            return {
+                "success": True,
+                "tracks": result_tracks,
+                "generation_time": time.time(),
+                "method": "advanced_wrapper"
+            }
+        else:
+            raise Exception("All tracks failed to complete generation")
+    
+    except Exception as e:
+        logger.error(f"❌ Advanced Suno wrapper failed: {e}")
+        suno_status.valid = False
+        suno_status.error_count += 1
+        suno_status.last_error = str(e)
+        
+        # Fallback to original implementation
+        return await call_suno_fallback(prompt, lyrics, style, ghost_options, user_plan)
+
+async def call_suno_fallback(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None, user_plan: Optional[str] = "free"):
+    """Fallback implementation using original direct API calls"""
+    logger.info("🔄 Using fallback Suno API implementation...")
+    
+    try:
+        # Original implementation as fallback
         session_id = os.environ.get("SUNO_SESSION_ID")
         cookie = os.environ.get("SUNO_COOKIE", "").replace('\n', '').replace('\r', '').strip()
-        
-        # Clean cookie string to avoid encoding issues
         cookie = cookie.encode('ascii', 'ignore').decode('ascii')
         
         if not session_id or not cookie:
             raise Exception("Missing Suno credentials")
         
-        # Prepare headers for Suno API
         headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
             "Accept": "application/json, text/plain, */*",
             "Content-Type": "application/json",
             "Cookie": cookie,
@@ -661,102 +741,46 @@ async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style:
             "Origin": "https://suno.com"
         }
         
-        # Prepare generation request
         generation_data = {
             "prompt": f"{prompt} {style}".strip(),
             "lyrics": lyrics or "",
             "mv": "chirp-v3-5",
-            "title": "",
-            "tags": style or "electronic",
-            "continue_clip_id": None,
-            "continue_at": None,
-            "infill_start_s": None,
-            "infill_end_s": None
+            "tags": style or "electronic"
         }
         
-        # Add ghost options if provided
-        if ghost_options:
-            logger.info(f"🎭 Using Ghost Studio options: {ghost_options}")
-            if ghost_options.get("use_composer_style"):
-                generation_data["prompt"] += f" in the style of {ghost_options.get('composer_style', '')}"
-        
-        logger.info(f"🚀 Sending generation request to Suno API...")
-        
-        # Make request to Suno's generation API
-        api_url = "https://studio-api.suno.ai/api/generate/v2/"
-        
-        response = requests.post(api_url, json=generation_data, headers=headers, timeout=30)
+        response = requests.post("https://studio-api.suno.ai/api/generate/v2/", 
+                               json=generation_data, headers=headers, timeout=30)
         
         if response.status_code == 200:
             result = response.json()
-            
             if result and len(result) > 0:
-                clip = result[0]  # Get first clip
-                clip_id = clip.get("id", f"real_api_{int(time.time())}")
-                
-                logger.info(f"✅ REAL Suno API generation successful! Clip ID: {clip_id}")
-                
-                # Format response
-                formatted_result = {
-                    "id": clip_id,
-                    "status": "generating",
-                    "prompt": prompt,
-                    "lyrics": lyrics,
-                    "style": style,
-                    "method": "suno_direct_api_real",
-                    "message": "Music generation started via REAL Suno API",
-                    "audio_url": clip.get("audio_url") or f"https://cdn1.suno.ai/{clip_id}.mp3",
-                    "download_url": f"/api/download/{clip_id}",
-                    "video_url": clip.get("video_url") or f"https://cdn1.suno.ai/{clip_id}.mp4",
-                    "image_url": clip.get("image_url") or f"https://cdn1.suno.ai/{clip_id}.png",
-                    "title": clip.get("title", "Generated Song"),
-                    "duration": clip.get("duration", "02:30"),
-                    "model_name": clip.get("model_name", "chirp-v3-5"),
-                    "created_at": clip.get("created_at", datetime.now().isoformat()),
-                    "credits_used": 10,
-                    "generation_time": "~30-60 seconds",
-                    "metadata": clip.get("metadata", {}),
-                    "note": "🎵 REAL Suno API generation - WORKING!"
+                clip = result[0]
+                return {
+                    "success": True,
+                    "tracks": [{
+                        "id": clip.get("id", f"fallback_{int(time.time())}"),
+                        "title": clip.get("title", "Generated Song"),
+                        "audio_url": clip.get("audio_url"),
+                        "video_url": clip.get("video_url"),
+                        "image_url": clip.get("image_url"),
+                        "tags": style or "electronic",
+                        "duration": clip.get("duration"),
+                        "created_at": datetime.now().isoformat(),
+                        "model_name": "chirp-v3-5",
+                        "lyrics": lyrics or ""
+                    }],
+                    "method": "fallback"
                 }
-                
-                return formatted_result
-            else:
-                raise Exception("Empty response from Suno API")
-                
-        elif response.status_code == 401:
-            raise Exception("Authentication failed - credentials may be expired")
-        elif response.status_code == 429:
-            raise Exception("Rate limit exceeded - too many requests")
-        else:
-            raise Exception(f"Suno API returned {response.status_code}: {response.text}")
-            
-    except Exception as e:
-        logger.error(f"❌ Real Suno API failed: {e}")
         
-        # Try Selenium fallback
-        try:
-            logger.info("🔄 Attempting Selenium fallback...")
-            return await call_suno_selenium_fallback(prompt, lyrics, style, ghost_options)
-        except:
-            # Final fallback
-            job_id = f"api_fallback_{int(time.time())}"
-            return {
-                "id": job_id,
-                "status": "api_error_fallback",
-                "prompt": prompt,
-                "lyrics": lyrics,
-                "style": style,
-                "method": "api_error_fallback",
-                "message": f"Suno API failed: {e}",
-                "audio_url": f"https://suno.com/song/{job_id}",
-                "video_url": f"https://suno.com/song/{job_id}/video",
-                "duration": "02:30",
-                "model_name": "chirp-v3-5",
-                "created_at": datetime.now().isoformat(),
-                "credits_used": 10,
-                "generation_time": "~30 seconds",
-                "note": f"❌ API error: {e}"
-            }
+        raise Exception(f"Fallback failed: {response.status_code}")
+        
+    except Exception as e:
+        logger.error(f"❌ Fallback also failed: {e}")
+        return {
+            "success": False,
+            "error": f"Both advanced wrapper and fallback failed: {e}",
+            "tracks": []
+        }
 
 async def call_suno_selenium_fallback(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None):
     """Selenium fallback when API fails"""
