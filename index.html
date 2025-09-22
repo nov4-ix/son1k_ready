@@ -139,9 +139,15 @@
         <button class="nav-tab px-4 py-2 rounded-lg transition" data-section="planes">Planes</button>
       </div>
       
-      <button id="entrarEstudio" class="bg-neon text-black px-6 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
-        Entrar al Estudio
-      </button>
+      <div class="flex items-center space-x-4">
+        <div class="text-right">
+          <div class="text-xs text-zinc-400">Plan: <span id="userPlan" class="text-neon">Free</span></div>
+          <div class="text-xs text-zinc-400">Pistas: <span id="userTracks" class="text-white">0</span>/<span id="userLimit" class="text-neon">3</span></div>
+        </div>
+        <button id="entrarEstudio" class="bg-neon text-black px-6 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+          Entrar al Estudio
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -398,6 +404,37 @@
             <button id="generarMusica" class="w-full bg-neon text-black rounded-lg py-4 font-semibold text-lg hover:bg-neon/90 transition shadow-glow">
               Generar Música
             </button>
+          </div>
+        </div>
+        
+        <!-- Asistente de IA -->
+        <div class="mt-8 rounded-2xl border border-neon/30 bg-gradient-to-br from-neon/5 to-neon-purple/5 p-6 backdrop-blur-xl">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-semibold">🤖 Asistente de IA</h4>
+            <button onclick="toggleAsistente()" id="toggleAsistenteBtn" class="text-neon hover:text-neon/80 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+          </div>
+          <div id="asistenteContent" class="space-y-4">
+            <div class="bg-zinc-900/50 rounded-lg p-4 max-h-40 overflow-y-auto" id="chatMessages">
+              <div class="text-sm text-zinc-400">
+                ¡Hola! Soy tu asistente de IA. Puedo ayudarte con letras, ideas musicales, géneros, y cualquier duda sobre producción. ¿En qué puedo ayudarte?
+              </div>
+            </div>
+            <div class="flex space-x-2">
+              <input 
+                type="text" 
+                class="flex-1 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-2 text-white text-sm"
+                placeholder="Pregunta algo al asistente..."
+                id="mensajeAsistente"
+                onkeypress="if(event.key==='Enter') enviarMensajeAsistente()"
+              >
+              <button onclick="enviarMensajeAsistente()" class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+                Enviar
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -680,6 +717,15 @@
     // Variables globales
     let currentSection = 'home';
     const API_BASE_URL = window.location.origin;
+    let userSession = {
+      plan: 'free',
+      tracksUsed: 0,
+      limits: {
+        free: 3,
+        pro: 50,
+        enterprise: 500
+      }
+    };
     
     // Configuración de knobs
     function setupKnobs() {
@@ -795,6 +841,11 @@
     
     // Funciones de generación musical
     async function generarMusica() {
+      // Verificar límites del usuario
+      if (!checkUserLimits()) {
+        return;
+      }
+      
       const letra = document.getElementById('letraCancion').value;
       const estilo = document.getElementById('promptEstilo').value;
       const preset = document.getElementById('presetGeneracion').value;
@@ -818,7 +869,7 @@
             prompt: estilo || 'canción con letra personalizada',
             lyrics: letra || '',
             style: preset || 'Profesional',
-            user_plan: 'free'
+            user_plan: userSession.plan
           })
         });
         
@@ -827,6 +878,14 @@
         if (data.success && data.tracks && data.tracks.length > 0) {
           const track = data.tracks[0];
           showToast('¡Música generada con éxito!', 'success');
+          
+          // Actualizar contador de uso
+          userSession.tracksUsed++;
+          updateUserStats();
+          
+          // Crear cuenta de usuario y transacción
+          await crearCuentaYTransaccion(track);
+          
           mostrarReproductor(track);
         } else {
           showToast('Error al generar música: ' + (data.error || 'Error desconocido'), 'error');
@@ -1006,6 +1065,166 @@
       }
     }
     
+    // Funciones del asistente de IA
+    function toggleAsistente() {
+      const content = document.getElementById('asistenteContent');
+      const btn = document.getElementById('toggleAsistenteBtn');
+      const isHidden = content.style.display === 'none';
+      
+      content.style.display = isHidden ? 'block' : 'none';
+      btn.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+    
+    async function enviarMensajeAsistente() {
+      const input = document.getElementById('mensajeAsistente');
+      const mensaje = input.value.trim();
+      if (!mensaje) return;
+      
+      const chatMessages = document.getElementById('chatMessages');
+      
+      // Agregar mensaje del usuario
+      const userMessage = document.createElement('div');
+      userMessage.className = 'text-sm text-white mb-2 text-right';
+      userMessage.innerHTML = `<span class="bg-neon text-black px-3 py-1 rounded-lg">${mensaje}</span>`;
+      chatMessages.appendChild(userMessage);
+      
+      input.value = '';
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/ollama/assistant`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: mensaje,
+            context: 'asistente musical'
+          })
+        });
+        
+        const data = await response.json();
+        
+        // Agregar respuesta del asistente
+        const assistantMessage = document.createElement('div');
+        assistantMessage.className = 'text-sm text-zinc-300 mb-2';
+        assistantMessage.innerHTML = `<span class="bg-zinc-800 px-3 py-1 rounded-lg">🤖 ${data.response || 'Error al procesar tu mensaje'}</span>`;
+        chatMessages.appendChild(assistantMessage);
+        
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      } catch (error) {
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'text-sm text-red-400 mb-2';
+        errorMessage.innerHTML = `<span class="bg-red-900/30 px-3 py-1 rounded-lg">❌ Error: ${error.message}</span>`;
+        chatMessages.appendChild(errorMessage);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    }
+    
+    // Sistema de límites de usuario
+    function checkUserLimits() {
+      const currentLimit = userSession.limits[userSession.plan];
+      if (userSession.tracksUsed >= currentLimit) {
+        showToast('Has alcanzado el límite de tu plan. Mejora a Pro para más pistas.', 'warning');
+        return false;
+      }
+      return true;
+    }
+    
+    function updateUserStats() {
+      document.getElementById('userPlan').textContent = userSession.plan.charAt(0).toUpperCase() + userSession.plan.slice(1);
+      document.getElementById('userTracks').textContent = userSession.tracksUsed;
+      document.getElementById('userLimit').textContent = userSession.limits[userSession.plan];
+    }
+    
+    async function loadUserSession() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/user/session`);
+        const data = await response.json();
+        if (data.success) {
+          userSession = { ...userSession, ...data.session };
+          updateUserStats();
+        }
+      } catch (error) {
+        console.log('No user session found, using default');
+      }
+    }
+    
+    // Sistema de tracking y revenue
+    async function crearCuentaYTransaccion(track) {
+      try {
+        // Crear cuenta de usuario si no existe
+        const accountResponse = await fetch(`${API_BASE_URL}/api/tracker/account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: 'user@son1kvers3.com', // En producción usar email real
+            full_name: 'Usuario Son1kVers3',
+            plan: userSession.plan.toUpperCase()
+          })
+        });
+        
+        if (accountResponse.ok) {
+          const accountData = await accountResponse.json();
+          
+          // Crear transacción por la generación
+          const transactionResponse = await fetch(`${API_BASE_URL}/api/tracker/transaction`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              account_id: accountData.account_id,
+              source: 'music_generation',
+              amount: userSession.plan === 'free' ? 0 : (userSession.plan === 'pro' ? 999 : 2499),
+              currency: 'USD',
+              meta: {
+                track_title: track.title,
+                track_id: track.id,
+                plan: userSession.plan
+              }
+            })
+          });
+          
+          if (transactionResponse.ok) {
+            console.log('Transaction recorded successfully');
+          }
+        }
+      } catch (error) {
+        console.error('Error tracking user activity:', error);
+      }
+    }
+    
+    // Dashboard Widget (React-style)
+    async function loadDashboardWidget() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/tracker/stats`);
+        const stats = await response.json();
+        
+        if (stats.success) {
+          updateDashboardDisplay(stats.data);
+        }
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+    
+    function updateDashboardDisplay(stats) {
+      // En una implementación real, esto sería un widget React
+      console.log('📊 Dashboard Stats:', {
+        'Total Accounts': stats.total_accounts,
+        'Revenue (USD)': stats.total_revenue_usd,
+        'Revenue (MXN)': stats.total_revenue_mxn,
+        'Plan Distribution': stats.plan_distribution,
+        'Recent Activity': stats.recent_transactions
+      });
+      
+      // Mostrar stats en consola para debug
+      showToast(`📊 Total cuentas: ${stats.total_accounts} | Revenue: $${stats.total_revenue_usd} USD`, 'info');
+    }
+    
     // Sistema de notificaciones
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
@@ -1091,12 +1310,19 @@
       setupSliders();
       setupNavigation();
       setupEventListeners();
+      
+      // Cargar sesión de usuario y dashboard
+      await loadUserSession();
       await checkBackendStatus();
+      await loadDashboardWidget();
       
       // Mensaje de bienvenida
       setTimeout(() => {
         showToast('Bienvenido a Son1kVers3 - La Resistencia Sonora', 'success');
       }, 1000);
+      
+      // Actualizar dashboard cada 30 segundos
+      setInterval(loadDashboardWidget, 30000);
     });
   </script>
 </body>
