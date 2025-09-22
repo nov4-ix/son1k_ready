@@ -264,147 +264,17 @@ def root():
         </body>
         </html>
         """, status_code=500)
-        if (result.status === 'success') {
-          // Show music player with real Suno track
-          showMusicPlayer(result.suno_response);
-        } else {
-          throw new Error(result.message || 'Error en generación');
-        }"""
-        )
-        
-        # Add Ghost Studio API integration
-        html_content = html_content.replace(
-            "// Simular llamada a API\n        await new Promise(resolve => setTimeout(resolve, 4000));",
-            """// REAL Ghost Studio API call
-        const response = await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: prompt,
-            style: tags,
-            ghost_options: {
-              preset: preset,
-              afinacion: document.getElementById('afinacionGhost')?.value || 60,
-              expresividad: document.getElementById('expresividadGhost')?.value || 75
-            }
-          })
-        });
-        
-        const result = await response.json();
-        if (result.status === 'success') {
-          showMusicPlayer(result.suno_response);
-        } else {
-          throw new Error(result.message || 'Error en Ghost Studio');
-        }"""
-        )
-        
-        # Add music player function before the closing script tag
-        html_content = html_content.replace(
-            "    });",
-            """    });
-    
-    // Music Player for Suno tracks
-    function showMusicPlayer(sunoResponse) {
-      const playerHTML = `
-        <div id="musicPlayer" class="fixed bottom-4 right-4 z-50 bg-zinc-950/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="font-semibold text-neon">🎵 Track Generado</h4>
-            <button onclick="closeMusicPlayer()" class="text-zinc-400 hover:text-white">✕</button>
-          </div>
-          
-          <div class="space-y-4">
-            <div class="text-sm text-zinc-400">
-              <p><strong>ID:</strong> ${sunoResponse.id}</p>
-              <p><strong>Método:</strong> ${sunoResponse.method}</p>
-              <p><strong>Duración:</strong> ${sunoResponse.duration || '02:30'}</p>
-            </div>
-            
-            ${sunoResponse.audio_url ? `
-              <audio controls class="w-full">
-                <source src="${sunoResponse.audio_url}" type="audio/mpeg">
-                Tu navegador no soporta audio.
-              </audio>
-            ` : ''}
-            
-            <div class="flex space-x-2">
-              ${sunoResponse.audio_url ? `
-                <a href="${sunoResponse.audio_url}" target="_blank" class="flex-1 bg-neon text-black text-center py-2 rounded-lg text-sm font-semibold hover:bg-neon/90 transition">
-                  🎵 Escuchar
-                </a>
-              ` : ''}
-              ${sunoResponse.download_url ? `
-                <a href="${sunoResponse.download_url}" download class="flex-1 bg-white/10 text-white text-center py-2 rounded-lg text-sm font-semibold hover:bg-white/20 transition">
-                  💾 Descargar
-                </a>
-              ` : ''}
-            </div>
-            
-            <div class="text-xs text-zinc-500">
-              ${sunoResponse.note || 'Generado con Son1kVers3'}
-            </div>
-          </div>
-        </div>
-      `;
-      
-      // Remove existing player
-      const existingPlayer = document.getElementById('musicPlayer');
-      if (existingPlayer) {
-        existingPlayer.remove();
-      }
-      
-      // Add new player
-      document.body.insertAdjacentHTML('beforeend', playerHTML);
-    }
-    
-    function closeMusicPlayer() {
-      const player = document.getElementById('musicPlayer');
-      if (player) {
-        player.remove();
-      }
-    }"""
-        )
-        
-        return HTMLResponse(content=html_content, status_code=200)
-        
-    except FileNotFoundError:
-        # Fallback to API info if HTML file not found
-        return HTMLResponse(content="""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Son1kVers3 - La Resistencia</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background: #0f111a; 
-            color: #00FFE7; 
-            text-align: center; 
-            padding: 100px 20px; 
-        }
-        .logo { 
-            font-size: 3rem; 
-            color: #00FFE7; 
-            margin-bottom: 30px; 
-        }
-        .message { 
-            font-size: 1.2rem; 
-            color: #ccc; 
-            max-width: 600px; 
-            margin: 0 auto; 
-        }
-    </style>
-</head>
-<body>
-    <div class="logo">Son1kVers3</div>
-    <div class="message">
-        Frontend real no encontrado. <br>
-        Buscando: /Users/nov4-ix/Desktop/sonikverse_complete_interfaz.html
-        <br><br>
-        <a href="/api/system/health" style="color: #00FFE7;">Ver Estado del Sistema</a>
-    </div>
-</body>
-</html>
-""", status_code=200)
+
+# Serve PWA static files
+@app.get("/manifest.json", response_class=FileResponse)
+def get_manifest():
+    """Serve PWA manifest"""
+    return FileResponse("manifest.json", media_type="application/json")
+
+@app.get("/sw.js", response_class=FileResponse)
+def get_service_worker():
+    """Serve service worker"""
+    return FileResponse("sw.js", media_type="application/javascript")
 
 @app.get("/api")
 def api_root():
