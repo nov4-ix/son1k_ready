@@ -29,6 +29,15 @@ async def lifespan(app: FastAPI):
     """Eventos del ciclo de vida del sistema"""
     # Startup
     logger.info("🎵 Son1kVers3 API iniciando...")
+    
+    # Inicializar base de datos automáticamente
+    try:
+        from init_users_auto import init_users_database
+        init_users_database()
+        logger.info("✅ Base de datos inicializada")
+    except Exception as e:
+        logger.error(f"❌ Error inicializando usuarios: {e}")
+    
     logger.info("✅ Sistema de generación musical cargado")
     logger.info("✅ Asistente IA musical activado")
     logger.info("✅ Base de datos musical cargada")
