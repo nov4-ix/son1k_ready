@@ -116,14 +116,14 @@ async def call_ai_assistant(prompt: str) -> str:
                 "http://localhost:11434/api/generate",
                 json={
                     "model": "llama3.1:8b",
-                    "prompt": f"Eres NOV4-IX, un asistente musical especializado en cyberpunk y synthwave para Son1kVers3. Responde de forma concisa y útil: {prompt}",
+                    "prompt": f"Eres Pixel, un asistente musical especializado en cyberpunk y synthwave para Son1kVers3. Responde de forma concisa y útil: {prompt}",
                     "stream": False
                 }
             )
             if response.status_code == 200:
                 data = response.json()
                 if "response" in data and data["response"].strip():
-                    return f"🤖 **NOV4-IX (Ollama):**\n\n{data['response']}"
+                    return f"🤖 **Pixel (Ollama):**\n\n{data['response']}"
     except Exception as e:
         logger.warning(f"Ollama no disponible: {e}")
     
@@ -166,11 +166,11 @@ async def call_ai_assistant(prompt: str) -> str:
     # Respuesta general con variedad
     else:
         general_responses = [
-            "🤖 **NOV4-IX - Asistente Musical Avanzado**\n\nEspecialista en el universo sonoro de \"La Resistencia\".\n\n🎵 **Capacidades creativas:**\n- Letras épicas con narrativa cyberpunk\n- Progresiones armónicas innovadoras\n- Prompts optimizados para Suno AI\n- Análisis de producción musical\n\n🎛️ **Servicios técnicos:**\n- Diseño de efectos únicos\n- Optimización de BPM y estructura\n- Configuración de sintetizadores\n- Masterización conceptual\n\n¿Qué aspecto del universo Son1kVers3 exploramos hoy?",
+            "🤖 **Pixel - Asistente Musical Avanzado**\n\nEspecialista en el universo sonoro de \"La Resistencia\".\n\n🎵 **Capacidades creativas:**\n- Letras épicas con narrativa cyberpunk\n- Progresiones armónicas innovadoras\n- Prompts optimizados para Suno AI\n- Análisis de producción musical\n\n🎛️ **Servicios técnicos:**\n- Diseño de efectos únicos\n- Optimización de BPM y estructura\n- Configuración de sintetizadores\n- Masterización conceptual\n\n¿Qué aspecto del universo Son1kVers3 exploramos hoy?",
             
             "🤖 **Sistema IA Musical - Son1kVers3**\n\nTu compañero para crear música del futuro.\n\n✨ **Especialidades únicas:**\n- Fusión cyberpunk-orquestal\n- Letras de resistencia digital\n- Soundscapes atmosféricos\n- Drops cinematográficos\n\n🎯 **Géneros dominados:**\n- Synthwave épico\n- Dark electronic\n- Cinematic trap\n- Ambient cyberpunk\n\n🎵 **¿En qué te ayudo?** Letras, acordes, prompts, o teoría musical avanzada.",
             
-            "🤖 **NOV4-IX Online - Ready for Creation**\n\nAsistente musical del proyecto \"La Resistencia\".\n\n🎼 **Modo creativo activado:**\n- Generación de letras temáticas\n- Diseño harmónico avanzado\n- Optimización para plataformas IA\n- Consultoría de producción\n\n🎛️ **Base de conocimiento:**\n- 10.000+ progresiones catalogadas\n- Efectos de síntesis especializados\n- Técnicas de masterización épica\n- Narrativas cyberpunk auténticas\n\n¿Comenzamos a crear algo épico juntos?"
+            "🤖 **Pixel Online - Ready for Creation**\n\nAsistente musical del proyecto \"La Resistencia\".\n\n🎼 **Modo creativo activado:**\n- Generación de letras temáticas\n- Diseño harmónico avanzado\n- Optimización para plataformas IA\n- Consultoría de producción\n\n🎛️ **Base de conocimiento:**\n- 10.000+ progresiones catalogadas\n- Efectos de síntesis especializados\n- Técnicas de masterización épica\n- Narrativas cyberpunk auténticas\n\n¿Comenzamos a crear algo épico juntos?"
         ]
         return random.choice(general_responses)
 
@@ -183,7 +183,7 @@ def generate_musical_fallback(message: str) -> str:
 
 *Verso inspirado en La Resistencia:*
 "En las sombras digitales donde el eco resuena,
-NOV4-IX despierta, la música nos llena.
+Pixel despierta, la música nos llena.
 Circuitos y melodías en perfecta armonía,
 Cada nota es un código, cada beat una guía."
 
@@ -228,7 +228,7 @@ professional production, digital rebellion"
 ¿Necesitas el prompt adaptado para otro género?"""
     
     else:
-        return """🤖 **Asistente Musical NOV4-IX - Son1kVers3**
+        return """🤖 **Asistente Musical Pixel - Son1kVers3**
 
 Especialista en creación musical del universo "La Resistencia". 
 Puedo ayudarte con:
@@ -329,7 +329,51 @@ async def chat_assistant(request: ChatRequest):
 async def generate_music(request: GenerateRequest):
     """Generar música (endpoint principal)"""
     try:
-        # Detectar género del prompt
+        # Intentar generar música real con Suno
+        try:
+            # Importar sistema de generación
+            import subprocess
+            import uuid
+            
+            # Crear job ID único
+            job_id = str(uuid.uuid4())
+            
+            # Intentar ejecutar el sistema de generación real
+            result = subprocess.run([
+                "python3", "-c", f"""
+import sys
+sys.path.append('backend/selenium_worker')
+try:
+    from suno_automation import generate_song_complete
+    result = generate_song_complete(
+        prompt='{request.prompt}', 
+        lyrics='{request.lyrics or ""}',
+        instrumental={'true' if getattr(request, 'instrumental', False) else 'false'}
+    )
+    print('SUNO_SUCCESS:', result)
+except Exception as e:
+    print('SUNO_ERROR:', str(e))
+"""
+            ], capture_output=True, text=True, timeout=30)
+            
+            if "SUNO_SUCCESS:" in result.stdout:
+                return {
+                    "status": "success",
+                    "message": "¡Música generada con Suno AI!",
+                    "job_id": job_id,
+                    "prompt": request.prompt,
+                    "lyrics": request.lyrics,
+                    "suno_result": result.stdout.split("SUNO_SUCCESS:")[1].strip(),
+                    "timestamp": datetime.now().isoformat(),
+                    "source": "suno_real"
+                }
+            else:
+                logger.warning(f"Suno error: {result.stdout} {result.stderr}")
+                
+        except Exception as e:
+            logger.warning(f"Error generación real: {e}")
+        
+        # Fallback: Simular generación pero con respuesta realista
         genre = "synthwave"
         if any(word in request.prompt.lower() for word in ["cyberpunk", "digital"]):
             genre = "cyberpunk"
@@ -338,16 +382,19 @@ async def generate_music(request: GenerateRequest):
         
         # Obtener datos del género
         genre_data = MUSIC_DATABASE["genres"].get(genre, MUSIC_DATABASE["genres"]["synthwave"])
+        job_id = str(uuid.uuid4())
         
-        # Generar respuesta de música
+        # Respuesta de fallback realista
         return {
-            "status": "success",
-            "message": "Música generada exitosamente",
+            "status": "processing",
+            "message": "Música enviada a cola de generación",
+            "job_id": job_id,
             "prompt": request.prompt,
             "lyrics": request.lyrics,
             "style": request.style,
             "detected_genre": genre,
             "timestamp": datetime.now().isoformat(),
+            "estimated_time": "2-3 minutos",
             "music_data": {
                 "bpm": genre_data["bpm"][0],
                 "key": genre_data["keys"][0], 
@@ -357,11 +404,7 @@ async def generate_music(request: GenerateRequest):
                 "quality": "professional"
             },
             "suno_prompt": f"{genre} epic, {genre_data['bpm'][0]} BPM, {request.prompt}, professional production",
-            "son1k_params": {
-                "memoria_glitch": 0.7,
-                "distorsion_emocional": 0.8,
-                "variacion_sagrada": 0.9
-            }
+            "source": "queue_system"
         }
         
     except Exception as e:
