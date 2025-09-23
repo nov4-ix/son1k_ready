@@ -215,6 +215,21 @@ def health_check():
     """Health check endpoint requerido"""
     return {"status": "healthy"}
 
+@app.get("/salud")
+def salud_check():
+    """Health check endpoint en español para Railway"""
+    return {"status": "healthy"}
+
+@app.get("/")
+def root_health():
+    """Root endpoint que también sirve como health check"""
+    return {
+        "status": "healthy",
+        "service": "Son1kVers3 API",
+        "version": "1.0.0",
+        "health": "online"
+    }
+
 @app.get("/api/status")
 def api_status():
     """Estado del API"""
