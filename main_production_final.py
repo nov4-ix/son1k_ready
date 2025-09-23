@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 import os
 import logging
 import time
@@ -21,11 +22,26 @@ import httpx
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Crear aplicación FastAPI
+# Inicialización del sistema con lifespan moderno
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Eventos del ciclo de vida del sistema"""
+    # Startup
+    logger.info("🎵 Son1kVers3 API iniciando...")
+    logger.info("✅ Sistema de generación musical cargado")
+    logger.info("✅ Asistente IA musical activado")
+    logger.info("✅ Base de datos musical cargada")
+    logger.info("🚀 ¡Sistema listo para generar música épica!")
+    yield
+    # Shutdown (si necesario)
+    logger.info("🔄 Son1kVers3 API finalizando...")
+
+# Crear aplicación FastAPI con lifespan moderno
 app = FastAPI(
     title="Son1kVers3 API",
     description="Sistema de generación musical con IA - Entrega Final",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -424,15 +440,6 @@ def api_documentation():
         }
     }
 
-# Inicialización del sistema
-@app.on_event("startup")
-async def startup_event():
-    """Eventos de inicio del sistema"""
-    logger.info("🎵 Son1kVers3 API iniciando...")
-    logger.info("✅ Sistema de generación musical cargado")
-    logger.info("✅ Asistente IA musical activado")
-    logger.info("✅ Base de datos musical cargada")
-    logger.info("🚀 ¡Sistema listo para generar música épica!")
 
 if __name__ == "__main__":
     import uvicorn
