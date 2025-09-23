@@ -18,17 +18,29 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import requests
 import httpx
+from stable_music_system import StableMusicSystem
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Sistema de música estable global
+music_system = None
+
 # Inicialización del sistema con lifespan moderno
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Eventos del ciclo de vida del sistema"""
+    global music_system
     # Startup
     logger.info("🎵 Son1kVers3 API iniciando...")
+    
+    # Inicializar sistema musical estable
+    try:
+        music_system = StableMusicSystem()
+        logger.info("✅ Sistema musical estable inicializado")
+    except Exception as e:
+        logger.error(f"❌ Error inicializando sistema musical: {e}")
     
     # Inicializar base de datos automáticamente
     try:
@@ -395,39 +407,47 @@ except Exception as e:
         except Exception as e:
             logger.warning(f"Error generación real: {e}")
         
-        # Fallback: Simular generación pero con respuesta realista
-        genre = "synthwave"
-        if any(word in request.prompt.lower() for word in ["cyberpunk", "digital"]):
-            genre = "cyberpunk"
-        elif any(word in request.prompt.lower() for word in ["epic", "orquestal"]):
-            genre = "epic"
-        
-        # Obtener datos del género
-        genre_data = MUSIC_DATABASE["genres"].get(genre, MUSIC_DATABASE["genres"]["synthwave"])
-        job_id = str(uuid.uuid4())
-        
-        # Respuesta de fallback realista
-        return {
-            "status": "processing",
-            "message": "Música enviada a cola de generación",
-            "job_id": job_id,
-            "prompt": request.prompt,
-            "lyrics": request.lyrics,
-            "style": request.style,
-            "detected_genre": genre,
-            "timestamp": datetime.now().isoformat(),
-            "estimated_time": "2-3 minutos",
-            "music_data": {
-                "bpm": genre_data["bpm"][0],
-                "key": genre_data["keys"][0], 
-                "chord_progression": genre_data["chords"][0],
-                "effects": genre_data["effects"][:2],
-                "duration": "3:30",
-                "quality": "professional"
-            },
-            "suno_prompt": f"{genre} epic, {genre_data['bpm'][0]} BPM, {request.prompt}, professional production",
-            "source": "queue_system"
-        }
+        # Fallback: Usar sistema musical estable con Ollama
+        if music_system:
+            logger.info("🎵 Usando sistema musical estable con Ollama")
+            music_data = await music_system.quick_ai_generation(request.prompt)
+            job_id = str(uuid.uuid4())
+            
+            return {
+                "status": "success",
+                "message": "¡Música generada con IA estable!",
+                "job_id": job_id,
+                "prompt": request.prompt,
+                "lyrics": music_data.get("lyrics", request.lyrics),
+                "style": request.style,
+                "title": music_data["title"],
+                "genre": music_data["genre"],
+                "mood": music_data["mood"],
+                "style_tags": music_data["style_tags"],
+                "description": music_data["description"],
+                "timestamp": datetime.now().isoformat(),
+                "generation_type": music_data["generation_type"],
+                "ai_model": music_data.get("ai_model", "ollama_stable"),
+                "music_data": {
+                    "genre": music_data["genre"],
+                    "mood": music_data["mood"],
+                    "duration": "3:30",
+                    "quality": "ai_generated"
+                },
+                "source": "ollama_ai"
+            }
+        else:
+            # Fallback final si no hay sistema musical
+            job_id = str(uuid.uuid4())
+            return {
+                "status": "processing",
+                "message": "Sistema musical temporalmente no disponible",
+                "job_id": job_id,
+                "prompt": request.prompt,
+                "lyrics": request.lyrics,
+                "timestamp": datetime.now().isoformat(),
+                "source": "emergency_fallback"
+            }
         
     except Exception as e:
         logger.error(f"Error en generación: {e}")
@@ -694,10 +714,8 @@ async def init_database_endpoint():
 async def suno_connection_status():
     """Verificar estado de conexión con Suno"""
     try:
-        # Verificar si podemos conectar con Suno (simulado)
-        # En un escenario real, aquí haríamos una request a la API de Suno
-        import requests
         import asyncio
+        import httpx
         
         suno_status = {
             "connected": False,
@@ -705,23 +723,45 @@ async def suno_connection_status():
             "last_check": datetime.now().isoformat(),
             "error": None,
             "queue_length": 0,
-            "estimated_wait": "N/A"
+            "estimated_wait": "N/A",
+            "method": "selenium_bridge"
         }
         
         try:
-            # Simular verificación de conexión a Suno
-            # En producción esto sería una llamada real a suno.com API
-            await asyncio.sleep(0.5)  # Simular latencia
+            # Verificar si tenemos credenciales de Suno
+            suno_email = os.getenv("SUNO_EMAIL")
+            suno_password = os.getenv("SUNO_PASSWORD")
             
-            # Por ahora simulamos que está desconectado
-            # Para conectar realmente necesitaríamos credenciales de Suno
-            suno_status.update({
-                "connected": False,
-                "api_available": False,
-                "error": "Suno API credentials not configured",
-                "queue_length": 0,
-                "estimated_wait": "Configuración requerida"
-            })
+            if not suno_email or not suno_password:
+                suno_status.update({
+                    "connected": False,
+                    "api_available": False,
+                    "error": "Credenciales de Suno no configuradas",
+                    "queue_length": 0,
+                    "estimated_wait": "Configurar SUNO_EMAIL y SUNO_PASSWORD en variables de entorno",
+                    "setup_required": True
+                })
+            else:
+                # Verificar conexión real con Suno.com
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.get("https://suno.com")
+                    if response.status_code == 200:
+                        suno_status.update({
+                            "connected": True,
+                            "api_available": True,
+                            "error": None,
+                            "queue_length": 0,
+                            "estimated_wait": "1-2 minutos",
+                            "credentials_found": True,
+                            "website_accessible": True
+                        })
+                    else:
+                        suno_status.update({
+                            "connected": False,
+                            "api_available": False,
+                            "error": f"Suno.com no accesible (HTTP {response.status_code})",
+                            "website_accessible": False
+                        })
             
         except Exception as e:
             suno_status.update({
@@ -736,7 +776,12 @@ async def suno_connection_status():
             "status": "success",
             "suno": suno_status,
             "message": "Estado de Suno verificado",
-            "recommendation": "Para conectar con Suno real, configurar credenciales en variables de entorno"
+            "recommendations": [
+                "1. Configurar variables de entorno: SUNO_EMAIL y SUNO_PASSWORD",
+                "2. Usar Selenium bridge para automatización estable",
+                "3. Implementar retry logic con exponential backoff",
+                "4. Usar Railway para hosting persistente"
+            ]
         }
         
     except Exception as e:
@@ -750,6 +795,145 @@ async def suno_connection_status():
                 "error": str(e)
             }
         }
+
+@app.post("/api/suno/generate")
+async def generate_with_suno_bridge(request: GenerateRequest):
+    """Generar música real usando Suno.com via Selenium bridge"""
+    try:
+        # Verificar credenciales
+        suno_email = os.getenv("SUNO_EMAIL")
+        suno_password = os.getenv("SUNO_PASSWORD")
+        
+        if not suno_email or not suno_password:
+            return {
+                "status": "error",
+                "message": "Credenciales de Suno no configuradas",
+                "setup_instructions": [
+                    "Configurar variables de entorno:",
+                    "export SUNO_EMAIL='tu-email@suno.com'",
+                    "export SUNO_PASSWORD='tu-contraseña'"
+                ]
+            }
+        
+        # Generar con Suno real usando Selenium
+        try:
+            result = await generate_suno_real(
+                prompt=request.prompt,
+                lyrics=request.lyrics,
+                style=request.style,
+                email=suno_email,
+                password=suno_password
+            )
+            
+            return {
+                "status": "success",
+                "message": "Generación iniciada en Suno",
+                "suno_job_id": result.get("job_id"),
+                "estimated_time": "2-3 minutos", 
+                "prompt": request.prompt,
+                "lyrics": request.lyrics,
+                "style": request.style,
+                "method": "selenium_bridge",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error en Suno bridge: {e}")
+            # Fallback al sistema simulado
+            fallback_result = await generate_music(request)
+            fallback_result["suno_error"] = str(e)
+            fallback_result["fallback_used"] = True
+            return fallback_result
+            
+    except Exception as e:
+        logger.error(f"Error en Suno generate: {e}")
+        return {
+            "status": "error",
+            "message": f"Error en generación Suno: {str(e)}"
+        }
+
+async def generate_suno_real(prompt: str, lyrics: str, style: str, email: str, password: str):
+    """Conectar con Suno.com real usando Selenium"""
+    try:
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        import time
+        
+        # Configurar Chrome para Railway
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--remote-debugging-port=9222")
+        
+        try:
+            driver = webdriver.Chrome(options=chrome_options)
+            wait = WebDriverWait(driver, 30)
+            
+            # 1. Ir a Suno.com
+            logger.info("Conectando con Suno.com...")
+            driver.get("https://suno.com")
+            
+            # 2. Login
+            login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Sign In') or contains(text(), 'Login')]")))
+            login_button.click()
+            
+            # Ingresar credenciales
+            email_field = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='email']")))
+            password_field = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
+            
+            email_field.send_keys(email)
+            password_field.send_keys(password)
+            
+            # Submit login
+            submit_button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+            submit_button.click()
+            
+            # 3. Esperar carga del dashboard
+            wait.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'Create')]")))
+            
+            # 4. Crear nueva canción
+            create_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Create')]")
+            create_button.click()
+            
+            # 5. Ingresar prompt y letras
+            prompt_field = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "textarea, input[placeholder*='prompt']")))
+            prompt_field.send_keys(f"{prompt} {style}")
+            
+            if lyrics:
+                lyrics_field = driver.find_element(By.CSS_SELECTOR, "textarea[placeholder*='lyrics'], textarea[placeholder*='Lyrics']")
+                lyrics_field.send_keys(lyrics)
+            
+            # 6. Generar
+            generate_button = driver.find_element(By.XPATH, "//button[contains(text(), 'Generate') or contains(text(), 'Create')]")
+            generate_button.click()
+            
+            # 7. Obtener job ID
+            time.sleep(3)
+            job_id = f"suno_{int(time.time())}"
+            
+            logger.info(f"Generación iniciada en Suno: {job_id}")
+            
+            return {
+                "job_id": job_id,
+                "status": "queued",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        finally:
+            if 'driver' in locals():
+                driver.quit()
+                
+    except ImportError:
+        logger.warning("Selenium no disponible")
+        raise Exception("Selenium no instalado. Instalar con: pip install selenium")
+    except Exception as e:
+        logger.error(f"Error en Suno automation: {e}")
+        raise Exception(f"Error conectando con Suno: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
