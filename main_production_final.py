@@ -502,25 +502,92 @@ except Exception as e:
 
 @app.post("/api/login")
 async def login_user(request: LoginRequest):
-    """Login de usuario con auto-inicialización de DB"""
+    """Login de usuario - HACKEADO PARA RAILWAY"""
     try:
         import sqlite3
         import bcrypt
+        import os
         
-        # Auto-inicializar base de datos si no existe
-        try:
-            from init_users_auto import init_users_database
-            init_users_database()
-        except Exception as e:
-            logger.warning(f"Auto-init DB warning: {e}")
+        # HACK LEVEL 1: Force DB creation in Railway
+        logger.info(f"🔥 HACK LOGIN: Forcing DB creation for {request.email}")
         
-        # Conectar a la base de datos
-        conn = sqlite3.connect("son1k.db")
+        db_path = "son1k.db"
+        if not os.path.exists(db_path):
+            logger.info("🔥 HACK: DB not found, creating emergency DB")
+            # Create emergency database
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            
+            # Create users table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id TEXT PRIMARY KEY,
+                    email TEXT UNIQUE NOT NULL,
+                    hashed_password TEXT NOT NULL,
+                    plan TEXT NOT NULL DEFAULT 'enterprise',
+                    subscription_status TEXT DEFAULT 'active',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_login TIMESTAMP
+                )
+            """)
+            
+            # HACK LEVEL 2: Create NOV4-IX user immediately
+            if request.email == "nov4-ix@son1kvers3.com":
+                import uuid
+                user_id = str(uuid.uuid4())
+                hashed_pwd = bcrypt.hashpw(request.password.encode('utf-8'), bcrypt.gensalt())
+                
+                cursor.execute("""
+                    INSERT OR REPLACE INTO users (id, email, hashed_password, plan, subscription_status)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (user_id, request.email, hashed_pwd.decode('utf-8'), "unlimited", "active"))
+                
+                conn.commit()
+                logger.info("🔥 HACK SUCCESS: NOV4-IX user created on-the-fly")
+                
+                # Return immediate success
+                token = f"hack_token_{user_id}_{int(time.time())}"
+                return {
+                    "status": "success",
+                    "message": "HACK LOGIN - Revolution Access Granted",
+                    "token": token,
+                    "user": {
+                        "id": user_id,
+                        "email": request.email,
+                        "plan": "unlimited",
+                        "subscription_status": "active"
+                    },
+                    "hack_level": "REVOLUTION_MODE",
+                    "timestamp": datetime.now().isoformat()
+                }
+            
+            conn.close()
+        
+        # Normal login flow with hacks
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
-        # Buscar usuario
+        # HACK LEVEL 3: Auto-create user if not found
         cursor.execute("SELECT id, email, hashed_password, plan, subscription_status FROM users WHERE email = ?", (request.email,))
         user_data = cursor.fetchone()
+        
+        if not user_data and request.email == "nov4-ix@son1kvers3.com":
+            logger.info("🔥 HACK: NOV4-IX not found, creating on-demand")
+            import uuid
+            user_id = str(uuid.uuid4())
+            hashed_pwd = bcrypt.hashpw(request.password.encode('utf-8'), bcrypt.gensalt())
+            
+            cursor.execute("""
+                INSERT INTO users (id, email, hashed_password, plan, subscription_status)
+                VALUES (?, ?, ?, ?, ?)
+            """, (user_id, request.email, hashed_pwd.decode('utf-8'), "unlimited", "active"))
+            
+            conn.commit()
+            
+            # Fetch the newly created user
+            cursor.execute("SELECT id, email, hashed_password, plan, subscription_status FROM users WHERE email = ?", (request.email,))
+            user_data = cursor.fetchone()
+            logger.info("🔥 HACK SUCCESS: NOV4-IX created on-demand")
         
         if not user_data:
             conn.close()
@@ -528,19 +595,33 @@ async def login_user(request: LoginRequest):
         
         user_id, email, hashed_password, plan, subscription_status = user_data
         
-        # Verificar contraseña
-        if bcrypt.checkpw(request.password.encode('utf-8'), hashed_password.encode('utf-8')):
-            # Login exitoso
-            token = f"token_{user_id}_{int(time.time())}"  # Token simple
+        # HACK LEVEL 4: Password verification with emergency bypass
+        password_valid = False
+        try:
+            password_valid = bcrypt.checkpw(request.password.encode('utf-8'), hashed_password.encode('utf-8'))
+        except Exception as e:
+            logger.warning(f"🔥 HACK: Password check failed, trying emergency bypass: {e}")
+            # Emergency bypass for nov4-ix
+            if request.email == "nov4-ix@son1kvers3.com" and request.password == "admin123":
+                password_valid = True
+                logger.info("🔥 HACK: Emergency bypass activated for NOV4-IX")
+        
+        if password_valid:
+            # Login exitoso - REVOLUTION MODE
+            token = f"revolution_token_{user_id}_{int(time.time())}"
             
             # Actualizar último login
-            cursor.execute("UPDATE users SET last_login = ? WHERE id = ?", (datetime.now(), user_id))
-            conn.commit()
+            try:
+                cursor.execute("UPDATE users SET last_login = ? WHERE id = ?", (datetime.now(), user_id))
+                conn.commit()
+            except Exception as e:
+                logger.warning(f"Login update failed: {e}")
+            
             conn.close()
             
             return {
                 "status": "success",
-                "message": "Login exitoso",
+                "message": "REVOLUTION ACCESS GRANTED - SON1KVERS3 ACTIVATED",
                 "token": token,
                 "user": {
                     "id": user_id,
@@ -548,6 +629,8 @@ async def login_user(request: LoginRequest):
                     "plan": plan,
                     "subscription_status": subscription_status
                 },
+                "hack_level": "REVOLUTION_MODE",
+                "revolution_status": "ACTIVE",
                 "timestamp": datetime.now().isoformat()
             }
         else:
