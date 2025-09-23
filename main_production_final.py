@@ -6,6 +6,7 @@ Entrega Final - FastAPI Server Completo y Funcional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
@@ -52,6 +53,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Montar archivos estáticos del frontend
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 # Models
 class GenerateRequest(BaseModel):
@@ -229,7 +233,12 @@ Puedo ayudarte con:
 
 @app.get("/")
 def root():
-    """Endpoint raíz"""
+    """Endpoint raíz - Sirve el frontend"""
+    return FileResponse("frontend/index.html", media_type="text/html")
+
+@app.get("/api-info")
+def api_info():
+    """Información de la API (anterior endpoint raíz)"""
     return {
         "service": "Son1kVers3 API",
         "status": "online",
