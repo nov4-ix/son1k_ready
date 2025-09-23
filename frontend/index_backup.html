@@ -17,6 +17,194 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 🎯 SOLUCIÓN GARANTIZADA: Transparencia Total -->
+  <script>
+/**
+ * 🎯 SOLUCIÓN GARANTIZADA: Transparencia Total del Frontend
+ * Este script se ejecuta inmediatamente y asegura transparencia completa
+ */
+(function() {
+    'use strict';
+    
+    console.log('🎯 INICIANDO SOLUCIÓN DE TRANSPARENCIA GARANTIZADA');
+    
+    // 1. INTERCEPTAR Y CORREGIR TODAS LAS RESPUESTAS
+    const originalFetch = window.fetch;
+    window.fetch = async function(url, options) {
+        console.log('🔍 Interceptando fetch:', url);
+        
+        // Hacer la request original
+        const response = await originalFetch(url, options);
+        
+        // Si es request de música, interceptar y corregir la respuesta
+        if (url.includes('/api/music/') || url.includes('generate')) {
+            console.log('🎵 Interceptando respuesta de música');
+            
+            const originalJson = response.json;
+            response.json = async function() {
+                const data = await originalJson.call(this);
+                console.log('📥 Respuesta original:', data);
+                
+                // CORREGIR RESPUESTA PARA SER TRANSPARENTE
+                const correctedData = makeResponseTransparent(data);
+                console.log('✅ Respuesta corregida:', correctedData);
+                
+                return correctedData;
+            };
+        }
+        
+        return response;
+    };
+    
+    // 2. FUNCIÓN PARA HACER RESPUESTA TRANSPARENTE
+    function makeResponseTransparent(data) {
+        if (!data) return data;
+        
+        // Crear copia para no modificar original
+        const transparent = JSON.parse(JSON.stringify(data));
+        
+        // CORREGIR JOB ID
+        if (transparent.job_id) {
+            transparent.job_id = transparent.job_id.replace(/suno/gi, 'son1k');
+            console.log('🔧 Job ID corregido:', transparent.job_id);
+        }
+        
+        // CORREGIR TRACKS
+        if (transparent.tracks && Array.isArray(transparent.tracks)) {
+            transparent.tracks = transparent.tracks.map((track, index) => {
+                const correctedTrack = { ...track };
+                
+                // Generar nombre dinámico basado en lyrics
+                if (track.lyrics_preview || data.lyrics) {
+                    const lyrics = track.lyrics_preview || data.lyrics || '';
+                    correctedTrack.title = generateDynamicName(lyrics, index);
+                    correctedTrack.filename = `${correctedTrack.title.replace(/[^a-zA-Z0-9]/g, '_')}.mp3`;
+                }
+                
+                // Asegurar provider transparente
+                correctedTrack.provider = 'Son1k';
+                
+                // Corregir cualquier referencia a suno
+                if (correctedTrack.job_id) {
+                    correctedTrack.job_id = correctedTrack.job_id.replace(/suno/gi, 'son1k');
+                }
+                
+                console.log(`✨ Track ${index + 1} corregido:`, correctedTrack.title);
+                return correctedTrack;
+            });
+        }
+        
+        // LIMPIAR CUALQUIER REFERENCIA A SUNO EN TODO EL OBJETO
+        cleanSunoReferences(transparent);
+        
+        return transparent;
+    }
+    
+    // 3. GENERAR NOMBRE DINÁMICO DESDE LYRICS
+    function generateDynamicName(lyrics, index = 0) {
+        if (!lyrics || !lyrics.trim()) {
+            return `Instrumental_${Date.now()}`;
+        }
+        
+        // Tomar primera línea significativa
+        const lines = lyrics.split('\n');
+        let firstLine = '';
+        
+        for (const line of lines) {
+            const cleaned = line.trim();
+            if (cleaned.length > 3 && !cleaned.match(/^[^\w]*$/) && !cleaned.toLowerCase().includes('suno')) {
+                firstLine = cleaned;
+                break;
+            }
+        }
+        
+        if (!firstLine) {
+            // Usar primeras palabras (excluyendo 'suno')
+            const words = lyrics.trim().split(/\s+/)
+                .filter(word => !word.toLowerCase().includes('suno'))
+                .slice(0, 4);
+            firstLine = words.join(' ') || 'Sin Título';
+        }
+        
+        // Limpiar y capitalizar
+        let cleanName = firstLine
+            .replace(/[<>:"/\\|?*]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        // Capitalizar cada palabra
+        cleanName = cleanName.split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+        
+        // Limitar longitud
+        if (cleanName.length > 50) {
+            cleanName = cleanName.substring(0, 47) + '...';
+        }
+        
+        // Agregar variación si hay múltiples tracks
+        if (index > 0) {
+            cleanName += ` - Parte ${index + 1}`;
+        }
+        
+        // Limpieza final: eliminar cualquier referencia a suno
+        cleanName = cleanName.replace(/suno/gi, 'Son1k');
+        
+        return cleanName || `Composición_${Date.now()}`;
+    }
+    
+    // 4. LIMPIAR REFERENCIAS A SUNO EN TODO EL OBJETO
+    function cleanSunoReferences(obj) {
+        if (typeof obj === 'object' && obj !== null) {
+            for (const [key, value] of Object.entries(obj)) {
+                if (typeof value === 'string') {
+                    obj[key] = value.replace(/suno/gi, 'son1k');
+                } else if (typeof value === 'object') {
+                    cleanSunoReferences(value);
+                }
+            }
+        }
+    }
+    
+    // 5. VERIFICAR QUE TODO FUNCIONA
+    function verifyTransparency() {
+        console.log('🧪 Verificando transparencia...');
+        
+        const testData = {
+            job_id: 'suno_job_12345',
+            tracks: [{
+                title: 'suno_track_1',
+                job_id: 'suno_job_12345',
+                provider: 'Suno',
+                lyrics_preview: 'Walking down the street tonight'
+            }]
+        };
+        
+        const corrected = makeResponseTransparent(testData);
+        
+        console.log('📊 Test de transparencia:');
+        console.log('  Job ID:', corrected.job_id);
+        console.log('  Track title:', corrected.tracks[0].title);
+        console.log('  Provider:', corrected.tracks[0].provider);
+        
+        const isTransparent = 
+            !corrected.job_id.includes('suno') &&
+            !corrected.tracks[0].title.includes('suno') &&
+            corrected.tracks[0].provider === 'Son1k';
+        
+        console.log(isTransparent ? '✅ TRANSPARENCIA VERIFICADA' : '❌ TRANSPARENCIA FALLIDA');
+        return isTransparent;
+    }
+    
+    // Ejecutar verificación
+    setTimeout(verifyTransparency, 1000);
+    
+    console.log('🎯 SOLUCIÓN DE TRANSPARENCIA GARANTIZADA INSTALADA');
+    
+})();
+  </script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -2111,7 +2299,7 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -2452,6 +2640,412 @@
       </button>
     </div>
   </div>
+
+  <!-- Simple Login Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-zinc-900 rounded-2xl p-8 w-full max-w-md border border-white/10">
+        <h3 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="tu@email.com"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Contraseña</label>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+          <button 
+            onclick="performLogin()" 
+            class="w-full bg-neon text-black py-3 rounded-lg font-semibold hover:bg-neon/90 transition"
+          >
+            Iniciar Sesión
+          </button>
+          <button 
+            onclick="closeLoginModal()" 
+            class="w-full border border-white/20 text-white py-3 rounded-lg font-semibold hover:bg-white/10 transition"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Button -->
+  <div id="loginButton" class="fixed top-4 right-4 z-40">
+    <button onclick="showLoginModal()" class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+      Iniciar Sesión
+    </button>
+  </div>
+
+  <!-- User Info -->
+  <div id="userInfo" class="fixed top-4 right-4 z-40 hidden">
+    <div class="bg-zinc-900 rounded-lg px-4 py-2 border border-white/10">
+      <span id="userEmail" class="text-white text-sm"></span>
+      <span id="userPlan" class="text-neon text-sm ml-2"></span>
+      <button onclick="logout()" class="text-red-400 text-sm ml-2 hover:text-red-300">Salir</button>
+    </div>
+  </div>
+
+  <!-- 🎵 Son1k Commercial Integration Script -->
+  <script src="commercial_integration.js"></script>
+  
+  <script>
+    // Efecto Matrix
+    function createMatrixEffect() {
+      // Crear canvas para efecto Matrix
+      const canvas = document.createElement('canvas');
+      canvas.id = 'matrixCanvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.zIndex = '9999';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.background = 'rgba(0, 0, 0, 0.1)';
+      
+      document.body.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+      const matrix = characters.split('');
+      
+      const columns = canvas.width / 20;
+      const drops = Array(Math.floor(columns)).fill(1);
+      
+      function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#0f0';
+        ctx.font = '20px monospace';
+        
+        for (let i = 0; i < drops.length; i++) {
+          const text = matrix[Math.floor(Math.random() * matrix.length)];
+          ctx.fillText(text, i * 20, drops[i] * 20);
+          
+          if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+      
+      const matrixInterval = setInterval(drawMatrix, 35);
+      
+      // Remover efecto después de 8 segundos
+      setTimeout(() => {
+        clearInterval(matrixInterval);
+        if (canvas.parentNode) {
+          canvas.parentNode.removeChild(canvas);
+        }
+      }, 8000);
+    }
+
+    // Easter egg: Terminal secreto (Múltiples combinaciones)
+    document.addEventListener('keydown', function(e) {
+      // Debug - mostrar qué teclas se presionan
+      console.log('Key pressed:', e.key, 'Ctrl:', e.ctrlKey, 'Alt:', e.altKey, 'Shift:', e.shiftKey);
+      
+      // Múltiples combinaciones para activar terminal
+      const isTerminalCombo = (
+        (e.ctrlKey && e.altKey && e.key === 'h') ||           // Ctrl+Alt+H
+        (e.ctrlKey && e.altKey && e.key === 'H') ||           // Ctrl+Alt+H (mayúscula)
+        (e.ctrlKey && e.shiftKey && e.key === 'T') ||         // Ctrl+Shift+T
+        (e.ctrlKey && e.altKey && e.key === 't') ||           // Ctrl+Alt+T
+        (e.key === 'F12' && e.ctrlKey) ||                    // Ctrl+F12
+        (e.key === '`' && e.ctrlKey && e.altKey)              // Ctrl+Alt+`
+      );
+      
+      if (isTerminalCombo) {
+        e.preventDefault();
+        console.log('🎵 Terminal activado!');
+        
+        // Activar efecto Matrix
+        createMatrixEffect();
+        
+        // Mostrar terminal después de un pequeño delay
+        setTimeout(() => {
+          const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt]\n\nIngresa comando:');
+          if (terminal) {
+            let result = '';
+            const cmd = terminal.toLowerCase().trim();
+            
+            if (cmd === 'help') {
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente';
+            } else if (cmd === 'status') {
+              result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n\n🔋 Sistema: 100% Operacional';
+            } else if (cmd === 'easter') {
+              result = '🥚 Easter eggs + Matrix activados!\n\n🌊 Efecto Matrix lanzado\n✨ Efectos especiales habilitados\n🎨 Tema visual cambiado\n🎵 Sonidos secretos activos\n\n"Welcome to the Matrix"';
+              createMatrixEffect(); // Efecto Matrix adicional
+              document.body.style.filter = 'hue-rotate(45deg)';
+              setTimeout(() => document.body.style.filter = '', 10000);
+            } else if (cmd === 'matrix') {
+              result = '🌊 MATRIX EFFECT LAUNCHED 🌊\n\nEfecto Matrix activado por 10 segundos\n\n"There is no spoon"';
+              createMatrixEffect();
+            } else if (cmd === 'pixel') {
+              result = '🤖 Pixel Assistant v1.0\n\n🎵 Especialidad: Música cyberpunk\n🧠 Base de conocimiento: Activa\n⚡ Tiempo de respuesta: <1s\n🎯 Precisión: 98.5%\n🌊 Matrix Integration: ENABLED\n\n"Tu compañero musical inteligente"';
+            } else if (cmd.startsWith('generate ')) {
+              const prompt = cmd.substring(9);
+              result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n⏳ Procesando con Suno AI\n📡 Enviado a cola de generación\n🌊 Matrix boost aplicado\n\n¡Revisa la sección Resultados!`;
+              // Trigger real generation
+              setTimeout(() => {
+                fetch('/api/generate', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({prompt: prompt})
+                }).catch(console.error);
+              }, 1000);
+            } else {
+              result = `❌ Comando no reconocido: "${cmd}"\n\nEscribe "help" para ver comandos disponibles.\n\n🌊 Matrix mode activo`;
+            }
+            
+            alert(result);
+          }
+        }, 1000); // 1 segundo delay para que se vea el efecto Matrix
+      }
+    });
+
+    // Agregar botón de terminal visible como respaldo
+    function addTerminalButton() {
+      const button = document.createElement('button');
+      button.innerHTML = '🖥️';
+      button.title = 'Terminal Son1kVers3 (Ctrl+Alt+H, Ctrl+Shift+T, Ctrl+F12)';
+      button.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid #00ff00;
+        background: rgba(0, 0, 0, 0.9);
+        color: #00ff00;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9999;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+      `;
+      
+      button.onmouseover = () => {
+        button.style.background = 'rgba(0, 255, 0, 0.2)';
+        button.style.transform = 'scale(1.1)';
+        button.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.6)';
+      };
+      
+      button.onmouseout = () => {
+        button.style.background = 'rgba(0, 0, 0, 0.9)';
+        button.style.transform = 'scale(1)';
+        button.style.boxShadow = '0 0 10px rgba(0, 255, 0, 0.3)';
+      };
+      
+      button.onclick = () => {
+        console.log('🎵 Terminal activado por botón!');
+        createMatrixEffect();
+        setTimeout(() => {
+          const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt], matrix\n\nIngresa comando:');
+          if (terminal) {
+            let result = '';
+            const cmd = terminal.toLowerCase().trim();
+            
+            if (cmd === 'help') {
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente Pixel\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente\n\n⌨️ Atajos de teclado:\n- Ctrl+Alt+H\n- Ctrl+Shift+T\n- Ctrl+F12\n- Botón 🖥️';
+            } else if (cmd === 'status') {
+              result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n💻 Terminal: Operacional\n\n🔋 Sistema: 100% Operacional';
+            } else if (cmd === 'easter') {
+              createMatrixEffect();
+              result = '🌊 MATRIX EFFECT ACTIVATED! 🌊\n\nEfecto Matrix ejecutándose...\nLa resistencia digital ha comenzado.\n\n"No hay cuchara" - Neo\n\n🎵 La música es nuestra realidad.';
+            } else if (cmd === 'pixel') {
+              result = '🤖 Pixel - Asistente IA Musical\n\nEstado: ✅ Activo\nVersión: 3.0 Matrix Edition\nCapacidades:\n- Generación musical avanzada\n- Procesamiento de lenguaje natural\n- Creatividad musical ilimitada\n- Interfaz de terminal Matrix\n\n"La música es el lenguaje universal" - Pixel';
+            } else if (cmd.startsWith('generate ')) {
+              const prompt = cmd.substring(9);
+              result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n\n⏳ Conectando con Suno AI...\n🎼 Creando melodía única...\n✨ ¡Tu música estará lista pronto!\n\nUsa el botón "Generar" en el frontend para el proceso completo.`;
+            } else if (cmd === 'matrix') {
+              createMatrixEffect();
+              result = '🌊 MATRIX RAIN EFFECT 🌊\n\nLa Matrix ha sido activada...\nBienvenido a la realidad digital.\n\n⌨️ Combinaciones de terminal:\n- Ctrl+Alt+H\n- Ctrl+Shift+T\n- Ctrl+F12\n- Ctrl+Alt+T\n- Ctrl+Alt+`\n- Botón 🖥️ (esquina superior derecha)';
+            } else {
+              result = `❌ Comando "${cmd}" no reconocido.\n\nUsa "help" para ver comandos disponibles.\n\n🌊 Matrix mode activo`;
+            }
+            
+            alert(result);
+          }
+        }, 1000);
+      };
+      
+      document.body.appendChild(button);
+    }
+    
+    // Agregar botón cuando cargue la página
+    window.addEventListener('load', addTerminalButton);
+
+    // Sistema de Login
+    let currentUser = null;
+    let userToken = null;
+
+    function showLoginModal() {
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+    }
+
+    async function performLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        alert('Por favor ingresa email y contraseña');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          currentUser = data.user;
+          userToken = data.token;
+          
+          // Guardar en localStorage
+          localStorage.setItem('user', JSON.stringify(currentUser));
+          localStorage.setItem('token', userToken);
+          
+          // Actualizar UI
+          updateUserUI();
+          closeLoginModal();
+          alert(`¡Bienvenido ${email}! Plan: ${currentUser.plan.toUpperCase()}`);
+        } else {
+          alert('Error: ' + (data.detail || 'Credenciales incorrectas'));
+        }
+      } catch (error) {
+        console.error('Error login:', error);
+        alert('Error de conexión. Verifica que el servidor esté activo.');
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      userToken = null;
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      updateUserUI();
+      alert('Sesión cerrada');
+    }
+
+    function updateUserUI() {
+      const loginButton = document.getElementById('loginButton');
+      const userInfo = document.getElementById('userInfo');
+      const userEmail = document.getElementById('userEmail');
+      const userPlan = document.getElementById('userPlan');
+
+      if (currentUser) {
+        loginButton.classList.add('hidden');
+        userInfo.classList.remove('hidden');
+        userEmail.textContent = currentUser.email;
+        userPlan.textContent = currentUser.plan.toUpperCase();
+      } else {
+        loginButton.classList.remove('hidden');
+        userInfo.classList.add('hidden');
+      }
+    }
+
+    // Restaurar sesión al cargar
+    function restoreSession() {
+      const savedUser = localStorage.getItem('user');
+      const savedToken = localStorage.getItem('token');
+      
+      if (savedUser && savedToken) {
+        currentUser = JSON.parse(savedUser);
+        userToken = savedToken;
+        updateUserUI();
+      }
+    }
+
+    // Enter key en campos de login
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (document.getElementById('loginModal').classList.contains('hidden') === false) {
+          performLogin();
+        }
+      }
+    });
+
+    // Modificar evento del botón para usar integración Suno
+    document.addEventListener('DOMContentLoaded', function() {
+      // Restaurar sesión
+      restoreSession();
+      // Esperar a que el DOM esté completamente cargado
+      setTimeout(() => {
+        // Remover evento anterior y agregar nuevo
+        const btnGenerar = document.getElementById('generarMusica');
+        if (btnGenerar) {
+          // Clonar botón para remover eventos anteriores
+          const newBtn = btnGenerar.cloneNode(true);
+          btnGenerar.parentNode.replaceChild(newBtn, btnGenerar);
+          
+          // Agregar nuevo evento que use el sistema comercial
+          newBtn.addEventListener('click', async function() {
+            // Verificar disponibilidad del sistema comercial
+            const sistemaDisponible = await checkCommercialSystemAvailability();
+            if (!sistemaDisponible) {
+              showToast('⚠️ Motor avanzado no disponible. Usando modo estándar...', 'warning');
+              // Fallback a función original
+              generarMusica();
+              return;
+            }
+            
+            // Usar motor comercial
+            generateMusicCommercial();
+          });
+          
+          // Mantener texto original del botón
+          newBtn.innerHTML = '🎵 Generar Música';
+        }
+        
+        // Verificar estado del motor comercial al cargar
+        checkCommercialSystemAvailability().then(disponible => {
+          const statusIndicator = document.createElement('div');
+          statusIndicator.className = 'fixed top-4 right-4 z-40 px-3 py-1 rounded-full text-xs font-medium';
+          statusIndicator.innerHTML = disponible 
+            ? '🟢 Sistema Listo' 
+            : '🔴 Modo Básico';
+          statusIndicator.style.backgroundColor = disponible ? '#10b981' : '#ef4444';
+          statusIndicator.style.color = 'white';
+          document.body.appendChild(statusIndicator);
+          
+          // Auto-hide después de 3 segundos
+          setTimeout(() => statusIndicator.remove(), 3000);
+        });
+      }, 1000); // Esperar 1 segundo para asegurar que todo esté cargado
+    });
+  </script>
 
 </body>
 </html>

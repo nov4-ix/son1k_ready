@@ -2757,10 +2757,24 @@
       }, 8000);
     }
 
-    // Easter egg: Terminal secreto (Ctrl+Alt+H)
+    // Easter egg: Terminal secreto (Múltiples combinaciones)
     document.addEventListener('keydown', function(e) {
-      if (e.ctrlKey && e.altKey && e.key === 'h') {
+      // Debug - mostrar qué teclas se presionan
+      console.log('Key pressed:', e.key, 'Ctrl:', e.ctrlKey, 'Alt:', e.altKey, 'Shift:', e.shiftKey);
+      
+      // Múltiples combinaciones para activar terminal
+      const isTerminalCombo = (
+        (e.ctrlKey && e.altKey && e.key === 'h') ||           // Ctrl+Alt+H
+        (e.ctrlKey && e.altKey && e.key === 'H') ||           // Ctrl+Alt+H (mayúscula)
+        (e.ctrlKey && e.shiftKey && e.key === 'T') ||         // Ctrl+Shift+T
+        (e.ctrlKey && e.altKey && e.key === 't') ||           // Ctrl+Alt+T
+        (e.key === 'F12' && e.ctrlKey) ||                    // Ctrl+F12
+        (e.key === '`' && e.ctrlKey && e.altKey)              // Ctrl+Alt+`
+      );
+      
+      if (isTerminalCombo) {
         e.preventDefault();
+        console.log('🎵 Terminal activado!');
         
         // Activar efecto Matrix
         createMatrixEffect();
@@ -2806,6 +2820,82 @@
         }, 1000); // 1 segundo delay para que se vea el efecto Matrix
       }
     });
+
+    // Agregar botón de terminal visible como respaldo
+    function addTerminalButton() {
+      const button = document.createElement('button');
+      button.innerHTML = '🖥️';
+      button.title = 'Terminal Son1kVers3 (Ctrl+Alt+H, Ctrl+Shift+T, Ctrl+F12)';
+      button.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid #00ff00;
+        background: rgba(0, 0, 0, 0.9);
+        color: #00ff00;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9999;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+      `;
+      
+      button.onmouseover = () => {
+        button.style.background = 'rgba(0, 255, 0, 0.2)';
+        button.style.transform = 'scale(1.1)';
+        button.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.6)';
+      };
+      
+      button.onmouseout = () => {
+        button.style.background = 'rgba(0, 0, 0, 0.9)';
+        button.style.transform = 'scale(1)';
+        button.style.boxShadow = '0 0 10px rgba(0, 255, 0, 0.3)';
+      };
+      
+      button.onclick = () => {
+        console.log('🎵 Terminal activado por botón!');
+        createMatrixEffect();
+        setTimeout(() => {
+          const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt], matrix\n\nIngresa comando:');
+          if (terminal) {
+            let result = '';
+            const cmd = terminal.toLowerCase().trim();
+            
+            if (cmd === 'help') {
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente Pixel\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente\n\n⌨️ Atajos de teclado:\n- Ctrl+Alt+H\n- Ctrl+Shift+T\n- Ctrl+F12\n- Botón 🖥️';
+            } else if (cmd === 'status') {
+              result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n💻 Terminal: Operacional\n\n🔋 Sistema: 100% Operacional';
+            } else if (cmd === 'easter') {
+              createMatrixEffect();
+              result = '🌊 MATRIX EFFECT ACTIVATED! 🌊\n\nEfecto Matrix ejecutándose...\nLa resistencia digital ha comenzado.\n\n"No hay cuchara" - Neo\n\n🎵 La música es nuestra realidad.';
+            } else if (cmd === 'pixel') {
+              result = '🤖 Pixel - Asistente IA Musical\n\nEstado: ✅ Activo\nVersión: 3.0 Matrix Edition\nCapacidades:\n- Generación musical avanzada\n- Procesamiento de lenguaje natural\n- Creatividad musical ilimitada\n- Interfaz de terminal Matrix\n\n"La música es el lenguaje universal" - Pixel';
+            } else if (cmd.startsWith('generate ')) {
+              const prompt = cmd.substring(9);
+              result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n\n⏳ Conectando con Suno AI...\n🎼 Creando melodía única...\n✨ ¡Tu música estará lista pronto!\n\nUsa el botón "Generar" en el frontend para el proceso completo.`;
+            } else if (cmd === 'matrix') {
+              createMatrixEffect();
+              result = '🌊 MATRIX RAIN EFFECT 🌊\n\nLa Matrix ha sido activada...\nBienvenido a la realidad digital.\n\n⌨️ Combinaciones de terminal:\n- Ctrl+Alt+H\n- Ctrl+Shift+T\n- Ctrl+F12\n- Ctrl+Alt+T\n- Ctrl+Alt+`\n- Botón 🖥️ (esquina superior derecha)';
+            } else {
+              result = `❌ Comando "${cmd}" no reconocido.\n\nUsa "help" para ver comandos disponibles.\n\n🌊 Matrix mode activo`;
+            }
+            
+            alert(result);
+          }
+        }, 1000);
+      };
+      
+      document.body.appendChild(button);
+    }
+    
+    // Agregar botón cuando cargue la página
+    window.addEventListener('load', addTerminalButton);
 
     // Sistema de Login
     let currentUser = null;
