@@ -390,9 +390,9 @@
                 role="tab" 
                 aria-selected="false">Reproductor</button>
         <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
-                data-section="extension" 
+                data-section="santuario" 
                 role="tab" 
-                aria-selected="false">Extensión</button>
+                aria-selected="false">🏛️ Santuario</button>
         <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
                 data-section="archivo" 
                 role="tab" 
@@ -962,8 +962,216 @@
     </div>
   </section>
 
-  <!-- SECCIÓN EXTENSIÓN -->
-  <section id="extension" class="content-section section-hidden min-h-screen pt-20 pb-10" aria-hidden="true">
+  <!-- 🏛️ SECCIÓN SANTUARIO (RED SOCIAL) -->
+  <section id="santuario" class="content-section section-hidden min-h-screen pt-20 pb-10" aria-hidden="true">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-neon to-purple-500 bg-clip-text text-transparent">🏛️ El Santuario</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Red social exclusiva para usuarios Pro y Enterprise. Conecta, colabora y crea con otros músicos.</p>
+        <div class="mt-4 flex justify-center space-x-4">
+          <span class="px-3 py-1 bg-neon/10 text-neon text-sm rounded-full border border-neon/20">Solo Pro+</span>
+          <span class="px-3 py-1 bg-purple-500/10 text-purple-300 text-sm rounded-full border border-purple-500/20">Invitación Exclusiva</span>
+        </div>
+      </div>
+      
+      <div class="max-w-6xl mx-auto space-y-8">
+        <!-- Panel Principal del Santuario -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Feed Principal -->
+          <div class="lg:col-span-2 space-y-6">
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold">🌊 Feed Creativo</h3>
+                <button class="bg-neon text-black px-4 py-2 rounded-lg font-medium hover:bg-neon/90 transition">
+                  ✨ Nuevo Post
+                </button>
+              </div>
+              
+              <!-- Posts del Feed -->
+              <div class="space-y-6" id="santuario-feed">
+                <!-- Post ejemplo -->
+                <div class="border border-white/10 rounded-xl p-4 bg-white/5">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-neon to-purple-500 rounded-full flex items-center justify-center">
+                      <span class="text-white text-sm">👤</span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <span class="font-medium text-white">@CreativoMusical</span>
+                        <span class="px-2 py-1 bg-neon/10 text-neon text-xs rounded">PRO</span>
+                        <span class="text-zinc-400 text-sm">hace 2h</span>
+                      </div>
+                      <p class="text-zinc-300 mb-3">🎵 Acabo de terminar una colaboración épica con beats cyberpunk! ¿Alguien quiere hacer un remix?</p>
+                      <div class="flex items-center space-x-4 text-sm">
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>❤️</span>
+                          <span>24</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>💬</span>
+                          <span>7</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>🔄</span>
+                          <span>3</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>🎵</span>
+                          <span>Escuchar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border border-white/10 rounded-xl p-4 bg-white/5">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <span class="text-white text-sm">🎼</span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <span class="font-medium text-white">@BeatMakerPro</span>
+                        <span class="px-2 py-1 bg-purple-500/10 text-purple-300 text-xs rounded">ENTERPRISE</span>
+                        <span class="text-zinc-400 text-sm">hace 4h</span>
+                      </div>
+                      <p class="text-zinc-300 mb-3">🔥 RETO SEMANAL: Crear un beat usando solo sonidos urbanos. Premio: colaboración conmigo! #RetoSantuario</p>
+                      <div class="bg-zinc-900/50 rounded-lg p-3 mb-3">
+                        <div class="flex items-center space-x-2">
+                          <span class="text-neon">🏆</span>
+                          <span class="text-white font-medium">Reto Activo</span>
+                          <span class="text-zinc-400">- Termina en 3 días</span>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-4 text-sm">
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>❤️</span>
+                          <span>18</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>💬</span>
+                          <span>12</span>
+                        </button>
+                        <button class="bg-neon text-black px-3 py-1 rounded text-xs font-medium hover:bg-neon/90 transition">
+                          Participar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel Lateral -->
+          <div class="space-y-6">
+            
+            <!-- Usuarios Conectados -->
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <h3 class="text-lg font-semibold mb-4">👥 Conectados Ahora</h3>
+              <div class="space-y-3">
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    <div class="w-8 h-8 bg-gradient-to-br from-neon to-blue-500 rounded-full"></div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
+                  </div>
+                  <div>
+                    <p class="text-white text-sm font-medium">@SynthMaster</p>
+                    <p class="text-zinc-400 text-xs">Creando beats</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full"></div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
+                  </div>
+                  <div>
+                    <p class="text-white text-sm font-medium">@LofiQueen</p>
+                    <p class="text-zinc-400 text-xs">En vivo</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-full"></div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border-2 border-black"></div>
+                  </div>
+                  <div>
+                    <p class="text-white text-sm font-medium">@TrapKing</p>
+                    <p class="text-zinc-400 text-xs">Ausente</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Retos Activos -->
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <h3 class="text-lg font-semibold mb-4">🏆 Retos Activos</h3>
+              <div class="space-y-4">
+                <div class="border border-neon/20 rounded-lg p-3 bg-neon/5">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-neon">🔥</span>
+                    <span class="text-white text-sm font-medium">Beat Urbano</span>
+                  </div>
+                  <p class="text-zinc-400 text-xs mb-2">Crear usando solo sonidos de ciudad</p>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-neon">3 días restantes</span>
+                    <span class="text-zinc-400">8 participantes</span>
+                  </div>
+                </div>
+                
+                <div class="border border-purple-500/20 rounded-lg p-3 bg-purple-500/5">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-purple-300">🎹</span>
+                    <span class="text-white text-sm font-medium">Piano Solo</span>
+                  </div>
+                  <p class="text-zinc-400 text-xs mb-2">Composición solo piano, máximo 2 min</p>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-purple-300">5 días restantes</span>
+                    <span class="text-zinc-400">12 participantes</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Salas de Chat -->
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <h3 class="text-lg font-semibold mb-4">💬 Salas de Chat</h3>
+              <div class="space-y-2">
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🎵 General</span>
+                    <span class="text-neon text-xs">24</span>
+                  </div>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🤝 Colaboraciones</span>
+                    <span class="text-neon text-xs">12</span>
+                  </div>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🎧 Feedback</span>
+                    <span class="text-neon text-xs">8</span>
+                  </div>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🔥 Retos</span>
+                    <span class="text-neon text-xs">15</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN EXTENSIÓN (OCULTA) -->
+  <section id="extension" class="content-section section-hidden min-h-screen pt-20 pb-10 hidden" aria-hidden="true" style="display: none !important;">
     <div class="mx-auto max-w-7xl px-4">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-bold mb-4">Chrome Extension</h2>
@@ -2697,8 +2905,8 @@
     </div>
   </div>
 
-  <!-- Simple Login Modal -->
-  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+  <!-- Simple Login Modal (OCULTO - Usar authModal en su lugar) -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden" style="display: none !important;">
     <div class="flex items-center justify-center min-h-screen p-4">
       <div class="bg-zinc-900 rounded-2xl p-8 w-full max-w-md border border-white/10">
         <h3 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h3>
@@ -2779,10 +2987,10 @@
     </div>
   </div>
 
-  <!-- 🤖 PIXEL ASISTENTE FLOTANTE -->
-  <div id="pixel-assistant" class="fixed bottom-4 left-4 z-50 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl transition-all duration-300" style="width: 300px; height: 400px;">
-    <!-- Header -->
-    <div class="flex items-center justify-between p-4 border-b border-purple-500/20">
+  <!-- 🤖 PIXEL ASISTENTE FLOTANTE ARRASTRABLE -->
+  <div id="pixel-assistant" class="fixed bottom-4 left-4 z-50 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl transition-all duration-300 resize" style="width: 300px; height: 400px; min-width: 250px; min-height: 300px; max-width: 500px; max-height: 600px;">
+    <!-- Header arrastrable -->
+    <div id="pixel-header" class="flex items-center justify-between p-4 border-b border-purple-500/20 cursor-move bg-gradient-to-r from-purple-900/50 to-black/50">
       <div class="flex items-center space-x-2">
         <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-neon rounded-full flex items-center justify-center">
           <span class="text-white text-sm">🤖</span>
@@ -2793,8 +3001,8 @@
         </div>
       </div>
       <div class="flex items-center space-x-1">
-        <button id="pixel-minimize" class="text-purple-400 hover:text-purple-300 text-xs">−</button>
-        <button id="pixel-close" class="text-purple-400 hover:text-purple-300 text-xs">✕</button>
+        <button id="pixel-minimize" class="text-purple-400 hover:text-purple-300 text-xs px-2 py-1 rounded hover:bg-purple-500/20">−</button>
+        <button id="pixel-close" class="text-purple-400 hover:text-purple-300 text-xs px-2 py-1 rounded hover:bg-red-500/20">✕</button>
       </div>
     </div>
     
@@ -3118,6 +3326,10 @@
       const closeBtn = document.getElementById('pixel-close');
       const sendBtn = document.getElementById('pixel-send');
       const input = document.getElementById('pixel-input');
+      const header = document.getElementById('pixel-header');
+      
+      // Hacer Pixel arrastrable
+      makePixelDraggable(pixelAssistant, header);
       
       // Minimizar/Restaurar Pixel
       minimizeBtn?.addEventListener('click', () => {
@@ -3255,29 +3467,108 @@
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
+    // Función para hacer Pixel arrastrable
+    function makePixelDraggable(element, dragHandle) {
+      let isDragging = false;
+      let currentX = 0;
+      let currentY = 0;
+      let initialX = 0;
+      let initialY = 0;
+      let xOffset = 0;
+      let yOffset = 0;
+
+      dragHandle.addEventListener('mousedown', dragStart);
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', dragEnd);
+      
+      // Touch events para móvil
+      dragHandle.addEventListener('touchstart', dragStart);
+      document.addEventListener('touchmove', drag);
+      document.addEventListener('touchend', dragEnd);
+
+      function dragStart(e) {
+        if (e.type === 'touchstart') {
+          initialX = e.touches[0].clientX - xOffset;
+          initialY = e.touches[0].clientY - yOffset;
+        } else {
+          initialX = e.clientX - xOffset;
+          initialY = e.clientY - yOffset;
+        }
+
+        if (e.target === dragHandle || dragHandle.contains(e.target)) {
+          isDragging = true;
+          element.style.transition = 'none';
+        }
+      }
+
+      function drag(e) {
+        if (isDragging) {
+          e.preventDefault();
+          
+          if (e.type === 'touchmove') {
+            currentX = e.touches[0].clientX - initialX;
+            currentY = e.touches[0].clientY - initialY;
+          } else {
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+          }
+
+          xOffset = currentX;
+          yOffset = currentY;
+
+          // Limitar a los bordes de la ventana
+          const rect = element.getBoundingClientRect();
+          const maxX = window.innerWidth - rect.width;
+          const maxY = window.innerHeight - rect.height;
+          
+          xOffset = Math.min(Math.max(0, xOffset), maxX);
+          yOffset = Math.min(Math.max(0, yOffset), maxY);
+
+          element.style.left = xOffset + 'px';
+          element.style.top = yOffset + 'px';
+          element.style.bottom = 'auto';
+          element.style.right = 'auto';
+        }
+      }
+
+      function dragEnd() {
+        if (isDragging) {
+          isDragging = false;
+          element.style.transition = 'all 0.3s ease';
+        }
+      }
+    }
+
     // Inicializar funcionalidades cuando cargue la página
     window.addEventListener('load', () => {
       initPixelAssistant();
       initTrackUpload();
     });
 
-    // Sistema de Login
+    // Sistema de Login Unificado
     let currentUser = null;
     let userToken = null;
 
     function showLoginModal() {
-      document.getElementById('loginModal').classList.remove('hidden');
+      // Usar el modal principal de autenticación
+      document.getElementById('authModal').style.display = 'flex';
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
     }
 
     function closeLoginModal() {
-      document.getElementById('loginModal').classList.add('hidden');
-      document.getElementById('loginEmail').value = '';
-      document.getElementById('loginPassword').value = '';
+      document.getElementById('authModal').style.display = 'none';
+      // Limpiar campos
+      const emailField = document.getElementById('loginEmail') || document.querySelector('input[type="email"]');
+      const passwordField = document.getElementById('loginPassword') || document.querySelector('input[type="password"]');
+      if (emailField) emailField.value = '';
+      if (passwordField) passwordField.value = '';
     }
 
     async function performLogin() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
+      // Buscar campos de email y password en cualquier modal activo
+      const email = (document.getElementById('loginEmail') || document.querySelector('#loginForm input[type="email"]'))?.value.trim();
+      const password = (document.getElementById('loginPassword') || document.querySelector('#loginForm input[type="password"]'))?.value;
 
       if (!email || !password) {
         alert('Por favor ingresa email y contraseña');

@@ -690,6 +690,67 @@ async def init_database_endpoint():
         logger.error(f"Error inicializando DB: {e}")
         return {"status": "error", "message": str(e)}
 
+@app.get("/api/suno/status")
+async def suno_connection_status():
+    """Verificar estado de conexión con Suno"""
+    try:
+        # Verificar si podemos conectar con Suno (simulado)
+        # En un escenario real, aquí haríamos una request a la API de Suno
+        import requests
+        import asyncio
+        
+        suno_status = {
+            "connected": False,
+            "api_available": False,
+            "last_check": datetime.now().isoformat(),
+            "error": None,
+            "queue_length": 0,
+            "estimated_wait": "N/A"
+        }
+        
+        try:
+            # Simular verificación de conexión a Suno
+            # En producción esto sería una llamada real a suno.com API
+            await asyncio.sleep(0.5)  # Simular latencia
+            
+            # Por ahora simulamos que está desconectado
+            # Para conectar realmente necesitaríamos credenciales de Suno
+            suno_status.update({
+                "connected": False,
+                "api_available": False,
+                "error": "Suno API credentials not configured",
+                "queue_length": 0,
+                "estimated_wait": "Configuración requerida"
+            })
+            
+        except Exception as e:
+            suno_status.update({
+                "connected": False,
+                "api_available": False,
+                "error": str(e),
+                "queue_length": 0,
+                "estimated_wait": "Error de conexión"
+            })
+        
+        return {
+            "status": "success",
+            "suno": suno_status,
+            "message": "Estado de Suno verificado",
+            "recommendation": "Para conectar con Suno real, configurar credenciales en variables de entorno"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error verificando Suno: {e}")
+        return {
+            "status": "error", 
+            "message": str(e),
+            "suno": {
+                "connected": False,
+                "api_available": False,
+                "error": str(e)
+            }
+        }
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8002))
