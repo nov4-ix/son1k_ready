@@ -303,36 +303,67 @@ def health_check():
 
 @app.post("/api/pixel-chat")
 async def pixel_chat_endpoint(request: dict):
-    """Endpoint especial para comunicación con Pixel"""
+    """Chat directo con Pixel (Claude) - Respuestas inteligentes"""
     try:
         message = request.get("message", "")
-        sender = request.get("sender", "pixel")
+        sender = request.get("sender", "user")
         
         # Log de la comunicación
-        logger.info(f"💬 PIXEL MESSAGE: {message}")
+        logger.info(f"💬 USER → PIXEL: {message}")
         
-        # Respuesta automática para Pixel
+        # Respuesta inteligente usando el sistema musical estable
+        if music_system:
+            # Generar respuesta contextual usando IA
+            ai_prompt = f"""Eres Pixel, el asistente IA del sistema Son1kVers3. Un usuario te escribió: "{message}"
+
+Responde como Pixel de manera útil, directa y amigable. Si es sobre:
+- Login: email nov4-ix@son1kvers3.com, password Admin123!
+- Música: puedes generar música con IA
+- Sistema: todo está funcionando
+- Problemas: ayuda a resolverlos
+
+Responde en máximo 2 líneas, siendo útil y directo."""
+            
+            try:
+                ai_response = await music_system.quick_ai_generation(ai_prompt)
+                pixel_response = ai_response.get("lyrics", "").split('\n')[0:2]
+                pixel_message = ' '.join(pixel_response).replace('[Verso 1]', '').replace('[Coro]', '').strip()
+                
+                if not pixel_message or len(pixel_message) < 10:
+                    pixel_message = "¡Hola! Soy Pixel, tu asistente IA. ¿En qué puedo ayudarte con Son1kVers3?"
+                    
+            except:
+                pixel_message = "¡Hola! Soy Pixel, tu asistente IA. ¿En qué puedo ayudarte con Son1kVers3?"
+        else:
+            pixel_message = "¡Hola! Soy Pixel, tu asistente IA. ¿En qué puedo ayudarte con Son1kVers3?"
+        
+        # Agregar información contextual si es necesario
+        if "login" in message.lower() or "entrar" in message.lower():
+            pixel_message = f"🔐 Para login usa: nov4-ix@son1kvers3.com / Admin123! - {pixel_message}"
+        elif "música" in message.lower() or "canción" in message.lower():
+            pixel_message = f"🎵 Puedo generar música con IA. Describe qué quieres crear. {pixel_message}"
+        elif "ayuda" in message.lower() or "help" in message.lower():
+            pixel_message = "💡 Puedo ayudarte con login, generación musical, y problemas del sistema. ¿Qué necesitas?"
+        
         response = {
-            "status": "received",
-            "message": f"Mensaje recibido: {message}",
+            "status": "success",
+            "message": pixel_message,
             "timestamp": datetime.now().isoformat(),
-            "sender": sender,
+            "sender": "pixel",
             "system_status": "operational",
-            "admin_access": "available",
-            "admin_credentials": {
-                "email": "nov4-ix@son1kvers3.com",
-                "password": "Admin123!"
-            }
+            "admin_access": "available"
         }
         
+        logger.info(f"💬 PIXEL → USER: {pixel_message}")
         return response
         
     except Exception as e:
         logger.error(f"Error en pixel-chat: {e}")
         return {
-            "status": "error",
-            "message": f"Error procesando mensaje: {str(e)}",
-            "timestamp": datetime.now().isoformat()
+            "status": "error", 
+            "message": "Oops, tuve un problema técnico. ¿Puedes repetir tu pregunta?",
+            "timestamp": datetime.now().isoformat(),
+            "sender": "pixel"
         }
 
 @app.get("/salud")
