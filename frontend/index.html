@@ -2641,6 +2641,63 @@
     </div>
   </div>
 
+  <!-- Simple Login Modal -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-zinc-900 rounded-2xl p-8 w-full max-w-md border border-white/10">
+        <h3 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="tu@email.com"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Contraseña</label>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+          <button 
+            onclick="performLogin()" 
+            class="w-full bg-neon text-black py-3 rounded-lg font-semibold hover:bg-neon/90 transition"
+          >
+            Iniciar Sesión
+          </button>
+          <button 
+            onclick="closeLoginModal()" 
+            class="w-full border border-white/20 text-white py-3 rounded-lg font-semibold hover:bg-white/10 transition"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Button -->
+  <div id="loginButton" class="fixed top-4 right-4 z-40">
+    <button onclick="showLoginModal()" class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+      Iniciar Sesión
+    </button>
+  </div>
+
+  <!-- User Info -->
+  <div id="userInfo" class="fixed top-4 right-4 z-40 hidden">
+    <div class="bg-zinc-900 rounded-lg px-4 py-2 border border-white/10">
+      <span id="userEmail" class="text-white text-sm"></span>
+      <span id="userPlan" class="text-neon text-sm ml-2"></span>
+      <button onclick="logout()" class="text-red-400 text-sm ml-2 hover:text-red-300">Salir</button>
+    </div>
+  </div>
+
   <!-- 🎵 Son1k Commercial Integration Script -->
   <script src="commercial_integration.js"></script>
   
@@ -2684,8 +2741,110 @@
       }
     });
 
+    // Sistema de Login
+    let currentUser = null;
+    let userToken = null;
+
+    function showLoginModal() {
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+    }
+
+    async function performLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        alert('Por favor ingresa email y contraseña');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          currentUser = data.user;
+          userToken = data.token;
+          
+          // Guardar en localStorage
+          localStorage.setItem('user', JSON.stringify(currentUser));
+          localStorage.setItem('token', userToken);
+          
+          // Actualizar UI
+          updateUserUI();
+          closeLoginModal();
+          alert(`¡Bienvenido ${email}! Plan: ${currentUser.plan.toUpperCase()}`);
+        } else {
+          alert('Error: ' + (data.detail || 'Credenciales incorrectas'));
+        }
+      } catch (error) {
+        console.error('Error login:', error);
+        alert('Error de conexión. Verifica que el servidor esté activo.');
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      userToken = null;
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      updateUserUI();
+      alert('Sesión cerrada');
+    }
+
+    function updateUserUI() {
+      const loginButton = document.getElementById('loginButton');
+      const userInfo = document.getElementById('userInfo');
+      const userEmail = document.getElementById('userEmail');
+      const userPlan = document.getElementById('userPlan');
+
+      if (currentUser) {
+        loginButton.classList.add('hidden');
+        userInfo.classList.remove('hidden');
+        userEmail.textContent = currentUser.email;
+        userPlan.textContent = currentUser.plan.toUpperCase();
+      } else {
+        loginButton.classList.remove('hidden');
+        userInfo.classList.add('hidden');
+      }
+    }
+
+    // Restaurar sesión al cargar
+    function restoreSession() {
+      const savedUser = localStorage.getItem('user');
+      const savedToken = localStorage.getItem('token');
+      
+      if (savedUser && savedToken) {
+        currentUser = JSON.parse(savedUser);
+        userToken = savedToken;
+        updateUserUI();
+      }
+    }
+
+    // Enter key en campos de login
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (document.getElementById('loginModal').classList.contains('hidden') === false) {
+          performLogin();
+        }
+      }
+    });
+
     // Modificar evento del botón para usar integración Suno
     document.addEventListener('DOMContentLoaded', function() {
+      // Restaurar sesión
+      restoreSession();
       // Esperar a que el DOM esté completamente cargado
       setTimeout(() => {
         // Remover evento anterior y agregar nuevo

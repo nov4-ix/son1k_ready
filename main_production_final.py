@@ -68,6 +68,10 @@ class ChatRequest(BaseModel):
     message: str
     context: Optional[str] = "general"
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 # Estado del sistema
 system_status = {
     "initialized": True,
@@ -410,6 +414,59 @@ except Exception as e:
     except Exception as e:
         logger.error(f"Error en generación: {e}")
         raise HTTPException(status_code=500, detail=f"Error generando música: {str(e)}")
+
+@app.post("/api/login")
+async def login_user(request: LoginRequest):
+    """Login de usuario"""
+    try:
+        import sqlite3
+        import bcrypt
+        
+        # Conectar a la base de datos
+        conn = sqlite3.connect("son1k.db")
+        cursor = conn.cursor()
+        
+        # Buscar usuario
+        cursor.execute("SELECT id, email, hashed_password, plan, subscription_status FROM users WHERE email = ?", (request.email,))
+        user_data = cursor.fetchone()
+        
+        if not user_data:
+            conn.close()
+            raise HTTPException(status_code=401, detail="Email o contraseña incorrectos")
+        
+        user_id, email, hashed_password, plan, subscription_status = user_data
+        
+        # Verificar contraseña
+        if bcrypt.checkpw(request.password.encode('utf-8'), hashed_password.encode('utf-8')):
+            # Login exitoso
+            token = f"token_{user_id}_{int(time.time())}"  # Token simple
+            
+            # Actualizar último login
+            cursor.execute("UPDATE users SET last_login = ? WHERE id = ?", (datetime.now(), user_id))
+            conn.commit()
+            conn.close()
+            
+            return {
+                "status": "success",
+                "message": "Login exitoso",
+                "token": token,
+                "user": {
+                    "id": user_id,
+                    "email": email,
+                    "plan": plan,
+                    "subscription_status": subscription_status
+                },
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            conn.close()
+            raise HTTPException(status_code=401, detail="Email o contraseña incorrectos")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en login: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @app.post("/api/music/generate-optimized")
 async def generate_optimized_music(request: GenerateRequest):
