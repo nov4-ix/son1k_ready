@@ -2702,11 +2702,11 @@
   <script src="commercial_integration.js"></script>
   
   <script>
-    // Easter egg: Terminal secreto (Ctrl+Shift+T)
+    // Easter egg: Terminal secreto (Ctrl+Alt+H)
     document.addEventListener('keydown', function(e) {
-      if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+      if (e.ctrlKey && e.altKey && e.key === 'h') {
         e.preventDefault();
-        const terminal = prompt('🎵 Son1kVers3 Terminal\n\nComandos: help, status, easter, pixel, generate [prompt]\n\nIngresa comando:');
+        const terminal = prompt('🎵 Son1kVers3 Terminal\n\nAcceso: Ctrl+Alt+H\nComandos: help, status, easter, pixel, generate [prompt]\n\nIngresa comando:');
         if (terminal) {
           let result = '';
           const cmd = terminal.toLowerCase().trim();
