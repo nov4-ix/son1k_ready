@@ -2702,42 +2702,108 @@
   <script src="commercial_integration.js"></script>
   
   <script>
+    // Efecto Matrix
+    function createMatrixEffect() {
+      // Crear canvas para efecto Matrix
+      const canvas = document.createElement('canvas');
+      canvas.id = 'matrixCanvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.zIndex = '9999';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.background = 'rgba(0, 0, 0, 0.1)';
+      
+      document.body.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+      const matrix = characters.split('');
+      
+      const columns = canvas.width / 20;
+      const drops = Array(Math.floor(columns)).fill(1);
+      
+      function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#0f0';
+        ctx.font = '20px monospace';
+        
+        for (let i = 0; i < drops.length; i++) {
+          const text = matrix[Math.floor(Math.random() * matrix.length)];
+          ctx.fillText(text, i * 20, drops[i] * 20);
+          
+          if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+      
+      const matrixInterval = setInterval(drawMatrix, 35);
+      
+      // Remover efecto después de 8 segundos
+      setTimeout(() => {
+        clearInterval(matrixInterval);
+        if (canvas.parentNode) {
+          canvas.parentNode.removeChild(canvas);
+        }
+      }, 8000);
+    }
+
     // Easter egg: Terminal secreto (Ctrl+Alt+H)
     document.addEventListener('keydown', function(e) {
       if (e.ctrlKey && e.altKey && e.key === 'h') {
         e.preventDefault();
-        const terminal = prompt('🎵 Son1kVers3 Terminal\n\nAcceso: Ctrl+Alt+H\nComandos: help, status, easter, pixel, generate [prompt]\n\nIngresa comando:');
-        if (terminal) {
-          let result = '';
-          const cmd = terminal.toLowerCase().trim();
-          
-          if (cmd === 'help') {
-            result = '🎵 Son1kVers3 Terminal v1.0\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs\n- pixel: Info del asistente\n- generate [prompt]: Generar música\n- clear: Limpiar';
-          } else if (cmd === 'status') {
-            result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n\n🔋 Sistema: 100% Operacional';
-          } else if (cmd === 'easter') {
-            result = '🥚 Easter eggs activados!\n\n✨ Efectos especiales habilitados\n🎨 Tema visual cambiado\n🎵 Sonidos secretos activos\n\n"Lo imperfecto también es sagrado"';
-            document.body.style.filter = 'hue-rotate(45deg)';
-            setTimeout(() => document.body.style.filter = '', 10000);
-          } else if (cmd === 'pixel') {
-            result = '🤖 Pixel Assistant v1.0\n\n🎵 Especialidad: Música cyberpunk\n🧠 Base de conocimiento: Activa\n⚡ Tiempo de respuesta: <1s\n🎯 Precisión: 98.5%\n\n"Tu compañero musical inteligente"';
-          } else if (cmd.startsWith('generate ')) {
-            const prompt = cmd.substring(9);
-            result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n⏳ Procesando con Suno AI\n📡 Enviado a cola de generación\n\n¡Revisa la sección Resultados!`;
-            // Trigger real generation
-            setTimeout(() => {
-              fetch('/api/generate', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({prompt: prompt})
-              }).catch(console.error);
-            }, 1000);
-          } else {
-            result = `❌ Comando no reconocido: "${cmd}"\n\nEscribe "help" para ver comandos disponibles.`;
+        
+        // Activar efecto Matrix
+        createMatrixEffect();
+        
+        // Mostrar terminal después de un pequeño delay
+        setTimeout(() => {
+          const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt]\n\nIngresa comando:');
+          if (terminal) {
+            let result = '';
+            const cmd = terminal.toLowerCase().trim();
+            
+            if (cmd === 'help') {
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente';
+            } else if (cmd === 'status') {
+              result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n\n🔋 Sistema: 100% Operacional';
+            } else if (cmd === 'easter') {
+              result = '🥚 Easter eggs + Matrix activados!\n\n🌊 Efecto Matrix lanzado\n✨ Efectos especiales habilitados\n🎨 Tema visual cambiado\n🎵 Sonidos secretos activos\n\n"Welcome to the Matrix"';
+              createMatrixEffect(); // Efecto Matrix adicional
+              document.body.style.filter = 'hue-rotate(45deg)';
+              setTimeout(() => document.body.style.filter = '', 10000);
+            } else if (cmd === 'matrix') {
+              result = '🌊 MATRIX EFFECT LAUNCHED 🌊\n\nEfecto Matrix activado por 10 segundos\n\n"There is no spoon"';
+              createMatrixEffect();
+            } else if (cmd === 'pixel') {
+              result = '🤖 Pixel Assistant v1.0\n\n🎵 Especialidad: Música cyberpunk\n🧠 Base de conocimiento: Activa\n⚡ Tiempo de respuesta: <1s\n🎯 Precisión: 98.5%\n🌊 Matrix Integration: ENABLED\n\n"Tu compañero musical inteligente"';
+            } else if (cmd.startsWith('generate ')) {
+              const prompt = cmd.substring(9);
+              result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n⏳ Procesando con Suno AI\n📡 Enviado a cola de generación\n🌊 Matrix boost aplicado\n\n¡Revisa la sección Resultados!`;
+              // Trigger real generation
+              setTimeout(() => {
+                fetch('/api/generate', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({prompt: prompt})
+                }).catch(console.error);
+              }, 1000);
+            } else {
+              result = `❌ Comando no reconocido: "${cmd}"\n\nEscribe "help" para ver comandos disponibles.\n\n🌊 Matrix mode activo`;
+            }
+            
+            alert(result);
           }
-          
-          alert(result);
-        }
+        }, 1000); // 1 segundo delay para que se vea el efecto Matrix
       }
     });
 
