@@ -301,6 +301,40 @@ def health_check():
     """Health check endpoint requerido"""
     return {"status": "healthy"}
 
+@app.post("/api/pixel-chat")
+async def pixel_chat_endpoint(request: dict):
+    """Endpoint especial para comunicación con Pixel"""
+    try:
+        message = request.get("message", "")
+        sender = request.get("sender", "pixel")
+        
+        # Log de la comunicación
+        logger.info(f"💬 PIXEL MESSAGE: {message}")
+        
+        # Respuesta automática para Pixel
+        response = {
+            "status": "received",
+            "message": f"Mensaje recibido: {message}",
+            "timestamp": datetime.now().isoformat(),
+            "sender": sender,
+            "system_status": "operational",
+            "admin_access": "available",
+            "admin_credentials": {
+                "email": "nov4-ix@son1kvers3.com",
+                "password": "Admin123!"
+            }
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error en pixel-chat: {e}")
+        return {
+            "status": "error",
+            "message": f"Error procesando mensaje: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }
+
 @app.get("/salud")
 def salud_check():
     """Health check endpoint en español para Railway"""
