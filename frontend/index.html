@@ -872,6 +872,34 @@
               id="promptGhostStudio"
             ></textarea>
           </div>
+
+          <!-- ZONA DE SUBIDA DE TRACKS -->
+          <div class="mb-8">
+            <label class="block text-lg font-medium text-zinc-300 mb-4">
+              <span class="flex items-center space-x-2">
+                <span>📁 Subir Track Base (Opcional)</span>
+                <span class="text-xs text-neon bg-neon/10 px-2 py-1 rounded">PRO</span>
+              </span>
+            </label>
+            <div id="track-upload-zone" class="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-neon/40 transition cursor-pointer bg-zinc-900/30">
+              <div class="space-y-2">
+                <div class="text-4xl">🎵</div>
+                <p class="text-zinc-300">Arrastra tu track aquí o haz click para seleccionar</p>
+                <p class="text-xs text-zinc-400">Formatos: MP3, WAV, FLAC (Máx. 10MB)</p>
+              </div>
+              <input type="file" id="track-file-input" accept=".mp3,.wav,.flac" class="hidden">
+            </div>
+            <div id="uploaded-track-info" class="hidden bg-neon/10 border border-neon/20 rounded-lg p-4 mt-4">
+              <div class="flex items-center space-x-3">
+                <span class="text-neon">🎵</span>
+                <div class="flex-1">
+                  <p id="track-filename" class="text-white font-medium"></p>
+                  <p id="track-size" class="text-xs text-zinc-400"></p>
+                </div>
+                <button id="remove-track" class="text-red-400 hover:text-red-300">🗑️</button>
+              </div>
+            </div>
+          </div>
           
           <div class="mb-8">
             <label class="block text-lg font-medium text-zinc-300 mb-4">Preset</label>
@@ -2728,6 +2756,82 @@
 
   <!-- 🎵 Son1k Commercial Integration Script -->
   <script src="commercial_integration.js"></script>
+
+  <!-- 🎵 REPRODUCTOR FLOTANTE GLOBAL -->
+  <div id="floating-player" class="fixed bottom-4 right-4 z-50 hidden bg-black/90 backdrop-blur-xl rounded-xl border border-neon/20 p-4 shadow-2xl max-w-xs">
+    <div class="flex items-center space-x-3">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 bg-gradient-to-br from-neon/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+          <span class="text-neon text-lg">🎵</span>
+        </div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p id="floating-track-title" class="text-white text-sm font-medium truncate">No hay música reproduciéndose</p>
+        <div class="flex items-center space-x-2 mt-1">
+          <button id="floating-play-pause" class="text-neon hover:text-neon/80 transition text-sm">⏸️</button>
+          <div class="flex-1 bg-white/10 rounded-full h-1">
+            <div id="floating-progress" class="bg-neon h-1 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <span id="floating-time" class="text-zinc-400 text-xs">0:00</span>
+        </div>
+      </div>
+      <button id="floating-close" class="text-zinc-400 hover:text-white transition">✕</button>
+    </div>
+  </div>
+
+  <!-- 🤖 PIXEL ASISTENTE FLOTANTE -->
+  <div id="pixel-assistant" class="fixed bottom-4 left-4 z-50 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl transition-all duration-300" style="width: 300px; height: 400px;">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 border-b border-purple-500/20">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-neon rounded-full flex items-center justify-center">
+          <span class="text-white text-sm">🤖</span>
+        </div>
+        <div>
+          <h3 class="text-white font-medium text-sm">Pixel</h3>
+          <p class="text-xs text-purple-300">Asistente Musical IA</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-1">
+        <button id="pixel-minimize" class="text-purple-400 hover:text-purple-300 text-xs">−</button>
+        <button id="pixel-close" class="text-purple-400 hover:text-purple-300 text-xs">✕</button>
+      </div>
+    </div>
+    
+    <!-- Chat Area -->
+    <div id="pixel-chat" class="flex-1 p-4 overflow-y-auto" style="height: 280px;">
+      <div class="space-y-3">
+        <div class="bg-purple-500/10 rounded-lg p-3">
+          <p class="text-purple-300 text-sm">🤖 ¡Hola! Soy Pixel, tu asistente musical inteligente.</p>
+          <p class="text-purple-300 text-xs mt-1">Puedo ayudarte con:</p>
+          <ul class="text-purple-300 text-xs mt-1 space-y-1">
+            <li>• Smart prompts musicales</li>
+            <li>• Mejora de letras</li>
+            <li>• Consejos de producción</li>
+            <li>• Análisis musical</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Input Area -->
+    <div class="p-4 border-t border-purple-500/20">
+      <div class="flex items-center space-x-2">
+        <input id="pixel-input" type="text" placeholder="Pregúntale a Pixel..." class="flex-1 bg-white/5 border border-purple-500/20 rounded-lg px-3 py-2 text-white text-sm placeholder-purple-400 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50">
+        <button id="pixel-send" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm transition">↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pixel minimizado -->
+  <div id="pixel-minimized" class="fixed bottom-4 left-4 z-50 hidden bg-black/95 backdrop-blur-xl rounded-full border border-purple-500/30 p-3 shadow-xl cursor-pointer hover:scale-105 transition-transform">
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-neon rounded-full flex items-center justify-center">
+        <span class="text-white text-sm">🤖</span>
+      </div>
+      <span class="text-purple-300 text-sm font-medium">Pixel</span>
+    </div>
+  </div>
   
   <script>
     // Efecto Matrix
@@ -2924,6 +3028,238 @@
     
     // Agregar botón cuando cargue la página
     window.addEventListener('load', addTerminalButton);
+
+    // ================================
+    // REPRODUCTOR FLOTANTE GLOBAL
+    // ================================
+    let floatingPlayer = null;
+    let floatingPlayerActive = false;
+
+    function initFloatingPlayer() {
+      floatingPlayer = document.getElementById('floating-player');
+      const playPauseBtn = document.getElementById('floating-play-pause');
+      const closeBtn = document.getElementById('floating-close');
+      
+      playPauseBtn.addEventListener('click', toggleFloatingPlayer);
+      closeBtn.addEventListener('click', hideFloatingPlayer);
+      
+      // Actualizar reproductor flotante cuando cambie la música principal
+      if (audioPlayer) {
+        audioPlayer.addEventListener('timeupdate', updateFloatingProgress);
+        audioPlayer.addEventListener('play', () => showFloatingPlayer());
+        audioPlayer.addEventListener('pause', () => updateFloatingPlayerState(false));
+        audioPlayer.addEventListener('ended', hideFloatingPlayer);
+      }
+    }
+
+    function showFloatingPlayer(trackName = 'Son1kVers3 Track') {
+      if (floatingPlayer) {
+        floatingPlayer.classList.remove('hidden');
+        document.getElementById('floating-track-title').textContent = trackName;
+        updateFloatingPlayerState(true);
+        floatingPlayerActive = true;
+      }
+    }
+
+    function hideFloatingPlayer() {
+      if (floatingPlayer) {
+        floatingPlayer.classList.add('hidden');
+        floatingPlayerActive = false;
+      }
+    }
+
+    function toggleFloatingPlayer() {
+      if (audioPlayer) {
+        if (audioPlayer.paused) {
+          audioPlayer.play();
+          updateFloatingPlayerState(true);
+        } else {
+          audioPlayer.pause();
+          updateFloatingPlayerState(false);
+        }
+      }
+    }
+
+    function updateFloatingPlayerState(isPlaying) {
+      const playPauseBtn = document.getElementById('floating-play-pause');
+      if (playPauseBtn) {
+        playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+      }
+    }
+
+    function updateFloatingProgress() {
+      if (audioPlayer && floatingPlayerActive) {
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        const progressBar = document.getElementById('floating-progress');
+        const timeDisplay = document.getElementById('floating-time');
+        
+        if (progressBar) {
+          progressBar.style.width = `${progress || 0}%`;
+        }
+        
+        if (timeDisplay) {
+          const minutes = Math.floor(audioPlayer.currentTime / 60);
+          const seconds = Math.floor(audioPlayer.currentTime % 60);
+          timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+      }
+    }
+
+    // Inicializar reproductor flotante cuando la página cargue
+    window.addEventListener('load', initFloatingPlayer);
+
+    // ================================
+    // PIXEL ASISTENTE FLOTANTE
+    // ================================
+    function initPixelAssistant() {
+      const pixelAssistant = document.getElementById('pixel-assistant');
+      const pixelMinimized = document.getElementById('pixel-minimized');
+      const minimizeBtn = document.getElementById('pixel-minimize');
+      const closeBtn = document.getElementById('pixel-close');
+      const sendBtn = document.getElementById('pixel-send');
+      const input = document.getElementById('pixel-input');
+      
+      // Minimizar/Restaurar Pixel
+      minimizeBtn?.addEventListener('click', () => {
+        pixelAssistant.classList.add('hidden');
+        pixelMinimized.classList.remove('hidden');
+      });
+      
+      pixelMinimized?.addEventListener('click', () => {
+        pixelMinimized.classList.add('hidden');
+        pixelAssistant.classList.remove('hidden');
+      });
+      
+      // Cerrar Pixel
+      closeBtn?.addEventListener('click', () => {
+        pixelAssistant.classList.add('hidden');
+      });
+      
+      // Enviar mensaje a Pixel
+      const sendMessage = async () => {
+        const message = input.value.trim();
+        if (!message) return;
+        
+        input.value = '';
+        addPixelMessage(message, 'user');
+        
+        try {
+          // Simular respuesta de Pixel
+          setTimeout(() => {
+            const responses = [
+              "🎵 Excelente idea! Para ese estilo, te recomiendo usar acordes menores con progresión vi-IV-I-V.",
+              "🤖 Pixel analizando... Ese prompt tiene potencial cyberpunk. ¿Quieres que lo optimice?",
+              "✨ Basado en tu prompt, sugiero agregar elementos de synthwave con reverb espacial.",
+              "🎼 Para letras más impactantes, prueba con metáforas urbanas y referencias tecnológicas.",
+              "🎯 Pixel recomienda: BPM entre 128-140 para ese género, con sidechain compression."
+            ];
+            const response = responses[Math.floor(Math.random() * responses.length)];
+            addPixelMessage(response, 'assistant');
+          }, 1000);
+        } catch (error) {
+          addPixelMessage("❌ Error de conexión. Reintentando...", 'error');
+        }
+      };
+      
+      sendBtn?.addEventListener('click', sendMessage);
+      input?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+    }
+    
+    function addPixelMessage(message, type) {
+      const chatArea = document.getElementById('pixel-chat');
+      const messageDiv = document.createElement('div');
+      
+      if (type === 'user') {
+        messageDiv.className = 'bg-neon/10 rounded-lg p-3 ml-8';
+        messageDiv.innerHTML = `<p class="text-neon text-sm">${message}</p>`;
+      } else if (type === 'error') {
+        messageDiv.className = 'bg-red-500/10 rounded-lg p-3';
+        messageDiv.innerHTML = `<p class="text-red-300 text-sm">${message}</p>`;
+      } else {
+        messageDiv.className = 'bg-purple-500/10 rounded-lg p-3';
+        messageDiv.innerHTML = `<p class="text-purple-300 text-sm">${message}</p>`;
+      }
+      
+      chatArea.appendChild(messageDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // ================================
+    // TRACK UPLOAD FUNCTIONALITY
+    // ================================
+    function initTrackUpload() {
+      const uploadZone = document.getElementById('track-upload-zone');
+      const fileInput = document.getElementById('track-file-input');
+      const trackInfo = document.getElementById('uploaded-track-info');
+      const removeBtn = document.getElementById('remove-track');
+      
+      uploadZone?.addEventListener('click', () => fileInput?.click());
+      
+      uploadZone?.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('border-neon');
+      });
+      
+      uploadZone?.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('border-neon');
+      });
+      
+      uploadZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('border-neon');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) handleTrackUpload(files[0]);
+      });
+      
+      fileInput?.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleTrackUpload(e.target.files[0]);
+      });
+      
+      removeBtn?.addEventListener('click', () => {
+        trackInfo.classList.add('hidden');
+        uploadZone.classList.remove('hidden');
+        fileInput.value = '';
+      });
+    }
+    
+    function handleTrackUpload(file) {
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      const allowedTypes = ['audio/mp3', 'audio/wav', 'audio/flac', 'audio/mpeg'];
+      
+      if (file.size > maxSize) {
+        showToast('El archivo es demasiado grande. Máximo 10MB.', 'error');
+        return;
+      }
+      
+      if (!allowedTypes.includes(file.type)) {
+        showToast('Formato no soportado. Use MP3, WAV o FLAC.', 'error');
+        return;
+      }
+      
+      // Mostrar información del archivo
+      document.getElementById('track-filename').textContent = file.name;
+      document.getElementById('track-size').textContent = formatFileSize(file.size);
+      document.getElementById('uploaded-track-info').classList.remove('hidden');
+      document.getElementById('track-upload-zone').classList.add('hidden');
+      
+      showToast('Track subido correctamente', 'success');
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Inicializar funcionalidades cuando cargue la página
+    window.addEventListener('load', () => {
+      initPixelAssistant();
+      initTrackUpload();
+    });
 
     // Sistema de Login
     let currentUser = null;

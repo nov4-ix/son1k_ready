@@ -613,7 +613,7 @@ async def improve_lyrics(request: dict):
 async def smart_prompt(request: dict):
     """Generar prompt inteligente"""
     try:
-        input_text = request.get("prompt", "")
+        input_text = request.get("prompt", "") or request.get("lyrics", "")
         if not input_text:
             return {"error": "No prompt provided"}
         
