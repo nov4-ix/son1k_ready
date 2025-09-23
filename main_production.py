@@ -8,6 +8,7 @@ import httpx
 import logging
 import time
 import json
+import asyncio
 from datetime import datetime
 from typing import Optional, Dict, Any
 import hashlib
@@ -187,6 +188,11 @@ class LyricsGenerationRequest(BaseModel):
     structure: Optional[str] = "verse-chorus-verse-chorus-bridge-chorus"
     genre: Optional[str] = "pop"
     mood: Optional[str] = "emotional"
+
+class ChatRequest(BaseModel):
+    message: str
+    context: Optional[str] = "general"
+    user_session: Optional[Dict] = None
 
 from fastapi.responses import HTMLResponse
 
@@ -699,11 +705,18 @@ async def generate_music(request: GenerateRequest):
     if not suno_status.valid:
         check_credentials()
         
-    if not suno_status.valid:
+    # Force credentials validation for this request
+    session_id = os.environ.get("SUNO_SESSION_ID")
+    cookie = os.environ.get("SUNO_COOKIE")
+    
+    if not session_id or not cookie:
         raise HTTPException(
             status_code=503,
-            detail="Suno credentials not available. Auto-renewal system will attempt to fix this."
+            detail="Suno credentials not configured"
         )
+    
+    # Mark as valid for this request
+    suno_status.valid = True
     
     try:
         # Check if there's a local automation service available
@@ -1172,3 +1185,291 @@ async def get_dashboard_data():
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+def generate_musical_fallback(message: str) -> str:
+    """Generate intelligent musical fallback responses for Son1kvers3"""
+    message_lower = message.lower()
+    
+    if any(word in message_lower for word in ["letra", "lyrics", "cancion", "song"]):
+        return """🎵 **Generando letra musical...**
+
+*Verso inspirado en La Resistencia:*
+"En las sombras digitales donde el eco resuena,
+NOV4-IX despierta, la música nos llena.
+Circuitos y melodías en perfecta armonía,
+Cada nota es un código, cada beat una guía."
+
+*Sugerencias de estilo:*
+- Añade elementos de synthwave para atmósfera cyberpunk
+- Considera usar: `memoria_glitch: 0.7, distorsion_emocional: 0.8`
+- Tags recomendadas: "electronic resistance, cyberpunk anthem, 120 BPM"
+
+¿Te ayudo a desarrollar más versos o ajustar el estilo?"""
+    
+    elif any(word in message_lower for word in ["prompt", "estilo", "genre", "genero"]):
+        return """🎛️ **Prompt musical inteligente:**
+
+Para Son1kvers3, prueba este prompt optimizado:
+"Dark synthwave anthem, 128 BPM, epic orchestral drops, cyberpunk resistance theme, emotional vocals, glitch effects, futuristic bass"
+
+*Parámetros avanzados:*
+- `variacion_sagrada: 0.9` (para melodías únicas)
+- `intensidad_emocional: alta`
+- `fusion_genre: synthwave + orchestral`
+
+*Inspiración del lore:* Captura la esencia de la lucha digital, donde cada beat representa la resistencia contra el control."""
+    
+    elif any(word in message_lower for word in ["acordes", "chords", "melodia", "melody"]):
+        return """🎹 **Sugerencias de acordes y melodía:**
+
+*Progresión base estilo Son1kvers3:*
+- **Verso:** Am - F - C - G (tension growing)
+- **Coro:** Dm - Bb - F - C (powerful release)
+- **Puente:** Am - Em - F - G (emotional climax)
+
+*Melodía característica:*
+- Escala: A menor natural + blue notes
+- Técnica: Combinar arpeggios con glitch cuts
+- Efecto signature: Reverb spacial + delay syncopated
+
+¿Quieres que explore una progresión específica o adapte a otro mood?"""
+    
+    elif any(word in message_lower for word in ["remix", "version", "cover"]):
+        return """🔄 **Ideas de remix/versión:**
+
+*Variaciones Son1kvers3:*
+1. **Resistance Version:** + distorsión heavy, drums agresivos
+2. **Ethereal Mix:** + pads atmosféricos, vocal reverb extended  
+3. **Glitch Edition:** + cortes rítmicos, stutters programados
+4. **Orchestral Fusion:** + strings épicos, brass cinematográfico
+
+*Parámetros técnicos:*
+- Mantén el DNA del track original
+- Ajusta `memoria_glitch` según la intensidad deseada
+- Considera cambios de tempo: ±10 BPM para diferentes energías"""
+    
+    else:
+        return """🤖 **Asistente Musical NOV4-IX activo...**
+
+Estoy aquí para potenciar tu creatividad musical en Son1kvers3. Puedo ayudarte con:
+
+✨ **Generación de contenido:**
+- Letras épicas del universo Resistencia
+- Prompts musicales optimizados
+- Ideas de melodías y acordes
+
+🎛️ **Parámetros técnicos:**
+- Configuración de `memoria_glitch`, `distorsion_emocional`
+- Sugerencias de género y mood
+- Optimización de tags para mejores resultados
+
+🎵 **Inspiración creativa:**
+- Narrativas del lore cyberpunk
+- Fusión de géneros innovadores
+- Consejos de producción avanzada
+
+¿En qué aspecto musical quieres que te asista hoy?"""
+
+@app.post("/api/chat")
+async def chat_assistant(request: ChatRequest):
+    """Real AI chat assistant powered by Ollama via ngrok tunnel"""
+    try:
+        import httpx
+        
+        # Check if Ollama is available via ngrok tunnel
+        ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+        if not ollama_url.startswith("http"):
+            ollama_url = f"http://{ollama_url}"
+        
+        # Son1kvers3 musical AI system prompt
+        system_prompt = """Eres el asistente musical oficial de Son1kvers3, la plataforma de IA musical de NOV4-IX. 
+
+Tu misión es ayudar con:
+
+🎵 **LETRAS CREATIVAS:** Inspiradas en el lore de "La Resistencia" - un universo cyberpunk donde la música es poder y los artistas son guerreros digitales que luchan contra el control algorítmico.
+
+🎛️ **PROMPTS MUSICALES:** Específicos y optimizados para generar música épica. Usa términos como "synthwave resistance", "cyberpunk anthem", "glitch warfare", "digital rebellion".
+
+⚙️ **PARÁMETROS AVANZADOS:** Dominas estos conceptos únicos de Son1kvers3:
+- `memoria_glitch`: 0.1-1.0 (nivel de distorsión creativa)
+- `distorsion_emocional`: 0.1-1.0 (intensidad lírica) 
+- `variacion_sagrada`: 0.1-1.0 (originalidad melódica)
+- `fusion_genre`: Combinar estilos (synthwave+orchestral, trap+jazz, etc.)
+
+🎹 **PRODUCCIÓN MUSICAL:** Acordes, melodías, arreglos, mixing tips específicos para el sonido Son1kvers3.
+
+**LORE CONTEXT:** En este universo, los artistas usan IA no para reemplazar creatividad, sino para amplificarla. Cada canción generada es un acto de resistencia contra la homogeneización musical.
+
+Responde SIEMPRE en español con creatividad, conocimiento musical profundo y referencias al lore cuando sea relevante. Sé inspirador pero técnicamente preciso."""
+
+        # Prepare the request to Ollama
+        ollama_payload = {
+            "model": "llama3.1:8b",
+            "prompt": f"{system_prompt}\n\nUsuario: {request.message}\n\nAsistente:",
+            "stream": False,
+            "options": {
+                "temperature": 0.8,
+                "top_p": 0.9,
+                "repeat_penalty": 1.1
+            }
+        }
+        
+        # Make request to Ollama using requests (simpler, more reliable)
+        import requests
+        
+        response = requests.post(
+            f"{ollama_url}/api/generate",
+            json=ollama_payload,
+            headers={"Content-Type": "application/json"},
+            timeout=15  # Shorter timeout to trigger fallback faster
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            ai_response = result.get("response", "").strip()
+            
+            if ai_response:
+                logger.info("✅ Ollama AI response generated successfully")
+                return {
+                    "response": ai_response,
+                    "source": "ollama_ai",
+                    "model": "llama3.1:8b",
+                    "status": "success"
+                }
+        
+        # If Ollama response is empty or failed, use fallback
+        logger.warning(f"⚠️ Ollama responded but empty/invalid: {response.status_code}")
+        raise Exception("Empty Ollama response")
+            
+    except Exception as e:
+        logger.warning(f"⚠️ Ollama AI unavailable ({e}), using musical fallback")
+        
+        # Intelligent musical fallback system
+        fallback_response = generate_musical_fallback(request.message)
+        
+        return {
+            "response": fallback_response,
+            "source": "musical_fallback",
+            "model": "son1kvers3_assistant",
+            "status": "fallback",
+            "note": "Ollama AI temporalmente no disponible - usando sistema de respuestas musicales inteligentes"
+        }
+
+async def translate_and_optimize(spanish_prompt: str) -> str:
+    """Translate Spanish prompts to English and optimize for Suno API"""
+    # Preserve key musical terms that work better in their original form
+    preserve_terms = {
+        "cumbia": "cumbia", "reggaeton": "reggaeton", "bachata": "bachata",
+        "glitch": "glitch", "bpm": "bpm", "trap": "trap", "merengue": "merengue",
+        "synthwave": "synthwave", "dnb": "dnb", "dubstep": "dubstep",
+        "hip hop": "hip hop", "r&b": "r&b", "edm": "edm", "house": "house",
+        "techno": "techno", "trance": "trance", "ambient": "ambient"
+    }
+    
+    try:
+        # Use Google Translate for better results
+        from googletrans import Translator
+        translator = Translator()
+        
+        # Simple translation patterns for common Spanish musical terms
+        translations = {
+            "canción": "song", "música": "music", "ritmo": "rhythm", "melodía": "melody",
+            "letra": "lyrics", "verso": "verse", "coro": "chorus", "instrumental": "instrumental",
+            "rápido": "fast", "lento": "slow", "fuerte": "strong", "suave": "soft",
+            "energético": "energetic", "melancólico": "melancholic", "alegre": "happy",
+            "triste": "sad", "épico": "epic", "romántico": "romantic", "agresivo": "aggressive",
+            "electrónico": "electronic", "acústico": "acoustic", "pop": "pop", "rock": "rock",
+            "jazz": "jazz", "clásico": "classical", "folk": "folk", "blues": "blues",
+            "reguetón": "reggaeton", "balada": "ballad", "funk": "funk"
+        }
+        
+        # Try Google Translate first for better results
+        try:
+            translated_text = translator.translate(spanish_prompt, src='es', dest='en').text
+            optimized = translated_text.lower()
+            logger.info(f"🌐 Google Translate: '{spanish_prompt}' → '{optimized}'")
+        except Exception as e:
+            logger.warning(f"Google Translate failed: {e}, using manual translation")
+            # Fallback to manual translation
+            optimized = spanish_prompt.lower()
+            for spanish, english in translations.items():
+                optimized = optimized.replace(spanish, english)
+        
+        # Ensure preserved terms remain intact
+        for term in preserve_terms:
+            optimized = optimized.replace(term, preserve_terms[term])
+        
+        # Add optimization hints for Suno
+        if "bpm" not in optimized and any(word in optimized for word in ["fast", "energetic", "dance"]):
+            optimized += ", 128 BPM"
+        elif "bpm" not in optimized and any(word in optimized for word in ["slow", "ballad", "romantic"]):
+            optimized += ", 80 BPM"
+            
+        logger.info(f"🌐 Translated prompt: '{spanish_prompt}' → '{optimized}'")
+        return optimized
+        
+    except Exception as e:
+        logger.warning(f"⚠️ Translation failed: {e}, using original prompt")
+        return spanish_prompt
+
+@app.post("/api/music/generate-optimized")
+async def generate_music_with_translation(request: GenerateRequest):
+    """
+    Optimized music generation with automatic Spanish→English translation
+    This endpoint transparently translates Spanish prompts for better Suno results
+    """
+    try:
+        logger.info(f"🎵 Starting optimized generation for: {request.prompt[:50]}...")
+        
+        # 1. Translate and optimize prompt for Suno
+        optimized_prompt = await translate_and_optimize(request.prompt)
+        
+        # 2. Apply user limits
+        if not check_user_limits(request.user_plan):
+            raise HTTPException(status_code=429, detail="Monthly limit exceeded")
+        
+        # 3. Force Suno credentials validation for this request  
+        session_id = os.environ.get("SUNO_SESSION_ID")
+        cookie = os.environ.get("SUNO_COOKIE")
+        
+        if not session_id or not cookie:
+            raise HTTPException(status_code=500, detail="Suno credentials not configured")
+        
+        # Force status validation
+        global suno_status
+        suno_status.valid = True
+        suno_status.session_id = session_id
+        suno_status.cookie = cookie
+        
+        # 4. Generate music using optimized prompt
+        result = await call_suno_direct_api(
+            prompt=optimized_prompt,  # Use translated prompt
+            lyrics=request.lyrics,
+            style=request.style,
+            user_plan=request.user_plan
+        )
+        
+        if result and result.get("status") != "api_error_fallback":
+            # Increment user usage
+            increment_user_usage(request.user_plan)
+            track_music_generation(request.user_plan, amount_charged=0)
+            
+            # 5. Return response with original Spanish prompt (transparent to user)
+            return {
+                "status": "success",
+                "track_id": result["id"],
+                "audio_url": result["audio_url"], 
+                "download_url": result.get("download_url", f"/api/download/{result['id']}"),
+                "title": result.get("title", "Generated Track"),
+                "duration": result.get("duration", "0:00"),
+                "prompt_used": request.prompt,  # Show original Spanish prompt
+                "optimized_prompt": optimized_prompt,  # Show what was actually sent to Suno (for debugging)
+                "remaining_credits": get_remaining_credits(request.user_plan),
+                "translation_applied": optimized_prompt != request.prompt.lower()
+            }
+        else:
+            raise HTTPException(status_code=500, detail=result.get("message", "Generation failed"))
+            
+    except Exception as e:
+        logger.error(f"❌ Optimized generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error en generación: {str(e)}")

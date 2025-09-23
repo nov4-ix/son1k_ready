@@ -6,6 +6,13 @@
       "full_name": "Test User",
       "created_at": "2025-09-21 20:18:37.036495",
       "accounts": []
+    },
+    "9b7eda60-9992-4546-aa16-1d2e2d47e96a": {
+      "id": "9b7eda60-9992-4546-aa16-1d2e2d47e96a",
+      "email": "anonymous_free@son1kvers3.com",
+      "full_name": "Anonymous Free User",
+      "created_at": "2025-09-22 16:42:16.162571",
+      "accounts": []
     }
   },
   "accounts": {
@@ -16,9 +23,38 @@
       "status": "active",
       "created_at": "2025-09-21 20:18:37.049521",
       "transactions": []
+    },
+    "2f57b27c-cbef-4063-a4b2-6e63044dd054": {
+      "id": "2f57b27c-cbef-4063-a4b2-6e63044dd054",
+      "user_id": "9b7eda60-9992-4546-aa16-1d2e2d47e96a",
+      "plan": "free",
+      "status": "active",
+      "created_at": "2025-09-22 16:42:20.017799",
+      "transactions": []
     }
   },
-  "transactions": {},
+  "transactions": {
+    "7be070b2-ad71-4579-a944-6dfc476806db": {
+      "id": "7be070b2-ad71-4579-a944-6dfc476806db",
+      "account_id": "2f57b27c-cbef-4063-a4b2-6e63044dd054",
+      "source": "music_generation",
+      "amount": 0,
+      "currency": "USD",
+      "description": "Music generation - free plan",
+      "provider_ref": null,
+      "created_at": "2025-09-22 16:42:26.166248"
+    },
+    "76f286ba-2bd9-4981-97ba-e4fbcec2fedf": {
+      "id": "76f286ba-2bd9-4981-97ba-e4fbcec2fedf",
+      "account_id": "2eb9841c-aa01-499a-a5fc-08baac2772e7",
+      "source": "music_generation",
+      "amount": 0,
+      "currency": "USD",
+      "description": "Music generation - pro plan",
+      "provider_ref": null,
+      "created_at": "2025-09-22 17:19:19.697775"
+    }
+  },
   "payout_accounts": {},
   "settings": {
     "active_payout_account_id": null
