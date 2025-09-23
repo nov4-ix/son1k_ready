@@ -5,3 +5,7 @@ builder = "nixpacks"
 healthcheckPath = "/salud"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
+
+[[services]]
+name = "son1kvers3-api"
+source = "."

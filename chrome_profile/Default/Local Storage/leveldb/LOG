@@ -1,5 +1,0 @@
-2025/09/20-05:06:03.969 be Creating DB /home/seluser/chrome_profile/Default/Local Storage/leveldb since it was missing.
-2025/09/20-05:06:04.066 be Reusing MANIFEST /home/seluser/chrome_profile/Default/Local Storage/leveldb/MANIFEST-000001
-2025/09/20-05:06:24.518 c0 Level-0 table #5: started
-2025/09/20-05:06:24.619 c0 Level-0 table #5: 113455 bytes OK
-2025/09/20-05:06:24.633 c0 Delete type=0 #3

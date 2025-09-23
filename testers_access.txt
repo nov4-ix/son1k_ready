@@ -1,0 +1,15 @@
+📋 CREDENCIALES PARA TESTERS - SON1KVERS3
+
+🔐 LOGIN ADMIN:
+Email: nov4-ix@son1kvers3.com
+Password: admin123
+
+🧪 PRO TESTERS (1-10):
+Email: pro.tester1@son1kvers3.com
+Password: Premium123!
+
+🌐 ACCESO LOCAL:
+http://localhost:8002
+https://f738990551d9.ngrok-free.app
+
+✅ SISTEMA LISTO PARA TESTING
