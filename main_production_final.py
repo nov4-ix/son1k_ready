@@ -674,6 +674,22 @@ async def commercial_integration():
     """
     return Response(content=js_content, media_type="application/javascript")
 
+@app.post("/api/admin/init-database")
+async def init_database_endpoint():
+    """Endpoint para inicializar base de datos en Railway"""
+    try:
+        from init_users_auto import init_users_database
+        init_users_database()
+        return {
+            "status": "success",
+            "message": "Base de datos inicializada",
+            "admin_created": "nov4-ix@son1kvers3.com",
+            "testers_created": "pro.tester1-10@son1kvers3.com"
+        }
+    except Exception as e:
+        logger.error(f"Error inicializando DB: {e}")
+        return {"status": "error", "message": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8002))
