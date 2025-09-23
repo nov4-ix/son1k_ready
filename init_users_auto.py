@@ -16,10 +16,12 @@ logger = logging.getLogger(__name__)
 def init_users_database():
     """Inicializa la base de datos con usuarios por defecto"""
     
-    # Determinar archivo de base de datos
+    # Determinar archivo de base de datos - Railway auto-detección
     db_file = "son1k.db"
-    if os.getenv("RAILWAY_ENVIRONMENT"):
-        db_file = "/app/son1k.db"  # Ruta en Railway
+    if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("PORT"):
+        # En Railway o producción, crear siempre nueva DB
+        db_file = "son1k.db"
+        logger.info("🚀 Modo Railway/Producción detectado")
     
     logger.info(f"🔧 Inicializando base de datos: {db_file}")
     
@@ -50,6 +52,11 @@ def init_users_database():
             logger.info(f"✅ Base de datos ya inicializada con {user_count} usuarios")
             conn.close()
             return
+        
+        # En Railway/Producción, forzar recreación completa
+        if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("PORT"):
+            logger.info("🔄 Forzando recreación de usuarios en Railway")
+            cursor.execute("DELETE FROM users")  # Limpiar usuarios existentes
         
         logger.info("🎵 Creando usuarios por defecto...")
         

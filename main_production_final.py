@@ -502,10 +502,17 @@ except Exception as e:
 
 @app.post("/api/login")
 async def login_user(request: LoginRequest):
-    """Login de usuario"""
+    """Login de usuario con auto-inicialización de DB"""
     try:
         import sqlite3
         import bcrypt
+        
+        # Auto-inicializar base de datos si no existe
+        try:
+            from init_users_auto import init_users_database
+            init_users_database()
+        except Exception as e:
+            logger.warning(f"Auto-init DB warning: {e}")
         
         # Conectar a la base de datos
         conn = sqlite3.connect("son1k.db")
