@@ -755,4 +755,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8002))
     logger.info(f"🎵 Iniciando Son1kVers3 en puerto {port}")
-    uvicorn.run("main_production_final:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("main_production_final:app", host="0.0.0.0", port=port, reload=False)// Deploy forced at martes, 23 de septiembre de 2025, 15:24:43 CST
