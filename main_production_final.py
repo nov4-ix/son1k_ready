@@ -108,7 +108,26 @@ async def call_ai_assistant(prompt: str) -> str:
     """Sistema inteligente de IA con múltiples respuestas dinámicas"""
     import random
     
-    # Detectar tipo de consulta
+    # Intentar Ollama primero, fallback a respuestas inteligentes
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": "llama3.1:8b",
+                    "prompt": f"Eres NOV4-IX, un asistente musical especializado en cyberpunk y synthwave para Son1kVers3. Responde de forma concisa y útil: {prompt}",
+                    "stream": False
+                }
+            )
+            if response.status_code == 200:
+                data = response.json()
+                if "response" in data and data["response"].strip():
+                    return f"🤖 **NOV4-IX (Ollama):**\n\n{data['response']}"
+    except Exception as e:
+        logger.warning(f"Ollama no disponible: {e}")
+    
+    # Fallback a respuestas inteligentes
     prompt_lower = prompt.lower()
     
     # Respuestas para letras
