@@ -1,0 +1,26 @@
+{
+  "title": "una canción épica de synthwave...",
+  "genre": "synthwave",
+  "tempo": "120 BPM",
+  "structure": "Intro - Verso - Coro - Verso - Coro - Puente - Coro - Outro",
+  "instruments": [
+    "Guitarra",
+    "Bajo",
+    "Batería",
+    "Sintetizador",
+    "Piano"
+  ],
+  "mood": "Energético y emotivo",
+  "lyrics": "",
+  "description": "Una canción synthwave generada por el sistema Son1k. una canción épica de synthwave sobre la resistencia",
+  "key": "C Major",
+  "timeSignature": "4/4",
+  "duration": "3:30",
+  "prompt": "una canción épica de synthwave sobre la resistencia",
+  "style": "synthwave",
+  "instrumental": true,
+  "timestamp": "2025-09-24T16:41:16.083Z",
+  "method": "demo_system",
+  "source": "son1k_demo",
+  "status": "generated_successfully"
+}

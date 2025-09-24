@@ -2,7 +2,7 @@
 console.log('🎵 Son1k-Suno Bridge Content Script Loaded');
 
 let son1kConfig = {
-    apiUrl: 'https://2a73bb633652.ngrok-free.app',
+    apiUrl: 'http://localhost:8000',
     userEmail: 'soypepejaimes@gmail.com',
     connected: false
 };
@@ -147,13 +147,16 @@ function sendToSon1k(data) {
     
     showNotification('📤 Sending to Son1k...', 'info');
     
-    fetch(son1kConfig.apiUrl + '/api/songs/create', {
+    fetch(son1kConfig.apiUrl + '/api/extension/generate', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'any'
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+            prompt: data.prompt || data.description || '',
+            lyrics: data.lyrics || '',
+            style: data.style || 'synthwave'
+        })
     })
     .then(response => {
         if (!response.ok) {

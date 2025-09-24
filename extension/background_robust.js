@@ -2,7 +2,7 @@
 console.log('🚀 Son1k Service Worker Starting...');
 
 let extensionConfig = {
-    apiUrl: 'https://2a73bb633652.ngrok-free.app',
+    apiUrl: 'http://localhost:8000',
     connected: false,
     lastPing: null,
     userEmail: 'soypepejaimes@gmail.com'

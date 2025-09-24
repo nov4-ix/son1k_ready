@@ -30,9 +30,18 @@ from auth_middleware import (
     check_generation_limits, increment_generation_count, LoginRequest, LoginResponse, UserStatsResponse
 )
 from pixel_assistant import chat_with_pixel, get_pixel_tips, get_pixel_help
+from health_checker import health_checker, router as health_router
+from error_handler import error_handler, handle_errors, ErrorSeverity, ErrorCategory, ErrorRecoveryStrategy
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# Configurar logging robusto
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/son1k_system.log'),
+        logging.StreamHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # Directorio para archivos de audio
@@ -93,6 +102,9 @@ app.add_middleware(
 # Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
+# Incluir router de health checks
+app.include_router(health_router)
+
 # Servir archivos inmersivos desde la raíz
 from fastapi.responses import FileResponse
 
@@ -126,6 +138,13 @@ async def health_check():
     }
 
 @app.post("/api/music/generate")
+@handle_errors(
+    context="music_generation",
+    severity=ErrorSeverity.HIGH,
+    category=ErrorCategory.GENERATION,
+    recovery_strategy=ErrorRecoveryStrategy.RETRY,
+    max_retries=3
+)
 async def generate_music(request: GenerateRequest, background_tasks: BackgroundTasks):
     """Generar música con el flujo completo optimizado"""
     

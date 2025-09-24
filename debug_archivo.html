@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Archivo - Son1k</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f111a; color: #e4e4e7; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background-color: #0B0B0F; padding: 20px; border-radius: 8px; }
+        h1 { color: #00FFE7; margin-bottom: 20px; text-align: center; }
+        .button-group button { margin: 5px; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background-color: #00FFE7; color: #0B0B0F; border: none; }
+        .btn-secondary { background-color: #3f3f46; color: white; border: none; }
+        .status-message { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .status-success { background-color: #16a34a; color: white; }
+        .status-error { background-color: #dc2626; color: white; }
+        .track-item { background-color: #1a1c22; padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Debug - El Archivo</h1>
+        
+        <div class="text-center mb-4">
+            <button onclick="loadTracks()" class="btn-primary">
+                🔄 Cargar Tracks
+            </button>
+            <button onclick="testConnection()" class="btn-secondary">
+                🧪 Probar Conexión
+            </button>
+        </div>
+
+        <div id="statusMessage" class="status-message hidden"></div>
+        <div id="tracksList">
+            <p>Haz clic en "Cargar Tracks" para ver tu música.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+        const statusMessageDiv = document.getElementById('statusMessage');
+
+        function showStatus(message, type = 'info') {
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.className = `status-message ${type === 'success' ? 'status-success' : type === 'error' ? 'status-error' : 'bg-gray-700 text-white'}`;
+            statusMessageDiv.classList.remove('hidden');
+        }
+
+        async function testConnection() {
+            try {
+                console.log('🧪 Probando conexión...');
+                showStatus('Probando conexión...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                console.log('✅ Conexión exitosa:', data);
+                showStatus(`✅ Servidor funcionando: ${data.status}`, 'success');
+                
+                // Mostrar información del servidor
+                const tracksList = document.getElementById('tracksList');
+                tracksList.innerHTML = `
+                    <div class="status-success" style="padding: 15px; border-radius: 5px;">
+                        <p><strong>✅ Conexión exitosa</strong></p>
+                        <p>Servidor: ${data.status}</p>
+                        <p>Tracks disponibles: ${data.tracks_available}</p>
+                        <p>Ollama: ${data.ollama_available ? 'Sí' : 'No'}</p>
+                        <button onclick="loadTracks()" class="btn-primary" style="margin-top: 10px;">
+                            🔄 Cargar Tracks Ahora
+                        </button>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                showStatus(`❌ Error de conexión: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadTracks() {
+            console.log('🎵 Cargando tracks...');
+            showStatus('Cargando tracks...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/tracks`);
+                console.log('📡 Respuesta API:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('📊 Datos recibidos:', data);
+                
+                const tracksList = document.getElementById('tracksList');
+                
+                if (data.tracks && data.tracks.length > 0) {
+                    console.log(`✅ Cargando ${data.tracks.length} tracks`);
+                    tracksList.innerHTML = '';
+                    
+                    data.tracks.forEach((track, index) => {
+                        console.log(`🎵 Track ${index + 1}:`, track.title);
+                        const trackElement = document.createElement('div');
+                        trackElement.className = 'track-item';
+                        trackElement.innerHTML = `
+                            <h3 style="color: #00FFE7; font-weight: bold;">${track.title}</h3>
+                            <p style="color: #a1a1aa;">${track.prompt}</p>
+                            <p style="color: #a1a1aa; font-size: 0.9em;">${new Date(track.created_at).toLocaleString()}</p>
+                            <div style="margin-top: 10px;">
+                                <button onclick="playTrack('${track.id}')" class="btn-primary" style="margin-right: 10px;">
+                                    ▶️ Reproducir
+                                </button>
+                                <button onclick="downloadTrack('${track.id}')" class="btn-secondary">
+                                    📥 Descargar
+                                </button>
+                            </div>
+                        `;
+                        tracksList.appendChild(trackElement);
+                    });
+                    showStatus(`Cargados ${data.tracks.length} tracks.`, 'success');
+                } else {
+                    tracksList.innerHTML = '<p>No hay pistas guardadas aún.</p>';
+                    showStatus('No hay tracks disponibles.', 'info');
+                }
+            } catch (error) {
+                console.error('❌ Error cargando tracks:', error);
+                showStatus(`Error cargando tracks: ${error.message}`, 'error');
+            }
+        }
+
+        function playTrack(trackId) {
+            const audio = new Audio(`${API_BASE_URL}/api/tracks/${trackId}/audio`);
+            audio.play();
+            showStatus(`Reproduciendo: ${trackId}`, 'info');
+        }
+
+        function downloadTrack(trackId) {
+            const link = document.createElement('a');
+            link.href = `${API_BASE_URL}/api/tracks/${trackId}/audio`;
+            link.download = `track_${trackId}.mp3`;
+            link.click();
+            showStatus(`Descargando: ${trackId}`, 'info');
+        }
+
+        // Cargar tracks automáticamente al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página cargada, probando conexión...');
+            testConnection();
+        });
+    </script>
+</body>
+</html>
+
+
+

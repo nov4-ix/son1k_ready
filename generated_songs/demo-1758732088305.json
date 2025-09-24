@@ -1,0 +1,26 @@
+{
+  "title": "jazz moderno con saxofón y pia...",
+  "genre": "jazz",
+  "tempo": "120 BPM",
+  "structure": "Intro - Verso - Coro - Verso - Coro - Puente - Coro - Outro",
+  "instruments": [
+    "Guitarra",
+    "Bajo",
+    "Batería",
+    "Sintetizador",
+    "Piano"
+  ],
+  "mood": "Energético y emotivo",
+  "lyrics": "",
+  "description": "Una canción jazz generada por el sistema Son1k. jazz moderno con saxofón y piano",
+  "key": "C Major",
+  "timeSignature": "4/4",
+  "duration": "3:30",
+  "prompt": "jazz moderno con saxofón y piano",
+  "style": "jazz",
+  "instrumental": true,
+  "timestamp": "2025-09-24T16:41:28.305Z",
+  "method": "demo_system",
+  "source": "son1k_demo",
+  "status": "generated_successfully"
+}

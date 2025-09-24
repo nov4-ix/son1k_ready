@@ -1,0 +1,18 @@
+{
+  "used_credits": 40,
+  "user_usage": {
+    "test_user_2025-09": {
+      "generations": 1,
+      "credits_used": 10,
+      "tier": "free",
+      "last_activity": "2025-09-24T16:22:25.719494"
+    },
+    "anonymous_2025-09": {
+      "generations": 3,
+      "credits_used": 30,
+      "tier": "free",
+      "last_activity": "2025-09-24T16:58:26.386248"
+    }
+  },
+  "last_updated": "2025-09-24T16:58:26.386280"
+}

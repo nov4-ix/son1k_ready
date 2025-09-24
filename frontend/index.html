@@ -1495,48 +1495,85 @@
         btn.disabled = true;
         btn.textContent = esInstrumental ? 'Generando instrumental...' : 'Generando canción...';
         
-        console.log('Enviando request a:', `${API_BASE_URL}/api/music/generate`);
+        console.log('🎵 Iniciando generación con Suno Wrapper...');
         
-        // Usar endpoint simplificado sin autenticación requerida
-        const response = await fetch(`${API_BASE_URL}/api/music/generate`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          },
-          body: JSON.stringify({
-            prompt: estilo || 'música instrumental',
-            lyrics: letra,
-            instrumental: esInstrumental,
-            style: preset
-          })
-        });
+        // Usar la nueva integración con wrapper de Suno
+        const result = await generateMusicWithSuno(
+          estilo || 'música instrumental',
+          letra,
+          preset,
+          esInstrumental
+        );
         
-        console.log('Response status:', response.status);
+        console.log('✅ Resultado de generación:', result);
         
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Error response:', errorText);
-          throw new Error(`Error HTTP: ${response.status} - ${errorText}`);
-        }
-        
-        const data = await response.json();
-        console.log('Response data:', data);
-        
-        if (data.job_id) {
-          showToast(`¡Tarea encolada! ID: ${data.job_id}`, 'success');
-          addLog(`🎵 Generando música - Job ID: ${data.job_id}`);
-        } else {
+        if (result.success) {
           showToast(esInstrumental ? '¡Instrumental generado con éxito!' : '¡Música generada con éxito!', 'success');
+          addLog(`🎵 Música generada - Job ID: ${result.jobId}`, 'success');
+          
+          // Si hay URLs de audio, mostrarlas
+          if (result.audioUrls && result.audioUrls.length > 0) {
+            addLog(`🎵 ${result.audioUrls.length} archivo(s) de audio generado(s)`, 'info');
+            
+            // Crear reproductor si hay audio
+            if (result.audioUrls[0]) {
+              createAudioPlayer(result.audioUrls[0], result.lyrics);
+            }
+          }
+          
+          // Mostrar letras si están disponibles
+          if (result.lyrics && result.lyrics.trim()) {
+            addLog(`📝 Letras generadas: ${result.lyrics.substring(0, 100)}...`, 'info');
+          }
+        } else {
+          throw new Error('Error en la generación');
         }
+        
       } catch (error) {
-        console.error('Error completo:', error);
+        console.error('❌ Error completo:', error);
         showToast('Error al generar música: ' + error.message, 'error');
         addLog(`❌ Error: ${error.message}`, 'error');
       } finally {
         const btn = document.getElementById('generarMusica');
         btn.disabled = false;
         btn.textContent = 'Generar Música';
+      }
+    }
+    
+    // Función para crear reproductor de audio
+    function createAudioPlayer(audioUrl, lyrics = '') {
+      try {
+        // Crear contenedor del reproductor
+        const playerContainer = document.createElement('div');
+        playerContainer.className = 'audio-player-container bg-gray-800 p-4 rounded-lg mt-4';
+        playerContainer.innerHTML = `
+          <div class="flex items-center space-x-4">
+            <audio controls class="flex-1">
+              <source src="${audioUrl}" type="audio/mpeg">
+              Tu navegador no soporta el elemento de audio.
+            </audio>
+            <a href="${audioUrl}" download class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              📥 Descargar
+            </a>
+          </div>
+          ${lyrics ? `<div class="mt-2 text-sm text-gray-300"><strong>Letras:</strong><br><em>${lyrics}</em></div>` : ''}
+        `;
+        
+        // Agregar al contenedor de logs o crear uno nuevo
+        let logsContainer = document.getElementById('logsContainer');
+        if (!logsContainer) {
+          logsContainer = document.createElement('div');
+          logsContainer.id = 'logsContainer';
+          logsContainer.className = 'mt-4';
+          document.body.appendChild(logsContainer);
+        }
+        
+        logsContainer.appendChild(playerContainer);
+        
+        console.log('🎵 Reproductor de audio creado:', audioUrl);
+        
+      } catch (error) {
+        console.error('❌ Error creando reproductor:', error);
       }
     }
     
@@ -2692,6 +2729,9 @@
 
   <!-- 🎵 Son1k Commercial Integration Script -->
   <script src="commercial_integration.js"></script>
+  
+  <!-- 🎵 Suno Wrapper Integration Script -->
+  <script src="suno_wrapper_integration.js"></script>
   
   <script>
     // Modificar evento del botón para usar integración Suno

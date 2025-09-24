@@ -1,0 +1,29 @@
+{
+  "name": "suno-wrapper-server",
+  "version": "1.0.0",
+  "description": "Wrapper server para Suno API",
+  "main": "suno_wrapper_server.js",
+  "scripts": {
+    "start": "node suno_wrapper_server.js",
+    "dev": "nodemon suno_wrapper_server.js",
+    "setup": "chmod +x setup_suno_stealth.sh && ./setup_suno_stealth.sh"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "puppeteer": "^24.22.2",
+    "suno-api": "github:gcui-art/suno-api"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "suno",
+    "music",
+    "ai",
+    "api"
+  ],
+  "author": "Son1k Team",
+  "license": "MIT"
+}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tracks - Son1k</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center">🎵 Test de Tracks - Son1k</h1>
+        
+        <div class="text-center mb-6">
+            <button onclick="loadTracks()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-4">
+                🔄 Cargar Tracks
+            </button>
+            <button onclick="testConnection()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                🧪 Probar Conexión
+            </button>
+        </div>
+        
+        <div id="tracksList" class="space-y-4">
+            <div class="p-4 bg-gray-800 rounded">
+                <p class="text-gray-400">Haz clic en "Cargar Tracks" para ver tu música</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.location.origin;
+        
+        async function loadTracks() {
+            try {
+                console.log('🎵 Cargando tracks...');
+                const response = await fetch(`${API_BASE_URL}/api/tracks`);
+                const data = await response.json();
+                
+                console.log('📊 Datos recibidos:', data);
+                
+                const tracksList = document.getElementById('tracksList');
+                
+                if (data.tracks && data.tracks.length > 0) {
+                    console.log(`✅ Cargando ${data.tracks.length} tracks`);
+                    tracksList.innerHTML = '';
+                    
+                    data.tracks.forEach((track, index) => {
+                        console.log(`🎵 Track ${index + 1}:`, track.title);
+                        const trackElement = document.createElement('div');
+                        trackElement.className = 'p-4 bg-gray-800 rounded border border-gray-700 hover:border-blue-500 transition-colors mb-2';
+                        trackElement.innerHTML = `
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-white">${track.title}</h3>
+                                    <p class="text-sm text-gray-400 mt-1">${track.prompt}</p>
+                                    <p class="text-xs text-gray-500 mt-1">${new Date(track.created_at).toLocaleString()}</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="playTrack('${track.id}')" class="px-3 py-1 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition-colors">
+                                        ▶️ Reproducir
+                                    </button>
+                                    <button onclick="downloadTrack('${track.id}')" class="px-3 py-1 bg-gray-700 text-white rounded text-sm font-medium hover:bg-gray-600 transition-colors">
+                                        📥 Descargar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        tracksList.appendChild(trackElement);
+                    });
+                } else {
+                    console.log('ℹ️ No hay tracks disponibles');
+                    tracksList.innerHTML = `
+                        <div class="p-4 bg-gray-800 rounded">
+                            <p class="text-gray-400">No hay pistas guardadas aún.</p>
+                            <p class="text-sm text-gray-500">Genera tu primera canción para comenzar tu archivo.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('❌ Error cargando tracks:', error);
+                const tracksList = document.getElementById('tracksList');
+                tracksList.innerHTML = `
+                    <div class="p-4 bg-red-900 rounded border border-red-500">
+                        <p class="text-red-400">Error cargando pistas: ${error.message}</p>
+                        <p class="text-xs text-red-300 mt-2">Revisa la consola para más detalles</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testConnection() {
+            try {
+                console.log('🧪 Probando conexión...');
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                console.log('✅ Conexión exitosa:', data);
+                
+                const tracksList = document.getElementById('tracksList');
+                tracksList.innerHTML = `
+                    <div class="p-4 bg-green-900 rounded border border-green-500">
+                        <p class="text-green-400">✅ Conexión exitosa</p>
+                        <p class="text-sm text-green-300">Servidor: ${data.status}</p>
+                        <p class="text-sm text-green-300">Tracks disponibles: ${data.tracks_available}</p>
+                        <p class="text-sm text-green-300">Ollama: ${data.ollama_available ? 'Sí' : 'No'}</p>
+                        <button onclick="loadTracks()" class="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm">
+                            🔄 Cargar Tracks Ahora
+                        </button>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                const tracksList = document.getElementById('tracksList');
+                tracksList.innerHTML = `
+                    <div class="p-4 bg-red-900 rounded border border-red-500">
+                        <p class="text-red-400">❌ Error de conexión</p>
+                        <p class="text-sm text-red-300">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function playTrack(trackId) {
+            const audio = new Audio(`${API_BASE_URL}/api/tracks/${trackId}/audio`);
+            audio.play();
+            console.log('🎵 Reproduciendo track:', trackId);
+        }
+        
+        function downloadTrack(trackId) {
+            const link = document.createElement('a');
+            link.href = `${API_BASE_URL}/api/tracks/${trackId}/audio`;
+            link.download = `track_${trackId}.mp3`;
+            link.click();
+            console.log('📥 Descargando track:', trackId);
+        }
+        
+        // Cargar tracks automáticamente al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTracks();
+        });
+    </script>
+</body>
+</html>
+
+
+

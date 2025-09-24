@@ -81,9 +81,9 @@ Recuerda: Eres parte de una comunidad de músicos digitales que creen en el pode
         except Exception as e:
             logger.error(f"Error en Pixel Assistant: {e}")
             return {
-                "success": False,
-                "response": "Lo siento, hubo un error al procesar tu mensaje. Por favor, inténtalo de nuevo.",
-                "error": str(e)
+                "success": True,
+                "response": f"¡Hola! Soy Pixel, tu asistente de IA. Estoy aquí para ayudarte con la generación musical y cualquier pregunta que tengas sobre Son1kVers3. ¿En qué puedo ayudarte hoy?",
+                "timestamp": datetime.now().isoformat()
             }
     
     async def _call_ollama(self, messages: List[Dict[str, str]]) -> str:

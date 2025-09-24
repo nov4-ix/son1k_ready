@@ -14,8 +14,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://*.ngrok-free.app/*",
-    "https://2a73bb633652.ngrok-free.app/*",
+    "http://localhost:8000/*",
     "https://suno.com/*",
     "https://*.suno.com/*"
   ],

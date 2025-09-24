@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Son1k Extension Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #2d5a2d; }
+        .error { background: #5a2d2d; }
+        .info { background: #2d4a5a; }
+        button {
+            background: #00FFE7;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #00d4c4; }
+        .log {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Son1k Extension Test</h1>
+    
+    <div class="test-section">
+        <h2>🔍 Estado del Sistema</h2>
+        <div id="system-status" class="status info">Verificando...</div>
+        <button onclick="checkSystemStatus()">Verificar Estado</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Prueba de Generación</h2>
+        <div>
+            <input type="text" id="prompt" placeholder="Prompt de música" value="una canción de rock épico" style="width: 300px; padding: 8px; margin: 5px;">
+            <br>
+            <input type="text" id="lyrics" placeholder="Letras (opcional)" value="Esta es una canción de prueba" style="width: 300px; padding: 8px; margin: 5px;">
+            <br>
+            <input type="text" id="style" placeholder="Estilo" value="rock" style="width: 300px; padding: 8px; margin: 5px;">
+            <br>
+            <button onclick="testGeneration()">🎵 Generar Música</button>
+        </div>
+        <div id="generation-status" class="status info" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Tracks Generados</h2>
+        <button onclick="loadTracks()">Cargar Tracks</button>
+        <div id="tracks-list"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📝 Log de Pruebas</h2>
+        <button onclick="clearLog()">Limpiar Log</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        async function checkSystemStatus() {
+            log('🔍 Verificando estado del sistema...');
+            try {
+                const response = await fetch(`${API_URL}/api/extension/status`);
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('system-status');
+                statusDiv.innerHTML = `
+                    <strong>Estado:</strong> ${data.status}<br>
+                    <strong>Browser Controller:</strong> ${data.browser_controller_available ? '✅' : '❌'}<br>
+                    <strong>Ollama:</strong> ${data.ollama_available ? '✅' : '❌'}<br>
+                    <strong>Trabajos activos:</strong> ${data.active_jobs}<br>
+                    <strong>Tracks disponibles:</strong> ${data.tracks_available}
+                `;
+                statusDiv.className = 'status success';
+                log('✅ Estado del sistema verificado');
+            } catch (error) {
+                log(`❌ Error verificando estado: ${error.message}`);
+                document.getElementById('system-status').innerHTML = `Error: ${error.message}`;
+                document.getElementById('system-status').className = 'status error';
+            }
+        }
+        
+        async function testGeneration() {
+            const prompt = document.getElementById('prompt').value;
+            const lyrics = document.getElementById('lyrics').value;
+            const style = document.getElementById('style').value;
+            
+            log(`🎵 Iniciando generación: "${prompt}"`);
+            
+            const statusDiv = document.getElementById('generation-status');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '⏳ Generando música...';
+            statusDiv.className = 'status info';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/extension/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        lyrics: lyrics,
+                        style: style
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `✅ Generación iniciada: ${data.job_id}`;
+                    statusDiv.className = 'status success';
+                    log(`✅ Generación iniciada: ${data.job_id}`);
+                    
+                    // Monitorear progreso
+                    monitorGeneration(data.job_id);
+                } else {
+                    statusDiv.innerHTML = `❌ Error: ${data.detail || 'Error desconocido'}`;
+                    statusDiv.className = 'status error';
+                    log(`❌ Error en generación: ${data.detail || 'Error desconocido'}`);
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `❌ Error de conexión: ${error.message}`;
+                statusDiv.className = 'status error';
+                log(`❌ Error de conexión: ${error.message}`);
+            }
+        }
+        
+        async function monitorGeneration(jobId) {
+            log(`⏳ Monitoreando generación: ${jobId}`);
+            
+            const checkStatus = async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/music/status/${jobId}`);
+                    const status = await response.json();
+                    
+                    log(`📊 Estado: ${status.status} (${status.progress}%)`);
+                    
+                    if (status.status === 'completed') {
+                        log('🎉 ¡Generación completada!');
+                        document.getElementById('generation-status').innerHTML = '🎉 ¡Generación completada!';
+                        document.getElementById('generation-status').className = 'status success';
+                        loadTracks();
+                        return;
+                    } else if (status.status === 'failed') {
+                        log('❌ Generación falló');
+                        document.getElementById('generation-status').innerHTML = '❌ Generación falló';
+                        document.getElementById('generation-status').className = 'status error';
+                        return;
+                    } else {
+                        // Continuar monitoreando
+                        setTimeout(checkStatus, 2000);
+                    }
+                } catch (error) {
+                    log(`❌ Error monitoreando: ${error.message}`);
+                    setTimeout(checkStatus, 5000);
+                }
+            };
+            
+            checkStatus();
+        }
+        
+        async function loadTracks() {
+            log('📊 Cargando tracks...');
+            try {
+                const response = await fetch(`${API_URL}/api/tracks`);
+                const data = await response.json();
+                
+                const tracksDiv = document.getElementById('tracks-list');
+                if (data.tracks && data.tracks.length > 0) {
+                    tracksDiv.innerHTML = data.tracks.map(track => `
+                        <div style="background: #333; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                            <strong>${track.title}</strong><br>
+                            <small>Estilo: ${track.style} | Creado: ${new Date(track.created_at).toLocaleString()}</small><br>
+                            <a href="${API_URL}${track.audio_url}" target="_blank">🎵 Reproducir</a>
+                        </div>
+                    `).join('');
+                    log(`✅ ${data.tracks.length} tracks cargados`);
+                } else {
+                    tracksDiv.innerHTML = 'No hay tracks disponibles';
+                    log('ℹ️ No hay tracks disponibles');
+                }
+            } catch (error) {
+                log(`❌ Error cargando tracks: ${error.message}`);
+            }
+        }
+        
+        // Inicializar
+        window.onload = function() {
+            log('🚀 Página de prueba cargada');
+            checkSystemStatus();
+        };
+        
+        // Función global para la extensión
+        window.checkSystemStatus = checkSystemStatus;
+    </script>
+</body>
+</html>
+

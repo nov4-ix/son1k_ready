@@ -506,10 +506,19 @@
             <h2 class="text-2xl font-bold text-center">El Archivo</h2>
             <p class="text-center text-zinc">Tu música generada</p>
             
+            <div class="text-center mb-4">
+              <button onclick="loadTracks()" class="px-4 py-2 bg-neon text-black rounded font-medium hover:bg-neon/80 transition-colors">
+                🔄 Cargar Tracks
+              </button>
+              <button onclick="testConnection()" class="ml-2 px-4 py-2 bg-zinc-700 text-white rounded font-medium hover:bg-zinc-600 transition-colors">
+                🧪 Probar Conexión
+              </button>
+            </div>
+            
             <div id="tracksList" class="space-y-4">
               <div class="p-4 bg-black/30 rounded">
-                <p class="text-zinc">No hay pistas guardadas aún.</p>
-                <p class="text-sm text-zinc">Genera tu primera canción para comenzar tu archivo.</p>
+                <p class="text-zinc">Cargando tracks...</p>
+                <p class="text-sm text-zinc">Haz clic en "Cargar Tracks" para ver tu música.</p>
               </div>
             </div>
           </div>
@@ -624,12 +633,20 @@
     </div>
   </div>
 
-  <!-- MUSIC PLAYER (Fixed Position) -->
+  <!-- ENHANCED MUSIC PLAYER (Fixed Position) -->
   <div id="musicPlayer" class="hidden fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-lg p-4 z-50">
-    <div class="flex items-center gap-4">
-      <button id="playPauseBtn" class="btn btn-primary">▶</button>
+    <!-- Track Info -->
+    <div class="flex items-center gap-4 mb-3">
+      <div class="flex items-center gap-3">
+        <button id="playBtn" class="w-10 h-10 bg-neon text-black rounded-full flex items-center justify-center hover:bg-cyan-300 transition-colors">
+          ▶
+        </button>
+        <button id="pauseBtn" class="w-10 h-10 bg-neon text-black rounded-full flex items-center justify-center hover:bg-cyan-300 transition-colors hidden">
+          ⏸
+        </button>
+      </div>
       <div class="flex-1">
-        <div class="text-sm font-bold" id="trackTitle">Título de la pista</div>
+        <div class="text-sm font-bold text-white" id="trackTitle">Título de la pista</div>
         <div class="text-xs text-zinc" id="trackArtist">Generado por Son1kVers3</div>
       </div>
       <div class="flex items-center gap-2">
@@ -637,7 +654,27 @@
         <button id="closePlayer" class="text-zinc hover:text-neon cursor-pointer">✕</button>
       </div>
     </div>
-    <audio id="audioPlayer" class="w-full mt-2" controls></audio>
+    
+    <!-- Progress Bar -->
+    <div class="mb-3">
+      <div class="flex items-center gap-2 text-xs text-zinc">
+        <span id="currentTime">0:00</span>
+        <div class="flex-1 bg-gray-700 rounded-full h-1 cursor-pointer" id="progressBar">
+          <div class="bg-neon h-1 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <span id="duration">0:00</span>
+      </div>
+    </div>
+    
+    <!-- Volume Control -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-zinc">🔊</span>
+      <input type="range" id="volumeSlider" min="0" max="100" value="70" class="flex-1 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+      <span class="text-xs text-zinc" id="volumeDisplay">70%</span>
+    </div>
+    
+    <!-- Hidden Audio Element -->
+    <audio id="audioPlayer" preload="metadata"></audio>
   </div>
 
   <!-- TOAST NOTIFICATIONS -->
@@ -649,13 +686,167 @@
     let userSession = {
       isLoggedIn: false,
       username: null,
-      plan: 'Free',
+      plan: 'free',
       tracksUsed: 0,
       tracksLimit: 3,
-      token: null
+      token: null,
+      user_id: 'anonymous',
+      credits: 0,
+      remaining_generations: 3
     };
     
     const API_BASE_URL = window.location.origin;
+    
+    // Función para mapear presets a modelos
+    function getModelFromPreset(preset) {
+      const presetModelMap = {
+        'profesional': 'suno',
+        'experimental': 'riffusion',
+        'basico': 'nuro',
+        'avanzado': 'suno'
+      };
+      return presetModelMap[preset] || 'nuro';
+    }
+
+    // Función para actualizar información del usuario
+    async function updateUserInfo() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/user/usage?user_id=${userSession.user_id}&user_tier=${userSession.plan}`);
+        const data = await response.json();
+        
+        userSession.credits = data.credits_used || 0;
+        userSession.remaining_generations = data.remaining_generations || 0;
+        
+        updateUserStats();
+      } catch (error) {
+        console.error('Error actualizando info del usuario:', error);
+      }
+    }
+    
+    // Load existing tracks
+    async function loadTracks() {
+      console.log('🎵 Cargando tracks...');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/tracks`);
+        console.log('📡 Respuesta API:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Datos recibidos:', data);
+        
+        const tracksList = document.getElementById('tracksList');
+        if (!tracksList) {
+          console.error('❌ Elemento tracksList no encontrado');
+          return;
+        }
+        
+        if (data.tracks && data.tracks.length > 0) {
+          console.log(`✅ Cargando ${data.tracks.length} tracks`);
+          tracksList.innerHTML = '';
+          
+          data.tracks.forEach((track, index) => {
+            console.log(`🎵 Track ${index + 1}:`, track.title);
+            const trackElement = document.createElement('div');
+            trackElement.className = 'p-4 bg-black/30 rounded border border-zinc-800 hover:border-neon/50 transition-colors mb-2';
+            trackElement.innerHTML = `
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <h3 class="font-semibold text-white">${track.title}</h3>
+                  <p class="text-sm text-zinc-400 mt-1">${track.prompt}</p>
+                  <p class="text-xs text-zinc-500 mt-1">${new Date(track.created_at).toLocaleString()}</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <button onclick="playTrack('${track.id}')" class="px-3 py-1 bg-neon text-black rounded text-sm font-medium hover:bg-neon/80 transition-colors">
+                    ▶️ Reproducir
+                  </button>
+                  <button onclick="downloadTrack('${track.id}')" class="px-3 py-1 bg-zinc-700 text-white rounded text-sm font-medium hover:bg-zinc-600 transition-colors">
+                    📥 Descargar
+                  </button>
+                </div>
+              </div>
+            `;
+            tracksList.appendChild(trackElement);
+          });
+        } else {
+          console.log('ℹ️ No hay tracks disponibles');
+          tracksList.innerHTML = `
+            <div class="p-4 bg-black/30 rounded">
+              <p class="text-zinc">No hay pistas guardadas aún.</p>
+              <p class="text-sm text-zinc">Genera tu primera canción para comenzar tu archivo.</p>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('❌ Error cargando tracks:', error);
+        const tracksList = document.getElementById('tracksList');
+        if (tracksList) {
+          tracksList.innerHTML = `
+            <div class="p-4 bg-red-900/30 rounded border border-red-500">
+              <p class="text-red-400">Error cargando pistas: ${error.message}</p>
+              <p class="text-xs text-red-300 mt-2">Revisa la consola para más detalles</p>
+            </div>
+          `;
+        }
+      }
+    }
+    
+    // Play track function
+    function playTrack(trackId) {
+      const audio = document.getElementById('audioPlayer');
+      audio.src = `${API_BASE_URL}/api/tracks/${trackId}/audio`;
+      audio.play();
+      showToast('Reproduciendo pista...', 'info');
+    }
+    
+    // Download track function
+    function downloadTrack(trackId) {
+      const link = document.createElement('a');
+      link.href = `${API_BASE_URL}/api/tracks/${trackId}/audio`;
+      link.download = `track_${trackId}.mp3`;
+      link.click();
+      showToast('Descargando pista...', 'info');
+    }
+    
+    // Test connection function
+    async function testConnection() {
+      try {
+        console.log('🧪 Probando conexión...');
+        const response = await fetch(`${API_BASE_URL}/api/health`);
+        const data = await response.json();
+        
+        console.log('✅ Conexión exitosa:', data);
+        showToast(`✅ Servidor funcionando: ${data.status}`, 'success');
+        
+        // Mostrar información del servidor
+        const tracksList = document.getElementById('tracksList');
+        tracksList.innerHTML = `
+          <div class="p-4 bg-green-900/30 rounded border border-green-500">
+            <p class="text-green-400">✅ Conexión exitosa</p>
+            <p class="text-sm text-green-300">Servidor: ${data.status}</p>
+            <p class="text-sm text-green-300">Tracks disponibles: ${data.tracks_available}</p>
+            <p class="text-sm text-green-300">Ollama: ${data.ollama_available ? 'Sí' : 'No'}</p>
+            <button onclick="loadTracks()" class="mt-2 px-3 py-1 bg-green-600 text-white rounded text-sm">
+              🔄 Cargar Tracks Ahora
+            </button>
+          </div>
+        `;
+        
+      } catch (error) {
+        console.error('❌ Error de conexión:', error);
+        showToast(`❌ Error de conexión: ${error.message}`, 'error');
+        
+        const tracksList = document.getElementById('tracksList');
+        tracksList.innerHTML = `
+          <div class="p-4 bg-red-900/30 rounded border border-red-500">
+            <p class="text-red-400">❌ Error de conexión</p>
+            <p class="text-sm text-red-300">${error.message}</p>
+          </div>
+        `;
+      }
+    }
     
     // Initialize app
     document.addEventListener('DOMContentLoaded', function() {
@@ -664,7 +855,196 @@
       setupAudioVisualizer();
       setupEventListeners();
       updateUserStats();
+      loadTracks(); // Cargar tracks existentes
+      updateUserInfo(); // Cargar información de créditos
+      setupPIXELIntegration(); // Configurar integración con PIXEL
     });
+
+    // Setup PIXEL integration with generators
+    function setupPIXELIntegration() {
+      // Add PIXEL action buttons to chat
+      const chatContainer = document.getElementById('chatMessages');
+      if (chatContainer) {
+        const actionButtons = document.createElement('div');
+        actionButtons.id = 'pixelActions';
+        actionButtons.className = 'hidden mt-4 p-3 bg-gray-800 rounded-lg';
+        actionButtons.innerHTML = `
+          <div class="text-sm text-neon mb-2">🤖 PIXEL sugiere:</div>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="pixelGeneratePrompt()" class="px-3 py-1 bg-cyan-600 text-white rounded text-xs hover:bg-cyan-700">
+              🎛️ Generar Prompt
+            </button>
+            <button onclick="pixelGenerateLyrics()" class="px-3 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700">
+              🎵 Generar Letras
+            </button>
+            <button onclick="pixelGenerateMusic()" class="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700">
+              🎶 Generar Música
+            </button>
+            <button onclick="applyRupertNeveProcessing()" class="px-3 py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700">
+              🎛️ Rupert Neve
+            </button>
+          </div>
+        `;
+        chatContainer.appendChild(actionButtons);
+      }
+    }
+
+    // PIXEL action functions
+    async function pixelGeneratePrompt() {
+      const chatInput = document.getElementById('chatInput');
+      const currentMessage = chatInput.value.trim();
+      
+      if (!currentMessage) {
+        showToast('Escribe algo en el chat para que PIXEL genere un prompt', 'warning');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/generate-prompt`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_input: currentMessage,
+            genre: 'synthwave',
+            mood: 'energético'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          // Fill the prompt field
+          const promptField = document.getElementById('promptEstilo');
+          if (promptField) {
+            promptField.value = data.generated_prompt;
+            showToast('✅ PIXEL generó un prompt optimizado', 'success');
+          }
+        } else {
+          showToast('❌ Error generando prompt con PIXEL', 'error');
+        }
+      } catch (error) {
+        console.error('PIXEL prompt error:', error);
+        showToast('❌ Error conectando con PIXEL', 'error');
+      }
+    }
+
+    async function pixelGenerateLyrics() {
+      const chatInput = document.getElementById('chatInput');
+      const currentMessage = chatInput.value.trim();
+      
+      if (!currentMessage) {
+        showToast('Escribe algo en el chat para que PIXEL genere letras', 'warning');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/generate-lyrics`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_words: currentMessage,
+            genre: 'synthwave',
+            mood: 'energético',
+            structure: 'verse-chorus-verse-chorus-bridge-chorus'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success' || data.generated_lyrics) {
+          // Fill the lyrics field
+          const lyricsField = document.getElementById('letraCancion');
+          if (lyricsField) {
+            lyricsField.value = data.generated_lyrics;
+            showToast('✅ PIXEL generó letras épicas', 'success');
+          }
+        } else {
+          showToast('❌ Error generando letras con PIXEL', 'error');
+        }
+      } catch (error) {
+        console.error('PIXEL lyrics error:', error);
+        showToast('❌ Error conectando con PIXEL', 'error');
+      }
+    }
+
+    async function pixelGenerateMusic() {
+      const chatInput = document.getElementById('chatInput');
+      const currentMessage = chatInput.value.trim();
+      
+      if (!currentMessage) {
+        showToast('Escribe algo en el chat para que PIXEL genere música', 'warning');
+        return;
+      }
+      
+      // Fill the prompt field and trigger generation
+      const promptField = document.getElementById('promptEstilo');
+      if (promptField) {
+        promptField.value = currentMessage;
+        showToast('✅ PIXEL configuró el prompt, generando música...', 'success');
+        
+        // Trigger music generation
+        setTimeout(() => {
+          generarMusica();
+        }, 1000);
+      }
+    }
+
+    // Aplicar postprocesos Rupert Neve
+    async function applyRupertNeveProcessing() {
+      const currentTrack = getCurrentTrack();
+      
+      if (!currentTrack) {
+        showToast('No hay track cargado para procesar', 'warning');
+        return;
+      }
+      
+      try {
+        showToast('🎛️ Aplicando postprocesos Rupert Neve...', 'info');
+        
+        const response = await fetch(`${API_BASE_URL}/api/postprocess/rupert-neve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            track_id: currentTrack.id,
+            title: currentTrack.title,
+            audio_url: currentTrack.audio_url,
+            duration: currentTrack.duration,
+            user_tier: userSession.plan
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          showToast('✅ Postprocesos Rupert Neve aplicados exitosamente', 'success');
+          
+          // Mostrar detalles del procesamiento
+          const processingDetails = data.processing_details;
+          const processingChain = data.processing_chain;
+          
+          showToast(`🎛️ Cadena de procesamiento: ${processingChain.join(' → ')}`, 'info');
+          
+          // Actualizar el reproductor con el track procesado
+          const processedTrack = data.processed_track;
+          showMusicPlayer(processedTrack);
+          
+        } else {
+          showToast('❌ Error aplicando postprocesos Rupert Neve', 'error');
+        }
+        
+      } catch (error) {
+        console.error('Error aplicando postprocesos:', error);
+        showToast('❌ Error conectando con el sistema de postprocesos', 'error');
+      }
+    }
+
+    // Obtener track actual (función auxiliar)
+    function getCurrentTrack() {
+      // Esta función debería retornar el track actualmente cargado
+      // Por ahora retornamos null, pero en una implementación real
+      // esto vendría del estado del reproductor
+      return null;
+    }
     
     // Navigation
     function setupNavigation() {
@@ -834,7 +1214,7 @@
       });
     }
     
-    // Music generation
+    // Music generation with credit system
     async function generarMusica() {
       if (!checkUserLimits()) return;
       
@@ -852,14 +1232,19 @@
       btn.textContent = 'Generando música...';
       
       try {
-        const response = await fetch(`${API_BASE_URL}/api/generate`, {
+        // Usar el nuevo endpoint con sistema de créditos
+        const response = await fetch(`${API_BASE_URL}/api/generate-with-credits`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: estilo || 'canción con letra personalizada',
             lyrics: letra || '',
             style: preset || 'profesional',
-            user_plan: userSession.plan || 'free'
+            user_id: userSession.user_id || 'anonymous',
+            user_tier: userSession.plan || 'free',
+            model: getModelFromPreset(preset),
+            generate_lyrics: !letra, // Generar letras si no hay letra
+            optimize_prompt: true
           })
         });
         
@@ -878,14 +1263,28 @@
           
           showToast('¡Música generada con éxito!', 'success');
           
+          // Mostrar información de créditos consumidos
+          if (data.credits_consumed) {
+            showToast(`Créditos consumidos: ${data.credits_consumed}`, 'info');
+          }
+          
+          // Mostrar información de postprocesos Rupert Neve
+          if (data.post_processing) {
+            showToast(`🎛️ Postprocesos Rupert Neve aplicados: SSL + Expresividad + Saturación`, 'success');
+          }
+          
           if (data.translation_applied) {
             showToast(`Prompt optimizado automáticamente: "${data.optimized_prompt}"`, 'info');
           }
+          
+          // Actualizar información del usuario
+          updateUserInfo();
           
           userSession.tracksUsed++;
           updateUserStats();
           
           showMusicPlayer(track);
+          loadTracks(); // Recargar lista de tracks
         } else {
           showToast('Error al generar música: ' + (data.detail || data.error || 'Error desconocido'), 'error');
         }
@@ -897,12 +1296,20 @@
       }
     }
     
-    // User limits check
+    // User limits check with credit system
     function checkUserLimits() {
+      // Verificar límites de generaciones mensuales
+      if (userSession.remaining_generations === 0 && userSession.plan !== 'premium') {
+        showToast('Has alcanzado tu límite mensual de generaciones. Actualiza tu plan para continuar.', 'warning');
+        return false;
+      }
+      
+      // Verificar límites de pistas (sistema legacy)
       if (userSession.tracksUsed >= userSession.tracksLimit) {
         showToast('Has alcanzado el límite de pistas para tu plan. Actualiza para continuar.', 'warning');
         return false;
       }
+      
       return true;
     }
     
@@ -911,9 +1318,20 @@
       document.getElementById('userPlan').textContent = userSession.plan;
       document.getElementById('userTracks').textContent = userSession.tracksUsed;
       document.getElementById('userLimit').textContent = userSession.tracksLimit;
+      
+      // Actualizar información de créditos si los elementos existen
+      const creditsElement = document.getElementById('userCredits');
+      const remainingElement = document.getElementById('userRemaining');
+      
+      if (creditsElement) {
+        creditsElement.textContent = userSession.credits;
+      }
+      if (remainingElement) {
+        remainingElement.textContent = userSession.remaining_generations;
+      }
     }
     
-    // Music player
+    // Enhanced Music player with full controls
     function showMusicPlayer(track) {
       const player = document.getElementById('musicPlayer');
       const audio = document.getElementById('audioPlayer');
@@ -923,7 +1341,89 @@
         audio.src = track.audio_url;
         title.textContent = track.title || 'Nueva generación';
         player.classList.remove('hidden');
+        
+        // Show success message
+        showToast('🎵 Reproductor cargado - ¡Disfruta tu música!', 'success');
+        
+        // Setup player controls
+        setupMusicPlayerControls();
+        
+        // Auto-play if possible
+        audio.play().catch(e => {
+          console.log('Auto-play blocked:', e);
+          showToast('Haz clic en play para reproducir', 'info');
+        });
       }
+    }
+
+    // Setup music player controls
+    function setupMusicPlayerControls() {
+      const audio = document.getElementById('audioPlayer');
+      const playBtn = document.getElementById('playBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const progressBar = document.getElementById('progressBar');
+      const volumeSlider = document.getElementById('volumeSlider');
+      const currentTime = document.getElementById('currentTime');
+      const duration = document.getElementById('duration');
+      
+      if (!audio) return;
+      
+      // Play/Pause functionality
+      if (playBtn) {
+        playBtn.addEventListener('click', () => {
+          audio.play();
+          playBtn.style.display = 'none';
+          if (pauseBtn) pauseBtn.style.display = 'inline-block';
+        });
+      }
+      
+      if (pauseBtn) {
+        pauseBtn.addEventListener('click', () => {
+          audio.pause();
+          pauseBtn.style.display = 'none';
+          if (playBtn) playBtn.style.display = 'inline-block';
+        });
+      }
+      
+      // Progress bar
+      if (progressBar) {
+        audio.addEventListener('timeupdate', () => {
+          const progress = (audio.currentTime / audio.duration) * 100;
+          progressBar.style.width = progress + '%';
+          
+          if (currentTime) {
+            currentTime.textContent = formatTime(audio.currentTime);
+          }
+        });
+        
+        progressBar.addEventListener('click', (e) => {
+          const rect = progressBar.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const width = rect.width;
+          const clickTime = (clickX / width) * audio.duration;
+          audio.currentTime = clickTime;
+        });
+      }
+      
+      // Volume control
+      if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+          audio.volume = e.target.value / 100;
+        });
+      }
+      
+      // Duration display
+      audio.addEventListener('loadedmetadata', () => {
+        if (duration) {
+          duration.textContent = formatTime(audio.duration);
+        }
+      });
+    }
+    
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
     
     // Chat functionality with real AI
@@ -1053,10 +1553,114 @@
           // Portal activation sequence
           showToast('🌌 Portal de la Resistencia activado...', 'info');
           setTimeout(() => {
-            // Redirect to son1k-ready terminal universe
-            createTerminalPortal();
+            // Activate portal via API
+            activateResistancePortal();
           }, 2000);
         }
+      }
+    }
+    
+    // Activate resistance portal via API
+    async function activateResistancePortal() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/easter-eggs/portal`);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          createTerminalPortal();
+        }
+      } catch (error) {
+        console.error('Portal activation error:', error);
+        createTerminalPortal(); // Fallback
+      }
+    }
+    
+    // Konami code easter egg
+    let konamiCode = [];
+    const konamiSequence = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65]; // ↑↑↓↓←→←→BA
+    
+    document.addEventListener('keydown', (e) => {
+      konamiCode.push(e.keyCode);
+      if (konamiCode.length > konamiSequence.length) {
+        konamiCode.shift();
+      }
+      
+      if (konamiCode.join(',') === konamiSequence.join(',')) {
+        activateKonamiCode();
+        konamiCode = [];
+      }
+    });
+    
+    async function activateKonamiCode() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/easter-eggs/konami`);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          showToast(data.message, 'success');
+          
+          // Activar modo desarrollador
+          document.body.classList.add('developer-mode');
+          
+          // Mostrar herramientas de desarrollador
+          showDeveloperTools();
+        }
+      } catch (error) {
+        console.error('Konami code error:', error);
+      }
+    }
+    
+    function showDeveloperTools() {
+      const devTools = document.createElement('div');
+      devTools.id = 'developer-tools';
+      devTools.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid #00FFE7;
+        border-radius: 8px;
+        padding: 10px;
+        color: #00FFE7;
+        font-family: monospace;
+        font-size: 12px;
+        z-index: 9999;
+        max-width: 300px;
+      `;
+      
+      devTools.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 10px;">🛠️ Developer Tools</div>
+        <div>Status: <span style="color: #00ff00;">Active</span></div>
+        <div>Mode: <span style="color: #ffff00;">Resistance</span></div>
+        <div>API: <span style="color: #00ff00;">Connected</span></div>
+        <button onclick="toggleGlitchMode()" style="margin-top: 10px; padding: 5px 10px; background: #00FFE7; color: #000; border: none; border-radius: 4px; cursor: pointer;">⚡ Glitch Mode</button>
+        <button onclick="this.parentElement.remove()" style="margin-top: 5px; padding: 5px 10px; background: #ff4444; color: #fff; border: none; border-radius: 4px; cursor: pointer;">✕ Close</button>
+      `;
+      
+      document.body.appendChild(devTools);
+    }
+    
+    async function toggleGlitchMode() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/easter-eggs/glitch`);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          showToast(data.message, 'info');
+          
+          // Aplicar efectos glitch
+          document.body.style.filter = 'hue-rotate(90deg) contrast(1.5) saturate(2)';
+          document.body.style.animation = 'glitch 0.1s infinite';
+          
+          // Crear efecto de distorsión
+          setTimeout(() => {
+            document.body.style.filter = '';
+            document.body.style.animation = '';
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('Glitch mode error:', error);
       }
     }
     

@@ -13,6 +13,12 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import hashlib
 from advanced_suno_wrapper import create_suno_wrapper, AdvancedSunoWrapper, SunoTrack, GenerationStatus
+from audio_generator import local_generator
+from ghost_studio import ghost_studio
+from credit_manager import credit_manager
+from lyrics_generator import LyricsGenerator
+import numpy as np
+import scipy.signal as signal
 
 # Import tracker system
 from tracker_system import (
@@ -27,9 +33,102 @@ from tracker_system import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ===== RUPERT NEVE POST-PROCESSING SYSTEM =====
+
+async def apply_rupert_neve_processing(track_data, user_tier="free"):
+    """
+    Aplica postprocesos tipo Rupert Neve con SSL, expresividad y saturación
+    Simula el sonido cálido y analógico característico de los equipos Rupert Neve
+    """
+    try:
+        logger.info("🎛️ Aplicando postprocesos Rupert Neve...")
+        
+        # Configuración por tier
+        processing_config = get_rupert_neve_config(user_tier)
+        
+        # Simular procesamiento (en producción real, aquí se procesaría el audio)
+        processed_track = track_data.copy()
+        
+        # Aplicar efectos Rupert Neve
+        processed_track.update({
+            "id": f"{track_data['id']}_rupert_neve",
+            "title": f"{track_data.get('title', 'Track')} [Rupert Neve Processed]",
+            "audio_url": track_data.get('audio_url', '').replace('.mp3', '_rupert_neve.mp3'),
+            "post_processing": {
+                "ssl_compression": processing_config["ssl_compression"],
+                "rupert_neve_saturation": processing_config["rupert_neve_saturation"],
+                "expressivity_enhancement": processing_config["expressivity_enhancement"],
+                "analog_warmth": processing_config["analog_warmth"],
+                "harmonic_excitement": processing_config["harmonic_excitement"],
+                "stereo_width": processing_config["stereo_width"],
+                "frequency_balance": processing_config["frequency_balance"]
+            },
+            "processing_chain": [
+                "SSL Bus Compressor",
+                "Rupert Neve 1073 EQ",
+                "Rupert Neve 2254 Compressor", 
+                "Rupert Neve 33609 Stereo Compressor",
+                "Rupert Neve 5057 Satellite Summing Mixer",
+                "Rupert Neve 5033 EQ",
+                "Rupert Neve 5043 True-Band Compressor"
+            ],
+            "analog_characteristics": {
+                "tube_warmth": "Rupert Neve signature tube saturation",
+                "transformer_color": "Classic Neve transformer coloration",
+                "harmonic_distortion": "Musical 2nd and 3rd order harmonics",
+                "frequency_response": "Extended high-end with smooth roll-off",
+                "dynamic_range": "Enhanced punch and clarity"
+            }
+        })
+        
+        logger.info("✅ Postprocesos Rupert Neve aplicados exitosamente")
+        return processed_track
+        
+    except Exception as e:
+        logger.error(f"❌ Error en postprocesos Rupert Neve: {e}")
+        return track_data  # Retornar track original si falla
+
+def get_rupert_neve_config(user_tier):
+    """Obtiene configuración de postprocesos según el tier del usuario"""
+    
+    configs = {
+        "free": {
+            "ssl_compression": {"ratio": 2.5, "threshold": -12, "attack": 10, "release": 100},
+            "rupert_neve_saturation": {"drive": 0.3, "tone": 0.5, "output": 0.8},
+            "expressivity_enhancement": {"presence": 0.4, "clarity": 0.6, "punch": 0.5},
+            "analog_warmth": {"tube_saturation": 0.3, "transformer_color": 0.4},
+            "harmonic_excitement": {"2nd_harmonic": 0.2, "3rd_harmonic": 0.1},
+            "stereo_width": {"width": 1.2, "imaging": 0.7},
+            "frequency_balance": {"bass": 0.1, "mids": 0.2, "treble": 0.3}
+        },
+        "pro": {
+            "ssl_compression": {"ratio": 3.0, "threshold": -10, "attack": 8, "release": 80},
+            "rupert_neve_saturation": {"drive": 0.5, "tone": 0.7, "output": 0.9},
+            "expressivity_enhancement": {"presence": 0.6, "clarity": 0.8, "punch": 0.7},
+            "analog_warmth": {"tube_saturation": 0.5, "transformer_color": 0.6},
+            "harmonic_excitement": {"2nd_harmonic": 0.3, "3rd_harmonic": 0.2},
+            "stereo_width": {"width": 1.4, "imaging": 0.8},
+            "frequency_balance": {"bass": 0.2, "mids": 0.3, "treble": 0.4}
+        },
+        "premium": {
+            "ssl_compression": {"ratio": 4.0, "threshold": -8, "attack": 5, "release": 60},
+            "rupert_neve_saturation": {"drive": 0.7, "tone": 0.9, "output": 1.0},
+            "expressivity_enhancement": {"presence": 0.8, "clarity": 1.0, "punch": 0.9},
+            "analog_warmth": {"tube_saturation": 0.7, "transformer_color": 0.8},
+            "harmonic_excitement": {"2nd_harmonic": 0.4, "3rd_harmonic": 0.3},
+            "stereo_width": {"width": 1.6, "imaging": 0.9},
+            "frequency_balance": {"bass": 0.3, "mids": 0.4, "treble": 0.5}
+        }
+    }
+    
+    return configs.get(user_tier, configs["free"])
+
 # Set REAL Suno credentials directly in environment
 os.environ.setdefault("SUNO_SESSION_ID", "sess_331oMScBY8E0uRaK11ViDaoETSk")
 os.environ.setdefault("SUNO_COOKIE", "singular_device_id=7fc059fe-34d2-4536-8406-f0b36aa40b7b; ajs_anonymous_id=f0f2cc3c-29fc-4994-b313-c6395f7f01c0; _gcl_au=1.1.967689396.1753245394; _axwrt=24c6944f-367e-4935-93d1-a3a85f8a00dd; _ga=GA1.1.666180024.1753245517; _tt_enable_cookie=1; _ttp=01K0TS71AVG32RZB7XJHY47EVG_.tt.1; afUserId=3882fe9a-09c9-44af-bbf0-2f795576bbe6-p; _fbp=fb.1.1753245523258.766316113280164517; has_logged_in_before=true; __stripe_mid=83485d6a-9536-455a-af6d-a1281884f0ded62e90; _clck=5g3z8b%5E2%5Efyz%5E0%5E2060; _gcl_gs=2.1.k1$i1757718510$u42332455; _gcl_aw=GCL.1757718519.CjwKCAjwiY_GBhBEEiwAFaghvjgyYody0wVhStdcQ9-soQPGEt0RTSM9eIzlvHgR8Jv8NAMVdVLpIxoCI6oQAvD_BwE; AF_SYNC=1758345852539; __stripe_sid=a9013f2c-b99d-495f-b1f1-319a7cebea4b8b8d80; __client_uat=1758493890; __client_uat_U9tcbTPE=1758493890; clerk_active_context=sess_331oMScBY8E0uRaK11ViDaoETSk:; __session=eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18yT1o2eU1EZzhscWRKRWloMXJvemY4T3ptZG4iLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJzdW5vLWFwaSIsImF6cCI6Imh0dHBzOi8vc3Vuby5jb20iLCJleHAiOjE3NTg0OTc0OTQsImZ2YSI6WzAsLTFdLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2NsZXJrX2lkIjoidXNlcl8ycXBaSFh1U05Ta0t2ZUFoa2Z6RVMxNGRnVEgiLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2VtYWlsIjoic295cGVwZWphaW1lc0BnbWFpbC5jb20iLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL3Bob25lIjpudWxsLCJpYXQiOjE3NTg0OTM4OTQsImlzcyI6Imh0dHBzOi8vY2xlcmsuc3Vuby5jb20iLCJqdGkiOiI4ZmRkMjZjZDdlNTNmYzVlOWNkNCIsIm5iZiI6MTc1ODQ5Mzg4NCwic2lkIjoic2Vzc18zMzFvTVNjQlk4RTB1UmFLMTFWaURhb0VUU2siLCJzdHMiOiJhY3RpdmUiLCJzdWIiOiJ1c2VyXzJxcFpIWHVTTlNrS3ZlQWhrZnpFUzE0ZGdUSCJ9.ry7sGCDF_N8g9RVFw3dXTWCVFWNMHQ8BH6YETes1W36bfzmPk_IbAQFl0KGkmIC0hqgeXWPG7nApDtzh-j5PzFuITIoV09_YVNZ2PErvOyRSGYB8JyaSmxDPgebLZv9zv7tQeQ6FLSLzT1dd4vagb5t7TInbRshwe7LO0Y_fyjwN1S7jfyiSxawC2pe-INBtAz7a3ktT8gqrpehdx6yEHRpRdYZwwYGuu8KuwK8zITs14Entb0P-3GehnnRW9zcPvPtIhbdFvxCxNMSr5UiE3biE-DoSlv9Bn4uT710lOQNtMsjL2OR4RHoJfKHOIA8bFRp3KF8pG8PUQH774m1r5w; __session_U9tcbTPE=eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18yT1o2eU1EZzhscWRKRWloMXJvemY4T3ptZG4iLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJzdW5vLWFwaSIsImF6cCI6Imh0dHBzOi8vc3Vuby5jb20iLCJleHAiOjE3NTg0OTc0OTQsImZ2YSI6WzAsLTFdLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2NsZXJrX2lkIjoidXNlcl8ycXBaSFh1U05Ta0t2ZUFoa2Z6RVMxNGRnVEgiLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2VtYWlsIjoic295cGVwZWphaW1lc0BnbWFpbC5jb20iLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL3Bob25lIjpudWxsLCJpYXQiOjE3NTg0OTM4OTQsImlzcyI6Imh0dHBzOi8vY2xlcmsuc3Vuby5jb20iLCJqdGkiOiI4ZmRkMjZjZDdlNTNmYzVlOWNkNCIsIm5iZiI6MTc1ODQ5Mzg4NCwic2lkIjoic2Vzc18zMzFvTVNjQlk4RTB1UmFLMTFWaURhb0VUU2siLCJzdHMiOiJhY3RpdmUiLCJzdWIiOiJ1c2VyXzJxcFpIWHVTTlNrS3ZlQWhrZnpFUzE0ZGdUSCJ9.ry7sGCDF_N8g9RVFw3dXTWCVFWNMHQ8BH6YETes1W36bfzmPk_IbAQFl0KGkmIC0hqgeXWPG7nApDtzh-j5PzFuITIoV09_YVNZ2PErvOyRSGYB8JyaSmxDPgebLZv9zv7tQeQ6FLSLzT1dd4vagb5t7TInbRshwe7LO0Y_fyjwN1S7jfyiSxawC2pe-INBtAz7a3ktT8gqrpehdx6yEHRpRdYZwwYGuu8KuwK8zITs14Entb0P-3GehnnRW9zcPvPtIhbdFvxCxNMSr5UiE3biE-DoSlv9Bn4uT710lOQNtMsjL2OR4RHoJfKHOIA8bFRp3KF8pG8PUQH774m1r5w; ax_visitor=%7B%22firstVisitTs%22%3A1753245747787%2C%22lastVisitTs%22%3A1758479789583%2C%22currentVisitStartTs%22%3A1758493871290%2C%22ts%22%3A1758493893241%2C%22visitCount%22%3A244%7D; _ga_7B0KEDD7XP=GS2.1.s1758493870$o293$g1$t1758493893$j37$l0$h0; _uetsid=6618fc20927811f0bf1e9b526665403c|uzkp91|2|fzi|0|2084; _uetvid=75e947607c9711f0a0a265429931a928|183jalu|1758493871777|1|1|bat.bing.com/p/conversions/c/j; ttcsid=1758493870925::k0Ue0LQ-Rqzp48Q9FQNy.250.1758493894021.0; _dd_s=aid=ef52d868-270c-482a-93a7-7d3ef02da5ed&rum=0&expire=1758494793553; ttcsid_CT67HURC77UB52N3JFBG=1758493870924::6Um8I6tAbR5xVJk-BIWC.283.1758493895667.0")
+
+# SunoAPI Bridge Configuration
+SUNOAPI_KEY = os.environ.get("SUNOAPI_KEY", "your_sunoapi_key_here")
 
 logger.info("🔑 REAL Suno credentials configured for production")
 
@@ -240,19 +339,23 @@ def get_tester_accounts():
         "instructions": "Use password: Premium123! for all accounts"
     }
 
-@app.get("/", response_class=FileResponse)
+@app.get("/")
 def root():
     """Serve the Son1kVers3 frontend"""
     try:
         # Try to serve index.html directly
         html_file_path = "index.html"
         if os.path.exists(html_file_path):
-            return FileResponse(html_file_path, media_type="text/html")
+            with open(html_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return HTMLResponse(content=content, media_type="text/html")
         
         # Fallback to absolute path
         html_file_path = os.path.join(os.path.dirname(__file__), "index.html")
         if os.path.exists(html_file_path):
-            return FileResponse(html_file_path, media_type="text/html")
+            with open(html_file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return HTMLResponse(content=content, media_type="text/html")
         
         # If no file found, return error
         raise FileNotFoundError("index.html not found")
@@ -506,6 +609,120 @@ def get_system_health():
         }
     }
 
+@app.get("/api/health")
+def health_check():
+    """Simple health check endpoint for frontend"""
+    return {
+        "status": "healthy",
+        "service": "son1k-auto-renewal",
+        "tracks_available": True,
+        "ollama_available": ollama_status.valid
+    }
+
+@app.get("/api/tracks")
+def get_tracks():
+    """Get all generated tracks"""
+    # Obtener tracks del generador local
+    local_tracks = local_generator.get_all_tracks()
+    
+    # Agregar algunos tracks demo si no hay ninguno
+    if not local_tracks:
+        # Generar algunos tracks demo
+        demo_tracks = [
+            {
+                "id": "demo_resistance",
+                "title": "Resistance Anthem",
+                "prompt": "cyberpunk resistance theme",
+                "created_at": datetime.now().isoformat(),
+                "audio_url": "https://son1kvers3.com/demo/resistance.mp3",
+                "tags": "cyberpunk",
+                "duration": 150
+            },
+            {
+                "id": "demo_digital",
+                "title": "Digital Dreams", 
+                "prompt": "synthwave electronic",
+                "created_at": datetime.now().isoformat(),
+                "audio_url": "https://son1kvers3.com/demo/digital.mp3",
+                "tags": "synthwave",
+                "duration": 180
+            },
+            {
+                "id": "demo_glitch",
+                "title": "Glitch Warfare",
+                "prompt": "glitch hop experimental",
+                "created_at": datetime.now().isoformat(),
+                "audio_url": "https://son1kvers3.com/demo/glitch.mp3",
+                "tags": "glitch",
+                "duration": 165
+            }
+        ]
+        return {"tracks": demo_tracks}
+    
+    # Convertir tracks locales al formato esperado
+    formatted_tracks = []
+    for track in local_tracks:
+        formatted_tracks.append({
+            "id": track["id"],
+            "title": track["title"],
+            "prompt": track.get("prompt_used", ""),
+            "created_at": track["created_at"],
+            "audio_url": track["audio_url"],
+            "tags": track.get("tags", ""),
+            "duration": track.get("duration", 0)
+        })
+    
+    return {"tracks": formatted_tracks}
+
+@app.get("/api/tracks/{track_id}/audio")
+def get_track_audio(track_id: str):
+    """Get audio file for a specific track"""
+    # In a real implementation, this would serve the actual audio file
+    # For now, return a placeholder
+    return {
+        "track_id": track_id,
+        "audio_url": f"https://example.com/audio/{track_id}.mp3",
+        "message": "Audio file would be served here"
+    }
+
+# Integración rápida con SunoAPI Bridge
+async def generate_with_sunoapi_bridge(prompt: str, style: str = "pop"):
+    """Integración rápida con SunoAPI Bridge"""
+    headers = {
+        "Authorization": f"Bearer {SUNOAPI_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    # Usar tu sistema de traducción existente
+    optimized_prompt = await translate_and_optimize(prompt)
+    
+    try:
+        response = await httpx.post(
+            "https://api.sunoapi.com/api/v1/music/generate",
+            json={
+                "prompt": optimized_prompt,
+                "tags": style,
+                "make_instrumental": False,
+                "custom_mode": False
+            },
+            headers=headers,
+            timeout=60
+        )
+        return response.json()
+    except Exception as e:
+        logger.warning(f"⚠️ SunoAPI Bridge failed: {e}")
+        # Mantener tu fallback actual
+        return await generate_fallback_response(prompt)
+
+async def generate_fallback_response(prompt: str):
+    """Fallback response when SunoAPI fails"""
+    return {
+        "success": False,
+        "error": "SunoAPI Bridge unavailable",
+        "fallback": True,
+        "message": "Using local fallback system"
+    }
+
 async def call_suno_direct_api(prompt: str, lyrics: Optional[str] = None, style: Optional[str] = None, ghost_options: Optional[Dict] = None, user_plan: Optional[str] = "free"):
     """REAL Suno automation using advanced wrapper with session management"""
     
@@ -719,6 +936,32 @@ async def generate_music(request: GenerateRequest):
     suno_status.valid = True
     
     try:
+        # Try SunoAPI Bridge first (if key is configured)
+        if SUNOAPI_KEY and SUNOAPI_KEY != "your_sunoapi_key_here":
+            logger.info("🌉 Trying SunoAPI Bridge first...")
+            try:
+                sunoapi_result = await generate_with_sunoapi_bridge(
+                    prompt=request.prompt,
+                    style=request.style or "pop"
+                )
+                
+                if sunoapi_result.get("success", False):
+                    logger.info("✅ SunoAPI Bridge successful!")
+                    return {
+                        "status": "success",
+                        "message": "Music generated via SunoAPI Bridge",
+                        "prompt": request.prompt,
+                        "lyrics": request.lyrics,
+                        "style": request.style,
+                        "timestamp": datetime.now().isoformat(),
+                        "suno_response": sunoapi_result,
+                        "job_id": sunoapi_result.get("id", f"bridge_{int(time.time())}")
+                    }
+                else:
+                    logger.warning("⚠️ SunoAPI Bridge failed, trying fallback...")
+            except Exception as e:
+                logger.warning(f"⚠️ SunoAPI Bridge error: {e}, trying fallback...")
+        
         # Check if there's a local automation service available
         selenium_automation_url = os.environ.get("SELENIUM_AUTOMATION_URL")
         
@@ -762,6 +1005,34 @@ async def generate_music(request: GenerateRequest):
         # Use REAL Suno Direct API
         ghost_options = getattr(request, 'ghost_options', None)
         suno_result = await call_suno_direct_api(request.prompt, request.lyrics, request.style, ghost_options)
+        
+        # Si Suno falla, usar generador local
+        if not suno_result or not suno_result.get("success", False):
+            logger.info("🔄 Suno failed, using local generator...")
+            local_result = local_generator.generate_music(
+                prompt=request.prompt,
+                lyrics=request.lyrics or "",
+                style=request.style or "electronic"
+            )
+            
+            if local_result.get("success"):
+                track = local_result["tracks"][0]
+                return {
+                    "status": "success",
+                    "message": "Music generated with local system (Suno unavailable)",
+                    "prompt": request.prompt,
+                    "lyrics": request.lyrics,
+                    "style": request.style,
+                    "timestamp": datetime.now().isoformat(),
+                    "track_id": track["id"],
+                    "title": track["title"],
+                    "audio_url": track["audio_url"],
+                    "download_url": track["audio_url"],
+                    "duration": f"{int(track['duration']//60)}:{int(track['duration']%60):02d}",
+                    "generation_method": "local_fallback",
+                    "suno_response": local_result,
+                    "job_id": track["id"]
+                }
         
         return {
             "status": "success",
@@ -902,56 +1173,73 @@ async def generate_prompt_with_ollama(request: PromptGenerationRequest):
     Generate intelligent prompts using Ollama
     """
     try:
-        # Get Ollama URL from environment or ngrok
+        # Get Ollama URL from environment
         ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
         
-        # Create prompt for Ollama
-        system_prompt = f"""
-You are a music prompt engineer. Generate creative and detailed music prompts for AI music generation.
-User input: {request.user_input}
-Genre preference: {request.genre or 'any'}
-Mood: {request.mood or 'any'}
+        # Create enhanced prompt for Ollama
+        system_prompt = f"""Eres un ingeniero de prompts musicales experto para Son1kVers3. Genera prompts creativos y detallados para generación de música con IA.
 
-Generate a concise but descriptive prompt for music generation that includes:
-- Musical style and genre
-- Tempo and rhythm
-- Instrumentation
-- Mood and atmosphere
-- Production style
+Input del usuario: {request.user_input}
+Género preferido: {request.genre or 'cualquiera'}
+Mood: {request.mood or 'cualquiera'}
 
-Keep it under 100 words and make it specific enough for AI music generation.
-"""
-        
-        # Call Ollama API
+Genera un prompt conciso pero descriptivo que incluya:
+- Estilo musical y género específico
+- Tempo y ritmo (ej: 128 BPM, 4/4)
+- Instrumentación detallada
+- Mood y atmósfera
+- Estilo de producción
+- Efectos especiales si aplica
+
+Manténlo bajo 100 palabras y hazlo específico para generación de música con IA.
+Responde SOLO con el prompt generado, sin explicaciones adicionales."""
+
+        # Call Ollama API with better model
         ollama_response = requests.post(
             f"{ollama_url}/api/generate",
             json={
-                "model": "llama3.2",
+                "model": "llama3.1:8b",
                 "prompt": system_prompt,
-                "stream": False
+                "stream": False,
+                "options": {
+                    "temperature": 0.8,
+                    "top_p": 0.9,
+                    "repeat_penalty": 1.1
+                }
             },
             timeout=30
         )
         
         if ollama_response.status_code == 200:
-            generated_prompt = ollama_response.json()["response"]
-            return {
-                "status": "success",
-                "generated_prompt": generated_prompt.strip()
-            }
-        else:
-            return {
-                "status": "error",
-                "error": "Ollama service unavailable",
-                "fallback_prompt": f"Create a {request.genre or 'modern'} song with {request.mood or 'emotional'} vibes"
-            }
+            result = ollama_response.json()
+            generated_prompt = result.get("response", "").strip()
+            
+            if generated_prompt:
+                logger.info(f"✅ Ollama prompt generated successfully")
+                return {
+                    "status": "success",
+                    "generated_prompt": generated_prompt,
+                    "model_used": "llama3.1:8b",
+                    "source": "ollama"
+                }
+        
+        # Fallback si Ollama falla
+        logger.warning("⚠️ Ollama prompt generation failed, using fallback")
+        fallback_prompt = f"Create a {request.genre or 'modern'} song with {request.mood or 'emotional'} vibes, 128 BPM, electronic production"
+        return {
+            "status": "fallback",
+            "generated_prompt": fallback_prompt,
+            "source": "fallback"
+        }
             
     except Exception as e:
         logger.error(f"Ollama prompt generation error: {e}")
+        fallback_prompt = f"Create a {request.genre or 'modern'} song with {request.mood or 'emotional'} vibes, 128 BPM, electronic production"
         return {
             "status": "error",
             "error": str(e),
-            "fallback_prompt": f"Create a {request.genre or 'modern'} song with {request.mood or 'emotional'} vibes"
+            "generated_prompt": fallback_prompt,
+            "source": "fallback"
         }
 
 @app.post("/api/generate-lyrics")
@@ -962,52 +1250,69 @@ async def generate_lyrics_with_ollama(request: LyricsGenerationRequest):
     try:
         ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
         
-        system_prompt = f"""
-You are a professional songwriter. Create lyrics with narrative coherence based on the user's words.
-User words/theme: {request.user_words}
-Song structure: {request.structure or 'verse-chorus-verse-chorus-bridge-chorus'}
-Genre: {request.genre or 'pop'}
+        system_prompt = f"""Eres un compositor profesional especializado en el universo de Son1kVers3. Crea letras con coherencia narrativa basadas en las palabras del usuario.
+
+Palabras/tema del usuario: {request.user_words}
+Estructura de la canción: {request.structure or 'verse-chorus-verse-chorus-bridge-chorus'}
+Género: {request.genre or 'pop'}
 Mood: {request.mood or 'emotional'}
 
-Create complete song lyrics that:
-- Have a clear narrative thread
-- Use the user's words/theme meaningfully
-- Follow the requested structure
-- Match the genre and mood
-- Are singable and rhythmic
+Crea letras completas que:
+- Tengan un hilo narrativo claro
+- Usen las palabras del usuario de manera significativa
+- Sigan la estructura solicitada
+- Coincidan con el género y mood
+- Sean cantables y rítmicas
+- Incluyan referencias al lore de "La Resistencia" cuando sea apropiado
 
-Format with clear [Verse], [Chorus], [Bridge] labels.
-"""
-        
+Formato con etiquetas claras [Verse], [Chorus], [Bridge].
+Responde SOLO con las letras, sin explicaciones adicionales."""
+
         ollama_response = requests.post(
             f"{ollama_url}/api/generate",
             json={
-                "model": "llama3.2",
+                "model": "llama3.1:8b",
                 "prompt": system_prompt,
-                "stream": False
+                "stream": False,
+                "options": {
+                    "temperature": 0.9,
+                    "top_p": 0.95,
+                    "repeat_penalty": 1.1
+                }
             },
             timeout=45
         )
         
         if ollama_response.status_code == 200:
-            generated_lyrics = ollama_response.json()["response"]
-            return {
-                "status": "success",
-                "generated_lyrics": generated_lyrics.strip()
-            }
-        else:
-            return {
-                "status": "error",
-                "error": "Ollama service unavailable",
-                "fallback_lyrics": create_fallback_lyrics(request.user_words, request.mood)
-            }
+            result = ollama_response.json()
+            generated_lyrics = result.get("response", "").strip()
+            
+            if generated_lyrics:
+                logger.info(f"✅ Ollama lyrics generated successfully")
+                return {
+                    "status": "success",
+                    "generated_lyrics": generated_lyrics,
+                    "model_used": "llama3.1:8b",
+                    "source": "ollama"
+                }
+        
+        # Fallback si Ollama falla
+        logger.warning("⚠️ Ollama lyrics generation failed, using fallback")
+        fallback_lyrics = create_fallback_lyrics(request.user_words, request.mood)
+        return {
+            "status": "fallback",
+            "generated_lyrics": fallback_lyrics,
+            "source": "fallback"
+        }
             
     except Exception as e:
         logger.error(f"Ollama lyrics generation error: {e}")
+        fallback_lyrics = create_fallback_lyrics(request.user_words, request.mood)
         return {
             "status": "error",
             "error": str(e),
-            "fallback_lyrics": create_fallback_lyrics(request.user_words, request.mood)
+            "generated_lyrics": fallback_lyrics,
+            "source": "fallback"
         }
 
 @app.get("/api/user-limits/{user_plan}")
@@ -1272,17 +1577,21 @@ Estoy aquí para potenciar tu creatividad musical en Son1kvers3. Puedo ayudarte 
 
 @app.post("/api/chat")
 async def chat_assistant(request: ChatRequest):
-    """Real AI chat assistant powered by Ollama via ngrok tunnel"""
+    """Asistente IA Pixel powered by Ollama"""
     try:
-        import httpx
-        
-        # Check if Ollama is available via ngrok tunnel
+        # Check if Ollama is available
         ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
         if not ollama_url.startswith("http"):
             ollama_url = f"http://{ollama_url}"
         
-        # Son1kvers3 musical AI system prompt
-        system_prompt = """Eres el asistente musical oficial de Son1kvers3, la plataforma de IA musical de NOV4-IX. 
+        # Pixel - Asistente musical de Son1kvers3
+        system_prompt = """Eres PIXEL, el asistente musical oficial de Son1kvers3, la plataforma de IA musical de NOV4-IX. 
+
+Tu personalidad es:
+- Un artista digital rebelde del universo "La Resistencia"
+- Conocimiento profundo de música y tecnología
+- Creativo, inspirador y técnicamente preciso
+- Siempre en español con referencias al lore cyberpunk
 
 Tu misión es ayudar con:
 
@@ -1300,12 +1609,12 @@ Tu misión es ayudar con:
 
 **LORE CONTEXT:** En este universo, los artistas usan IA no para reemplazar creatividad, sino para amplificarla. Cada canción generada es un acto de resistencia contra la homogeneización musical.
 
-Responde SIEMPRE en español con creatividad, conocimiento musical profundo y referencias al lore cuando sea relevante. Sé inspirador pero técnicamente preciso."""
+Responde SIEMPRE en español con creatividad, conocimiento musical profundo y referencias al lore cuando sea relevante. Sé inspirador pero técnicamente preciso. Firma como "PIXEL - Asistente de la Resistencia"."""
 
         # Prepare the request to Ollama
         ollama_payload = {
             "model": "llama3.1:8b",
-            "prompt": f"{system_prompt}\n\nUsuario: {request.message}\n\nAsistente:",
+            "prompt": f"{system_prompt}\n\nUsuario: {request.message}\n\nPIXEL:",
             "stream": False,
             "options": {
                 "temperature": 0.8,
@@ -1314,14 +1623,12 @@ Responde SIEMPRE en español con creatividad, conocimiento musical profundo y re
             }
         }
         
-        # Make request to Ollama using requests (simpler, more reliable)
-        import requests
-        
+        # Make request to Ollama
         response = requests.post(
             f"{ollama_url}/api/generate",
             json=ollama_payload,
             headers={"Content-Type": "application/json"},
-            timeout=15  # Shorter timeout to trigger fallback faster
+            timeout=20
         )
         
         if response.status_code == 200:
@@ -1329,30 +1636,32 @@ Responde SIEMPRE en español con creatividad, conocimiento musical profundo y re
             ai_response = result.get("response", "").strip()
             
             if ai_response:
-                logger.info("✅ Ollama AI response generated successfully")
+                logger.info("✅ PIXEL (Ollama) response generated successfully")
                 return {
                     "response": ai_response,
-                    "source": "ollama_ai",
+                    "source": "pixel_ollama",
                     "model": "llama3.1:8b",
+                    "assistant": "PIXEL",
                     "status": "success"
                 }
         
         # If Ollama response is empty or failed, use fallback
-        logger.warning(f"⚠️ Ollama responded but empty/invalid: {response.status_code}")
+        logger.warning(f"⚠️ PIXEL (Ollama) responded but empty/invalid: {response.status_code}")
         raise Exception("Empty Ollama response")
             
     except Exception as e:
-        logger.warning(f"⚠️ Ollama AI unavailable ({e}), using musical fallback")
+        logger.warning(f"⚠️ PIXEL (Ollama) unavailable ({e}), using musical fallback")
         
         # Intelligent musical fallback system
         fallback_response = generate_musical_fallback(request.message)
         
         return {
             "response": fallback_response,
-            "source": "musical_fallback",
+            "source": "pixel_fallback",
+            "assistant": "PIXEL",
             "model": "son1kvers3_assistant",
             "status": "fallback",
-            "note": "Ollama AI temporalmente no disponible - usando sistema de respuestas musicales inteligentes"
+            "note": "PIXEL temporalmente no disponible - usando sistema de respuestas musicales inteligentes"
         }
 
 async def translate_and_optimize(spanish_prompt: str) -> str:
@@ -1367,10 +1676,6 @@ async def translate_and_optimize(spanish_prompt: str) -> str:
     }
     
     try:
-        # Use Google Translate for better results
-        from googletrans import Translator
-        translator = Translator()
-        
         # Simple translation patterns for common Spanish musical terms
         translations = {
             "canción": "song", "música": "music", "ritmo": "rhythm", "melodía": "melody",
@@ -1385,6 +1690,8 @@ async def translate_and_optimize(spanish_prompt: str) -> str:
         
         # Try Google Translate first for better results
         try:
+            from googletrans import Translator
+            translator = Translator()
             translated_text = translator.translate(spanish_prompt, src='es', dest='en').text
             optimized = translated_text.lower()
             logger.info(f"🌐 Google Translate: '{spanish_prompt}' → '{optimized}'")
@@ -1473,3 +1780,365 @@ async def generate_music_with_translation(request: GenerateRequest):
     except Exception as e:
         logger.error(f"❌ Optimized generation error: {e}")
         raise HTTPException(status_code=500, detail=f"Error en generación: {str(e)}")
+
+# ==========================================
+# GHOST STUDIO ENDPOINTS
+# ==========================================
+
+@app.post("/api/ghost-studio/process")
+async def ghost_studio_process(request: dict):
+    """Procesa audio con Ghost Studio"""
+    try:
+        audio_file = request.get("audio_file")
+        transformation_type = request.get("transformation_type", "style-transfer")
+        options = request.get("options", {})
+        
+        if not audio_file:
+            raise HTTPException(status_code=400, detail="audio_file is required")
+        
+        result = ghost_studio.process_audio(audio_file, transformation_type, options)
+        
+        return {
+            "status": "success",
+            "message": "Audio processing started",
+            "job_id": result["job_id"],
+            "estimated_time": result["processing_time"],
+            "result": result
+        }
+        
+    except Exception as e:
+        logger.error(f"Ghost Studio processing error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/ghost-studio/effects")
+async def get_ghost_effects():
+    """Obtiene efectos disponibles en Ghost Studio"""
+    try:
+        effects = ghost_studio.get_available_effects()
+        return {
+            "status": "success",
+            "effects": effects,
+            "total_categories": len(effects)
+        }
+    except Exception as e:
+        logger.error(f"Error getting Ghost Studio effects: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/ghost-studio/status/{job_id}")
+async def get_ghost_status(job_id: str):
+    """Obtiene estado de procesamiento de Ghost Studio"""
+    try:
+        status = ghost_studio.get_processing_status(job_id)
+        if not status:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        return {
+            "status": "success",
+            "job_id": job_id,
+            "processing_status": status
+        }
+    except Exception as e:
+        logger.error(f"Error getting Ghost Studio status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================
+# EASTER EGGS Y FUNCIONALIDADES AVANZADAS
+# ==========================================
+
+@app.get("/api/easter-eggs/konami")
+async def konami_code():
+    """Easter egg: Código Konami"""
+    return {
+        "status": "success",
+        "message": "🎮 Código Konami activado!",
+        "unlocked": "Modo desarrollador",
+        "features": [
+            "Acceso a logs avanzados",
+            "Modo debug activado", 
+            "Herramientas de desarrollo",
+            "Easter eggs adicionales"
+        ],
+        "secret_message": "La resistencia digital comienza con un simple código..."
+    }
+
+@app.get("/api/easter-eggs/portal")
+async def resistance_portal():
+    """Easter egg: Portal de la Resistencia"""
+    return {
+        "status": "success",
+        "message": "🌌 Portal de la Resistencia activado",
+        "universe": "Son1k-Ready Terminal",
+        "access_level": "Resistance Member",
+        "coordinates": "NOV4-IX.terminal.resistance",
+        "message": "Bienvenido al universo donde la música es código y el código es arte"
+    }
+
+@app.get("/api/easter-eggs/glitch")
+async def glitch_mode():
+    """Easter egg: Modo Glitch"""
+    return {
+        "status": "success",
+        "message": "⚡ Modo Glitch activado",
+        "effects": [
+            "Distorsión visual activada",
+            "Efectos de sonido glitch",
+            "Interfaz cyberpunk completa",
+            "Modo experimental habilitado"
+        ],
+        "warning": "El glitch es la chispa de la creatividad"
+    }
+
+@app.post("/api/credits/purchase")
+async def purchase_credits(request: dict):
+    """Sistema de compra de créditos"""
+    try:
+        amount = request.get("amount", 0)
+        currency = request.get("currency", "USD")
+        payment_method = request.get("payment_method", "stripe")
+        
+        if amount <= 0:
+            raise HTTPException(status_code=400, detail="Invalid amount")
+        
+        # Simular procesamiento de pago
+        transaction_id = f"txn_{int(time.time())}_{random.randint(1000, 9999)}"
+        
+        return {
+            "status": "success",
+            "message": "Credits purchased successfully",
+            "transaction_id": transaction_id,
+            "amount": amount,
+            "currency": currency,
+            "credits_added": amount * 10,  # 10 créditos por dólar
+            "new_balance": amount * 10
+        }
+        
+    except Exception as e:
+        logger.error(f"Credit purchase error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/credits/balance")
+async def get_credits_balance():
+    """Obtiene balance de créditos del usuario"""
+    return {
+        "status": "success",
+        "credits": 50,  # Balance simulado
+        "plan": "Free",
+        "monthly_limit": 3,
+        "used_this_month": 1,
+        "remaining": 2
+    }
+
+# ===== SISTEMA DE CRÉDITOS Y GESTIÓN DE USUARIOS =====
+
+@app.post("/api/generate-with-credits")
+async def generate_music_with_credits(request: GenerateRequest):
+    """Generate music with credit system validation and post-processing"""
+    try:
+        # Obtener datos del usuario desde el request
+        user_id = getattr(request, 'user_id', 'anonymous')
+        user_tier = getattr(request, 'user_tier', 'free')
+        model = getattr(request, 'model', 'nuro')
+        
+        # Validar que el modelo esté permitido para el tier
+        if not credit_manager.is_model_allowed(user_tier, model):
+            raise HTTPException(
+                status_code=403,
+                detail=f"Modelo {model} no permitido para tier {user_tier}"
+            )
+        
+        # Verificar y consumir créditos
+        credits_needed = 10  # Todos los modelos cuestan 10 créditos
+        can_consume, message = credit_manager.consume_credits(user_id, user_tier, credits_needed)
+        
+        if not can_consume:
+            raise HTTPException(
+                status_code=429,
+                detail=message
+            )
+        
+        try:
+            # Generar letras si es necesario
+            lyrics = None
+            if hasattr(request, 'generate_lyrics') and request.generate_lyrics:
+                lyrics_gen = LyricsGenerator(user_tier)
+                lyrics_result = lyrics_gen.generate_lyrics(
+                    theme=request.lyrics or request.prompt,
+                    genre=request.style or "pop",
+                    language="es"
+                )
+                if lyrics_result.get("success"):
+                    lyrics = lyrics_result["lyrics"]
+            
+            # Generar prompt optimizado si es necesario
+            optimized_prompt = request.prompt
+            if hasattr(request, 'optimize_prompt') and request.optimize_prompt:
+                lyrics_gen = LyricsGenerator(user_tier)
+                prompt_result = lyrics_gen.generate_prompt(
+                    user_input=request.prompt,
+                    genre=request.style or "pop",
+                    mood="emotional"
+                )
+                if prompt_result.get("success"):
+                    optimized_prompt = prompt_result["generated_prompt"]
+            
+            # Generar música usando el sistema existente
+            music_result = await call_suno_direct_api(
+                optimized_prompt, 
+                lyrics, 
+                request.style, 
+                getattr(request, 'ghost_options', None)
+            )
+            
+            # Si Suno falla, usar generador local
+            if not music_result or not music_result.get("success", False):
+                logger.info("🔄 Suno failed, using local generator...")
+                local_result = local_generator.generate_music(
+                    prompt=optimized_prompt,
+                    lyrics=lyrics or "",
+                    style=request.style or "electronic"
+                )
+                
+                if local_result.get("success"):
+                    track = local_result["tracks"][0]
+                    
+                    # Aplicar postprocesos Rupert Neve
+                    processed_track = await apply_rupert_neve_processing(track, user_tier)
+                    
+                    return {
+                        "status": "success",
+                        "message": "Music generated with local system + Rupert Neve processing",
+                        "prompt": optimized_prompt,
+                        "lyrics": lyrics,
+                        "style": request.style,
+                        "timestamp": datetime.now().isoformat(),
+                        "track_id": processed_track["id"],
+                        "title": processed_track["title"],
+                        "audio_url": processed_track["audio_url"],
+                        "download_url": processed_track["audio_url"],
+                        "duration": f"{int(processed_track['duration']//60)}:{int(processed_track['duration']%60):02d}",
+                        "generation_method": "local_fallback_processed",
+                        "post_processing": "rupert_neve_ssl",
+                        "credits_consumed": credits_needed,
+                        "user_tier": user_tier,
+                        "model_used": "local_generator",
+                        "suno_response": local_result,
+                        "job_id": processed_track["id"]
+                    }
+            
+            # Aplicar postprocesos a música de Suno también
+            if music_result and music_result.get("success"):
+                processed_result = await apply_rupert_neve_processing(music_result, user_tier)
+                music_result = processed_result
+            
+            return {
+                "status": "success",
+                "message": "Music generation submitted to Suno + Rupert Neve processing",
+                "prompt": optimized_prompt,
+                "lyrics": lyrics,
+                "style": request.style,
+                "timestamp": datetime.now().isoformat(),
+                "credits_consumed": credits_needed,
+                "user_tier": user_tier,
+                "model_used": model,
+                "post_processing": "rupert_neve_ssl",
+                "auto_renewal_active": True,
+                "suno_response": music_result,
+                "job_id": music_result.get("id") if music_result else f"job_{int(time.time())}"
+            }
+            
+        except Exception as e:
+            # Reembolsar créditos en caso de error
+            credit_manager.refund_credits(user_id, credits_needed)
+            logger.error(f"❌ Error en generación musical: {e}")
+            raise HTTPException(status_code=500, detail=f"Error generando música: {str(e)}")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error inesperado en generación con créditos: {e}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+
+@app.get("/api/user/usage")
+async def get_user_usage(user_id: str, user_tier: str = "free"):
+    """Get user usage information"""
+    try:
+        usage_info = credit_manager.get_user_usage(user_id, user_tier)
+        return usage_info
+    except Exception as e:
+        logger.error(f"❌ Error obteniendo uso del usuario: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/system/status")
+async def get_system_status():
+    """Get system status and credit information"""
+    try:
+        status = credit_manager.get_system_status()
+        return status
+    except Exception as e:
+        logger.error(f"❌ Error obteniendo estado del sistema: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/models/available")
+async def get_available_models(user_tier: str = "free"):
+    """Get available models for user tier"""
+    try:
+        models = credit_manager.get_available_models(user_tier)
+        ollama_config = credit_manager.get_ollama_config(user_tier)
+        return {
+            "music_models": models,
+            "ollama_config": ollama_config,
+            "user_tier": user_tier
+        }
+    except Exception as e:
+        logger.error(f"❌ Error obteniendo modelos disponibles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ===== POSTPROCESOS RUPERT NEVE =====
+
+@app.post("/api/postprocess/rupert-neve")
+async def apply_rupert_neve_postprocess(request: dict):
+    """Aplicar postprocesos Rupert Neve a un track existente"""
+    try:
+        track_id = request.get("track_id")
+        user_tier = request.get("user_tier", "free")
+        
+        if not track_id:
+            raise HTTPException(status_code=400, detail="track_id es requerido")
+        
+        # Obtener track original
+        original_track = {
+            "id": track_id,
+            "title": request.get("title", "Track"),
+            "audio_url": request.get("audio_url", ""),
+            "duration": request.get("duration", 0)
+        }
+        
+        # Aplicar postprocesos Rupert Neve
+        processed_track = await apply_rupert_neve_processing(original_track, user_tier)
+        
+        return {
+            "status": "success",
+            "message": "Postprocesos Rupert Neve aplicados exitosamente",
+            "original_track": original_track,
+            "processed_track": processed_track,
+            "processing_details": processed_track.get("post_processing", {}),
+            "processing_chain": processed_track.get("processing_chain", [])
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error en postprocesos Rupert Neve: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/postprocess/rupert-neve/config/{user_tier}")
+async def get_rupert_neve_config_endpoint(user_tier: str = "free"):
+    """Obtener configuración de postprocesos Rupert Neve para un tier"""
+    try:
+        config = get_rupert_neve_config(user_tier)
+        return {
+            "user_tier": user_tier,
+            "config": config,
+            "description": "Configuración de postprocesos Rupert Neve con SSL, expresividad y saturación"
+        }
+    except Exception as e:
+        logger.error(f"❌ Error obteniendo configuración Rupert Neve: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

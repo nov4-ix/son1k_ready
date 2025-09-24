@@ -1,0 +1,26 @@
+{
+  "title": "balada romántica suave...",
+  "genre": "romántico",
+  "tempo": "120 BPM",
+  "structure": "Intro - Verso - Coro - Verso - Coro - Puente - Coro - Outro",
+  "instruments": [
+    "Guitarra",
+    "Bajo",
+    "Batería",
+    "Sintetizador",
+    "Piano"
+  ],
+  "mood": "Energético y emotivo",
+  "lyrics": "En tus ojos veo el cielo",
+  "description": "Una canción romántico generada por el sistema Son1k. balada romántica suave",
+  "key": "C Major",
+  "timeSignature": "4/4",
+  "duration": "3:30",
+  "prompt": "balada romántica suave",
+  "style": "romántico",
+  "instrumental": false,
+  "timestamp": "2025-09-24T16:35:50.707Z",
+  "method": "demo_system",
+  "source": "son1k_demo",
+  "status": "generated_successfully"
+}
