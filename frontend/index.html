@@ -67,10 +67,13 @@
         console.log('🖥️ Terminal button created and visible');
     }
     
-    // 💻 TERMINAL CODEX INMERSIVO
+    // 💻 TERMINAL CODEX INMERSIVO CON EFECTOS MATRIX
     function showTerminal() {
-        // ACTIVAR MODO INMERSIVO COMPLETO
+        // ACTIVAR MODO INMERSIVO COMPLETO CON EFECTOS MATRIX
         document.body.style.background = 'radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.15), #020304 60%)';
+        
+        // CREAR EFECTO MATRIX VISUAL
+        createMatrixEffect();
         
         const cmd = prompt(`🌊 SON1KVERS3 — TERMINAL CODEX 🌊
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -411,10 +414,81 @@ Comandos: upgrade --auth, mission --next, help --codex`;
             if (confirm('¿Continuar explorando el Terminal Codex?')) {
                 showTerminal();
             } else {
-                // Restaurar fondo normal
+                // Restaurar fondo normal y limpiar efectos Matrix
                 document.body.style.background = 'radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.06), transparent 60%), #0b0b0d';
+                clearMatrixEffect();
             }
         }, 1000);
+    }
+    
+    // 🌊 EFECTOS VISUALES MATRIX
+    let matrixCanvas = null;
+    let matrixCtx = null;
+    let matrixAnimation = null;
+    
+    function createMatrixEffect() {
+        // Crear canvas para efecto Matrix
+        if (matrixCanvas) return; // Ya existe
+        
+        matrixCanvas = document.createElement('canvas');
+        matrixCanvas.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.6;
+        `;
+        
+        matrixCanvas.width = window.innerWidth;
+        matrixCanvas.height = window.innerHeight;
+        matrixCtx = matrixCanvas.getContext('2d');
+        document.body.appendChild(matrixCanvas);
+        
+        // Configurar Matrix rain
+        const chars = '0123456789ABCDEF∆◯⚡△🌊⌨️💻🎵🔥';
+        const charArray = chars.split('');
+        const fontSize = 14;
+        const columns = Math.floor(matrixCanvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+        
+        function drawMatrix() {
+            // Fade effect
+            matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+            
+            // Matrix characters
+            matrixCtx.fillStyle = '#00ff95';
+            matrixCtx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const char = charArray[Math.floor(Math.random() * charArray.length)];
+                matrixCtx.fillText(char, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        matrixAnimation = setInterval(drawMatrix, 50);
+        console.log('🌊 Matrix effect activated');
+    }
+    
+    function clearMatrixEffect() {
+        if (matrixAnimation) {
+            clearInterval(matrixAnimation);
+            matrixAnimation = null;
+        }
+        if (matrixCanvas) {
+            document.body.removeChild(matrixCanvas);
+            matrixCanvas = null;
+            matrixCtx = null;
+        }
+        console.log('🌊 Matrix effect cleared');
     }
     
     // CREAR BOTÓN INMEDIATAMENTE
