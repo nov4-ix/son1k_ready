@@ -236,15 +236,21 @@ class CredentialManager:
     
     def start_rotation_task(self):
         """Iniciar tarea de rotación automática"""
-        async def rotation_worker():
+        import threading
+        import time
+        
+        def rotation_worker():
             while True:
                 try:
-                    await asyncio.sleep(self.rotation_interval)
-                    await self.rotate_accounts()
+                    time.sleep(self.rotation_interval)
+                    # Ejecutar rotación de forma síncrona
+                    asyncio.run(self.rotate_accounts())
                 except Exception as e:
                     logger.error(f"❌ Error en rotación: {e}")
+                    time.sleep(60)  # Esperar 1 minuto antes de reintentar
         
-        asyncio.create_task(rotation_worker())
+        thread = threading.Thread(target=rotation_worker, daemon=True)
+        thread.start()
     
     async def rotate_accounts(self):
         """Rotar cuentas automáticamente"""

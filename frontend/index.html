@@ -3,12 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Son1kVers3 — La Resistencia</title>
+  <title>Son1kVers3 — La Resistencia Musical Digital</title>
   
   <!-- SEO / Share / PWA -->
-  <meta name="description" content="Son1kVers3: Genera música, Ghost Studio y Archivo central. Lo imperfecto también es sagrado.">
-  <meta property="og:title" content="Son1kVers3 — Resistencia sonora">
-  <meta property="og:description" content="Texto→Música, Ghost Studio, Archivo.">
+  <meta name="description" content="Son1kVers3 es la plataforma revolucionaria de generación musical con IA. Convierte texto en música épica, accede al Ghost Studio y explora el Archivo de la Resistencia. Tecnología avanzada, interfaz inmersiva y generación ilimitada de música.">
+  <meta property="og:title" content="Son1kVers3 — La Resistencia Musical Digital">
+  <meta property="og:description" content="Plataforma de generación musical con IA. Convierte texto en música, accede al Ghost Studio y explora el Archivo de la Resistencia. Tecnología avanzada y generación ilimitada.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.son1kvers3.com">
+  <meta property="og:image" content="https://www.son1kvers3.com/static/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Son1kVers3 — La Resistencia Musical Digital">
+  <meta name="twitter:description" content="Plataforma de generación musical con IA. Convierte texto en música épica con tecnología avanzada.">
+  <meta name="keywords" content="generación musical, IA, música, Son1kVers3, Ghost Studio, Archivo, resistencia, tecnología, creatividad, composición">
+  <meta name="author" content="NOV4-IX">
+  <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0b0b0d">
   
   <!-- Fuentes -->
@@ -369,8 +378,11 @@
   <nav class="fixed top-0 left-0 right-0 z-50 bg-zinc-950/80 backdrop-blur-xl border-b border-white/10" role="navigation">
     <div class="mx-auto max-w-7xl px-4 flex items-center justify-between h-16">
       <div class="flex items-center space-x-3">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-neon to-neon-purple flex items-center justify-center">
-          <span class="text-xs font-bold text-black">S3</span>
+        <div 
+          id="s3Logo" 
+          class="w-8 h-8 rounded-lg bg-gradient-to-br from-neon to-neon-purple flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-200 group"
+          title="3 clicks rápidos para activar modo inmersivo">
+          <span class="text-xs font-bold text-black group-hover:text-white transition-colors duration-200">S3</span>
         </div>
         <span class="text-xl font-bold text-neon">SON1KVERS3</span>
       </div>
@@ -437,6 +449,27 @@
             en un mundo de<br>
             <span class="text-neon-purple">máquinas.</span>
           </h2>
+          
+          <!-- Descripción del sitio web -->
+          <div class="mt-8 p-6 bg-zinc-900/50 rounded-xl border border-zinc-800">
+            <h3 class="text-xl font-bold text-neon mb-4">🎵 Son1kVers3 — La Resistencia Musical Digital</h3>
+            <p class="text-zinc-300 leading-relaxed mb-4">
+              <strong>www.son1kvers3.com</strong> es la plataforma revolucionaria de generación musical con inteligencia artificial. 
+              Convierte cualquier texto, emoción o idea en música épica y profesional usando tecnología de vanguardia.
+            </p>
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
+              <div class="space-y-2">
+                <p class="text-zinc-400"><span class="text-neon">✨</span> <strong>Generación Inteligente:</strong> IA avanzada que entiende tu creatividad</p>
+                <p class="text-zinc-400"><span class="text-neon">👻</span> <strong>Ghost Studio:</strong> Herramientas profesionales de edición</p>
+                <p class="text-zinc-400"><span class="text-neon">📚</span> <strong>Archivo de la Resistencia:</strong> Biblioteca musical comunitaria</p>
+              </div>
+              <div class="space-y-2">
+                <p class="text-zinc-400"><span class="text-neon">🎮</span> <strong>Modo Inmersivo:</strong> Experiencia cyberpunk única</p>
+                <p class="text-zinc-400"><span class="text-neon">🌍</span> <strong>Acceso Global:</strong> Disponible en todo el mundo</p>
+                <p class="text-zinc-400"><span class="text-neon">🔒</span> <strong>Seguro y Privado:</strong> Tus creaciones están protegidas</p>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div class="flex space-x-4">
@@ -2718,6 +2751,105 @@
     </iframe>
   </div>
 
+  <!-- Botón flotante para modo inmersivo (móviles) -->
+  <div id="immersiveToggleButton" class="fixed bottom-6 right-6 z-40 md:hidden">
+    <button 
+      onclick="toggleImmersiveInterface()"
+      class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+      title="Activar Modo Inmersivo">
+      <svg class="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Botón de escritorio para modo inmersivo -->
+  <div id="immersiveToggleButtonDesktop" class="fixed top-6 right-6 z-40 hidden md:block">
+    <button 
+      onclick="toggleImmersiveInterface()"
+      class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-2 group"
+      title="Modo Inmersivo (Ctrl+Alt+H)">
+      <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+      <span class="text-sm font-medium">NEXUS</span>
+    </button>
+  </div>
+
+  <!-- Asistente Pixel - Chat Flotante -->
+  <div id="pixelChatContainer" class="fixed bottom-6 left-6 z-50 w-80 h-96 bg-zinc-900/95 backdrop-blur-xl border border-zinc-700 rounded-xl shadow-2xl transform transition-all duration-300 hidden">
+    <!-- Header del chat -->
+    <div class="flex items-center justify-between p-4 border-b border-zinc-700 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-t-xl">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+          <span class="text-sm font-bold text-white">P</span>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-white">Pixel</h3>
+          <p class="text-xs text-green-400">● En línea</p>
+        </div>
+      </div>
+      <div class="flex space-x-2">
+        <button id="minimizePixelChat" class="w-6 h-6 bg-zinc-700 hover:bg-zinc-600 rounded flex items-center justify-center transition">
+          <svg class="w-3 h-3 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+          </svg>
+        </button>
+        <button id="closePixelChat" class="w-6 h-6 bg-red-600 hover:bg-red-700 rounded flex items-center justify-center transition">
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Área de mensajes -->
+    <div id="pixelMessages" class="flex-1 p-4 space-y-3 overflow-y-auto h-64">
+      <div class="flex items-start space-x-2">
+        <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="text-xs font-bold text-white">P</span>
+        </div>
+        <div class="bg-zinc-800/50 rounded-lg p-3 max-w-xs">
+          <p class="text-sm text-zinc-200">¡Hola! Soy Pixel, tu asistente de IA. ¿En qué puedo ayudarte hoy?</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Área de entrada -->
+    <div class="p-4 border-t border-zinc-700">
+      <div class="flex space-x-2">
+        <input 
+          id="pixelMessageInput" 
+          type="text" 
+          placeholder="Escribe tu mensaje..."
+          class="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+          onkeypress="handlePixelKeyPress(event)"
+        />
+        <button 
+          id="sendPixelMessage" 
+          onclick="sendPixelMessage()"
+          class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg transition flex items-center space-x-1"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón flotante para abrir Pixel -->
+  <div id="pixelToggleButton" class="fixed bottom-6 left-6 z-40">
+    <button 
+      onclick="togglePixelChat()"
+      class="w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+      title="Abrir asistente Pixel">
+      <svg class="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+      </svg>
+    </button>
+  </div>
+
   <!-- Script de integración inmersiva -->
   <script src="immersive_integration.js"></script>
   
@@ -2739,20 +2871,85 @@
         }
       });
       
-      console.log('🎵 Interfaz inmersiva inicializada - Presiona Ctrl+Alt+H para activar');
+      // Manejar 3 clicks rápidos en el logo S3
+      let clickCount = 0;
+      let clickTimer = null;
+      const s3Logo = document.getElementById('s3Logo');
+      
+      if (s3Logo) {
+        s3Logo.addEventListener('click', function(event) {
+          event.preventDefault();
+          clickCount++;
+          
+          // Mostrar indicador visual
+          if (clickCount === 1) {
+            showToast('Click 1/3 - Sigue clickeando rápido!', 'info', 1000);
+            s3Logo.style.transform = 'scale(1.1)';
+            s3Logo.style.boxShadow = '0 0 10px #00ff88';
+          } else if (clickCount === 2) {
+            showToast('Click 2/3 - ¡Uno más!', 'warning', 1000);
+            s3Logo.style.transform = 'scale(1.15)';
+            s3Logo.style.boxShadow = '0 0 15px #ffaa00';
+          }
+          
+          // Resetear contador después de 1 segundo
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+          }
+          
+          clickTimer = setTimeout(() => {
+            clickCount = 0;
+            s3Logo.style.transform = 'scale(1)';
+            s3Logo.style.boxShadow = '';
+          }, 1000);
+          
+          // Si son 3 clicks en menos de 1 segundo
+          if (clickCount === 3) {
+            clickCount = 0;
+            clearTimeout(clickTimer);
+            toggleImmersiveInterface();
+            
+            // Efecto visual especial
+            s3Logo.style.transform = 'scale(1.3)';
+            s3Logo.style.background = 'linear-gradient(45deg, #ff00ff, #00ffff)';
+            s3Logo.style.boxShadow = '0 0 20px #ff00ff';
+            showToast('¡NEXUS ACTIVADO! Modo inmersivo iniciado', 'success', 2000);
+            
+            setTimeout(() => {
+              s3Logo.style.transform = 'scale(1)';
+              s3Logo.style.background = '';
+              s3Logo.style.boxShadow = '';
+            }, 500);
+          }
+        });
+      }
+      
+      console.log('🎵 Interfaz inmersiva inicializada - Presiona Ctrl+Alt+H o 3 clicks en S3 para activar');
     }
     
     // Mostrar/ocultar interfaz inmersiva
     function toggleImmersiveInterface() {
       const container = document.getElementById('immersiveInterfaceContainer');
+      const mobileButton = document.getElementById('immersiveToggleButton');
+      const desktopButton = document.getElementById('immersiveToggleButtonDesktop');
       
       if (isImmersiveVisible) {
         container.classList.add('hidden');
         isImmersiveVisible = false;
+        
+        // Mostrar botones de toggle
+        if (mobileButton) mobileButton.style.display = 'block';
+        if (desktopButton) desktopButton.style.display = 'block';
+        
         console.log('🎵 Interfaz inmersiva ocultada');
       } else {
         container.classList.remove('hidden');
         isImmersiveVisible = true;
+        
+        // Ocultar botones de toggle
+        if (mobileButton) mobileButton.style.display = 'none';
+        if (desktopButton) desktopButton.style.display = 'none';
+        
         console.log('🎵 Interfaz inmersiva activada');
         
         // Mostrar mensaje de bienvenida
@@ -2783,6 +2980,199 @@
     window.showImmersiveInterface = showImmersiveInterface;
     window.hideImmersiveInterface = hideImmersiveInterface;
     window.toggleImmersiveInterface = toggleImmersiveInterface;
+  </script>
+
+  <!-- Script para Asistente Pixel -->
+  <script>
+    // Variables globales para Pixel
+    let pixelChatVisible = false;
+    let pixelChatMinimized = false;
+    let pixelMessageHistory = [];
+
+    // Inicializar Pixel
+    function initPixelAssistant() {
+      console.log('🤖 Asistente Pixel inicializado');
+      
+      // Event listeners para botones
+      document.getElementById('minimizePixelChat').addEventListener('click', minimizePixelChat);
+      document.getElementById('closePixelChat').addEventListener('click', closePixelChat);
+      
+      // Enviar mensaje de bienvenida
+      setTimeout(() => {
+        addPixelMessage('Pixel', '¡Hola! Soy Pixel, tu asistente de IA. Puedo ayudarte con la generación musical, explicar funciones del sistema, o responder cualquier pregunta. ¿En qué puedo ayudarte?', false);
+      }, 1000);
+    }
+
+    // Mostrar/ocultar chat de Pixel
+    function togglePixelChat() {
+      const container = document.getElementById('pixelChatContainer');
+      const button = document.getElementById('pixelToggleButton');
+      
+      if (pixelChatVisible) {
+        container.classList.add('hidden');
+        button.style.display = 'block';
+        pixelChatVisible = false;
+        pixelChatMinimized = false;
+      } else {
+        container.classList.remove('hidden');
+        button.style.display = 'none';
+        pixelChatVisible = true;
+        pixelChatMinimized = false;
+        
+        // Enfocar input
+        setTimeout(() => {
+          document.getElementById('pixelMessageInput').focus();
+        }, 100);
+      }
+    }
+
+    // Minimizar chat
+    function minimizePixelChat() {
+      const container = document.getElementById('pixelChatContainer');
+      const button = document.getElementById('pixelToggleButton');
+      
+      container.classList.add('hidden');
+      button.style.display = 'block';
+      pixelChatMinimized = true;
+      pixelChatVisible = false;
+    }
+
+    // Cerrar chat
+    function closePixelChat() {
+      const container = document.getElementById('pixelChatContainer');
+      const button = document.getElementById('pixelToggleButton');
+      
+      container.classList.add('hidden');
+      button.style.display = 'block';
+      pixelChatVisible = false;
+      pixelChatMinimized = false;
+    }
+
+    // Manejar tecla Enter
+    function handlePixelKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendPixelMessage();
+      }
+    }
+
+    // Enviar mensaje a Pixel
+    async function sendPixelMessage() {
+      const input = document.getElementById('pixelMessageInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      // Agregar mensaje del usuario
+      addPixelMessage('Usuario', message, true);
+      input.value = '';
+      
+      // Mostrar indicador de escritura
+      showPixelTyping();
+      
+      try {
+        // Enviar a Ollama
+        const response = await fetch('/api/pixel/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: message,
+            history: pixelMessageHistory.slice(-10) // Últimos 10 mensajes para contexto
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Error en la respuesta del servidor');
+        }
+        
+        const data = await response.json();
+        
+        // Ocultar indicador de escritura
+        hidePixelTyping();
+        
+        // Agregar respuesta de Pixel
+        addPixelMessage('Pixel', data.response, false);
+        
+        // Guardar en historial
+        pixelMessageHistory.push({ role: 'user', content: message });
+        pixelMessageHistory.push({ role: 'assistant', content: data.response });
+        
+      } catch (error) {
+        console.error('Error enviando mensaje a Pixel:', error);
+        hidePixelTyping();
+        addPixelMessage('Pixel', 'Lo siento, hubo un error al procesar tu mensaje. Por favor, inténtalo de nuevo.', false);
+      }
+    }
+
+    // Agregar mensaje al chat
+    function addPixelMessage(sender, message, isUser) {
+      const messagesContainer = document.getElementById('pixelMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'flex items-start space-x-2';
+      
+      if (isUser) {
+        messageDiv.innerHTML = `
+          <div class="flex-1"></div>
+          <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-3 max-w-xs">
+            <p class="text-sm text-white">${message}</p>
+          </div>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <span class="text-xs font-bold text-white">P</span>
+          </div>
+          <div class="bg-zinc-800/50 rounded-lg p-3 max-w-xs">
+            <p class="text-sm text-zinc-200">${message}</p>
+          </div>
+        `;
+      }
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Mostrar indicador de escritura
+    function showPixelTyping() {
+      const messagesContainer = document.getElementById('pixelMessages');
+      const typingDiv = document.createElement('div');
+      typingDiv.id = 'pixelTyping';
+      typingDiv.className = 'flex items-start space-x-2';
+      typingDiv.innerHTML = `
+        <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="text-xs font-bold text-white">P</span>
+        </div>
+        <div class="bg-zinc-800/50 rounded-lg p-3 max-w-xs">
+          <div class="flex space-x-1">
+            <div class="w-2 h-2 bg-zinc-400 rounded-full animate-bounce"></div>
+            <div class="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-2 h-2 bg-zinc-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+          </div>
+        </div>
+      `;
+      
+      messagesContainer.appendChild(typingDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Ocultar indicador de escritura
+    function hidePixelTyping() {
+      const typingDiv = document.getElementById('pixelTyping');
+      if (typingDiv) {
+        typingDiv.remove();
+      }
+    }
+
+    // Inicializar Pixel cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+      initPixelAssistant();
+    });
+
+    // Exportar funciones para uso global
+    window.togglePixelChat = togglePixelChat;
+    window.handlePixelKeyPress = handlePixelKeyPress;
+    window.sendPixelMessage = sendPixelMessage;
   </script>
   </body>
 </html>

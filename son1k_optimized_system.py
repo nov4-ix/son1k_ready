@@ -4,7 +4,7 @@
 Flujo completo: Prompt → Suno → Reproductor → Descarga
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +25,11 @@ from suno_real_integration import generate_music_with_suno, setup_suno_credentia
 from ollama_suno_proxy import generate_music_with_ollama_proxy, setup_ollama_suno_proxy, get_ollama_suno_status
 from credential_manager import add_suno_account, get_account_stats
 from stealth_suno_wrapper import validate_suno_stealth, get_suno_credits_stealth
+from auth_middleware import (
+    auth_manager, get_current_user, get_current_admin_user, get_pro_or_enterprise_user,
+    check_generation_limits, increment_generation_count, LoginRequest, LoginResponse, UserStatsResponse
+)
+from pixel_assistant import chat_with_pixel, get_pixel_tips, get_pixel_help
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -628,6 +633,67 @@ async def cleanup_old_files():
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en limpieza: {str(e)}")
+
+# ===== ENDPOINTS DE PIXEL ASSISTANT =====
+
+@app.post("/api/pixel/chat")
+async def pixel_chat(request: Dict[str, Any]):
+    """Chat con Pixel Assistant usando Ollama"""
+    try:
+        message = request.get("message", "")
+        history = request.get("history", [])
+        
+        if not message.strip():
+            raise HTTPException(status_code=400, detail="Mensaje vacío")
+        
+        # Chatear con Pixel
+        result = await chat_with_pixel(message, history)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error en chat de Pixel: {e}")
+        raise HTTPException(status_code=500, detail=f"Error en chat: {str(e)}")
+
+@app.get("/api/pixel/tips")
+async def pixel_tips():
+    """Obtener consejos rápidos de Pixel"""
+    try:
+        tips = await get_pixel_tips()
+        return {"tips": tips}
+    except Exception as e:
+        logger.error(f"Error obteniendo tips de Pixel: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo tips: {str(e)}")
+
+@app.get("/api/pixel/help")
+async def pixel_help():
+    """Obtener temas de ayuda de Pixel"""
+    try:
+        help_topics = await get_pixel_help()
+        return {"help_topics": help_topics}
+    except Exception as e:
+        logger.error(f"Error obteniendo ayuda de Pixel: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo ayuda: {str(e)}")
+
+@app.get("/api/pixel/status")
+async def pixel_status():
+    """Estado del asistente Pixel"""
+    try:
+        return {
+            "status": "online",
+            "assistant": "Pixel",
+            "version": "1.0.0",
+            "capabilities": [
+                "chat_inteligente",
+                "consejos_musicales",
+                "soporte_tecnico",
+                "creatividad"
+            ],
+            "model": "llama3.1:8b"
+        }
+    except Exception as e:
+        logger.error(f"Error obteniendo estado de Pixel: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo estado: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
