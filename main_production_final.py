@@ -301,13 +301,33 @@ def health_check():
     """Health check endpoint requerido"""
     return {"status": "healthy"}
 
+@app.get("/api/pixel-chat")
+async def pixel_chat_get(message: str = ""):
+    """Chat directo con Pixel - GET method para terminal UI"""
+    try:
+        if not message:
+            return {"response": "🤖 Pixel: ¿En qué puedo ayudarte?"}
+        
+        response = await pixel_chat_logic(message)
+        return {"response": response}
+    except Exception as e:
+        logger.error(f"Error en Pixel chat GET: {e}")
+        return {"response": f"🤖 Pixel: Sistema temporalmente ocupado. Error: {str(e)}"}
+
 @app.post("/api/pixel-chat")
 async def pixel_chat_endpoint(request: dict):
     """Chat directo con Pixel - Terminal UI integrado"""
     try:
         message = request.get("message", "")
         sender = request.get("sender", "user")
-        
+        response = await pixel_chat_logic(message)
+        return {"response": response}
+    except Exception as e:
+        logger.error(f"Error en Pixel chat: {e}")
+        return {"response": f"🤖 Pixel: Sistema temporalmente ocupado. Error: {str(e)}"}
+
+async def pixel_chat_logic(message: str):
+    try:
         logger.info(f"💬 USER → PIXEL: {message}")
         
         # Respuestas contextuales inteligentes
@@ -347,6 +367,47 @@ async def pixel_chat_endpoint(request: dict):
             "timestamp": datetime.now().isoformat(),
             "sender": "pixel"
         }
+
+# Modelos para autenticación
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+@app.post("/api/auth/login") 
+async def login(request: LoginRequest):
+    """Login endpoint para autenticación"""
+    try:
+        # Credenciales simples para testing
+        if request.email == "nov4-ix@son1kvers3.com" and request.password == "admin123":
+            return {
+                "status": "success",
+                "message": "Login exitoso",
+                "user": {
+                    "email": request.email,
+                    "role": "admin",
+                    "level": "enterprise"
+                },
+                "token": "son1k_admin_token_" + str(int(time.time()))
+            }
+        elif request.email.startswith("pro.tester") and request.password == "Premium123!":
+            return {
+                "status": "success", 
+                "message": "Login exitoso",
+                "user": {
+                    "email": request.email,
+                    "role": "tester",
+                    "level": "pro"
+                },
+                "token": "son1k_tester_token_" + str(int(time.time()))
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Credenciales incorrectas"
+            }
+    except Exception as e:
+        logger.error(f"Error en login: {e}")
+        return {"status": "error", "message": "Error interno del servidor"}
 
 @app.get("/salud")
 def salud_check():
