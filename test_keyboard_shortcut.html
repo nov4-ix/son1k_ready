@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Ctrl+Alt+H</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #000;
+            color: #00ff88;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #004400; }
+        .error { background: #440000; }
+        .info { background: #000044; }
+        button {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #00cc66;
+        }
+        #log {
+            background: #111;
+            padding: 10px;
+            border-radius: 5px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎵 Test de Atajo Ctrl+Alt+H</h1>
+        
+        <div class="status info">
+            <strong>Instrucciones:</strong><br>
+            1. Presiona <kbd>Ctrl+Alt+H</kbd> para activar la interfaz inmersiva<br>
+            2. Presiona <kbd>Ctrl+Alt+H</kbd> nuevamente para cerrarla<br>
+            3. Observa los logs abajo
+        </div>
+        
+        <div>
+            <button onclick="testAPI()">Probar API</button>
+            <button onclick="testFiles()">Probar Archivos</button>
+            <button onclick="clearLog()">Limpiar Log</button>
+        </div>
+        
+        <div id="log"></div>
+        
+        <div class="status info">
+            <strong>Estado:</strong> <span id="status">Esperando...</span>
+        </div>
+    </div>
+
+    <!-- Interfaz Inmersiva (Oculta por defecto) -->
+    <div id="immersiveInterfaceContainer" class="fixed inset-0 z-50 hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; background: rgba(0,0,0,0.95);">
+        <iframe 
+            src="http://localhost:8000/immersive_interface.html" 
+            class="w-full h-full border-0"
+            id="immersiveIframe"
+            style="width: 100%; height: 100%; border: none;">
+        </iframe>
+    </div>
+
+    <script>
+        let isImmersiveVisible = false;
+        let logElement = document.getElementById('log');
+        let statusElement = document.getElementById('status');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message) {
+            statusElement.textContent = message;
+        }
+        
+        function clearLog() {
+            logElement.innerHTML = '';
+            log('Log limpiado');
+        }
+        
+        async function testAPI() {
+            log('🔍 Probando API...');
+            try {
+                const response = await fetch('http://localhost:8000/api/health');
+                const data = await response.json();
+                log(`✅ API saludable: ${JSON.stringify(data)}`);
+                updateStatus('API funcionando');
+            } catch (error) {
+                log(`❌ Error API: ${error.message}`);
+                updateStatus('Error API');
+            }
+        }
+        
+        async function testFiles() {
+            log('🔍 Probando archivos inmersivos...');
+            try {
+                const response1 = await fetch('http://localhost:8000/immersive_interface.html');
+                const response2 = await fetch('http://localhost:8000/immersive_integration.js');
+                
+                if (response1.ok && response2.ok) {
+                    log('✅ Archivos inmersivos disponibles');
+                    updateStatus('Archivos OK');
+                } else {
+                    log(`❌ Error archivos: ${response1.status}, ${response2.status}`);
+                    updateStatus('Error archivos');
+                }
+            } catch (error) {
+                log(`❌ Error archivos: ${error.message}`);
+                updateStatus('Error archivos');
+            }
+        }
+        
+        function toggleImmersiveInterface() {
+            const container = document.getElementById('immersiveInterfaceContainer');
+            
+            if (isImmersiveVisible) {
+                container.classList.add('hidden');
+                isImmersiveVisible = false;
+                log('🎵 Interfaz inmersiva ocultada');
+                updateStatus('Interfaz oculta');
+            } else {
+                container.classList.remove('hidden');
+                isImmersiveVisible = true;
+                log('🎵 Interfaz inmersiva activada');
+                updateStatus('Interfaz activa');
+            }
+        }
+        
+        // Manejar atajo de teclado Ctrl+Alt+H
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.altKey && event.key === 'h') {
+                event.preventDefault();
+                log('⌨️ Atajo Ctrl+Alt+H detectado');
+                toggleImmersiveInterface();
+            }
+        });
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🎵 Test de atajo inicializado');
+            log('Presiona Ctrl+Alt+H para probar');
+            updateStatus('Listo para probar');
+        });
+        
+        // Exportar funciones para uso global
+        window.toggleImmersiveInterface = toggleImmersiveInterface;
+        window.testAPI = testAPI;
+        window.testFiles = testFiles;
+        window.clearLog = clearLog;
+    </script>
+</body>
+</html>

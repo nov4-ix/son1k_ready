@@ -321,6 +321,20 @@ class AdvancedSunoWrapper:
         
         return []
     
+    async def get_generation_status(self, track_id: str) -> Optional[Dict[str, Any]]:
+        """Get generation status for a track"""
+        track = await self.get_track_status(track_id)
+        if track:
+            return {
+                "id": track.id,
+                "status": track.status.value,
+                "progress": 100 if track.status == GenerationStatus.COMPLETED else 50,
+                "audio_url": track.audio_url,
+                "title": track.title,
+                "created_at": track.created_at.isoformat()
+            }
+        return None
+    
     async def get_user_credits(self) -> Dict[str, int]:
         """Get current user credit information"""
         response = await self._make_request('GET', '/api/billing/info/')

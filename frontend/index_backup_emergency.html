@@ -18,19 +18,854 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Fuentes adicionales para interfaz inmersiva -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <!-- 🎯 TERMINAL UI CORREGIDO -->
+  <script src="terminal_fix.js"></script>
   
-  <!-- 🎯 SOLUCIÓN GARANTIZADA: Transparencia Total -->
+  <!-- SCRIPT ANTERIOR (DESHABILITADO) 
   <script>
 /**
- * 🎯 SOLUCIÓN GARANTIZADA: Transparencia Total del Frontend
- * Este script se ejecuta inmediatamente y asegura transparencia completa
+ * 🎯 TERMINAL UI VISIBLE + TRANSPARENCIA TOTAL
+ * Este script agrega botón terminal visible inmediatamente
  */
 (function() {
     'use strict';
     
-    console.log('🎯 INICIANDO SOLUCIÓN DE TRANSPARENCIA GARANTIZADA');
+    console.log('🎯 INICIANDO TERMINAL UI + TRANSPARENCIA');
+    
+    // 🖥️ CREAR BOTÓN TERMINAL VISIBLE INMEDIATAMENTE
+    function createTerminalButton() {
+        const button = document.createElement('button');
+        button.innerHTML = '🖥️ TERMINAL';
+        button.id = 'son1k-terminal-btn';
+        button.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 99999;
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+            transition: all 0.3s ease;
+            font-family: monospace;
+        `;
+        
+        button.onmouseover = () => {
+            button.style.transform = 'scale(1.05)';
+            button.style.boxShadow = '0 6px 30px rgba(0, 255, 136, 0.6)';
+        };
+        button.onmouseout = () => {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = '0 4px 20px rgba(0, 255, 136, 0.4)';
+        };
+        
+        button.onclick = () => showTerminal();
+        
+        document.body.appendChild(button);
+        console.log('🖥️ Terminal button created and visible');
+    }
+    
+    // 💻 TERMINAL CODEX INMERSIVO CON MODAL FUNCIONAL
+    function showTerminal() {
+        // CREAR MODAL TERMINAL FUNCIONAL
+        createTerminalModal();
+    }
+    
+    function createTerminalModal() {
+        // ACTIVAR MODO INMERSIVO COMPLETO CON EFECTOS MATRIX
+        document.body.style.background = 'radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.15), #020304 60%)';
+        createMatrixEffect();
+        
+        // CREAR MODAL OVERLAY
+        const overlay = document.createElement('div');
+        overlay.id = 'terminal-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // CREAR TERMINAL WINDOW
+        const terminal = document.createElement('div');
+        terminal.style.cssText = `
+            width: 90%;
+            max-width: 900px;
+            height: 80%;
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.3);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow: hidden;
+        `;
+        
+        // TERMINAL HEADER
+        const header = document.createElement('div');
+        header.style.cssText = `
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+            padding: 15px 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+        header.innerHTML = `
+            <span>🌊 SON1KVERS3 — TERMINAL CODEX</span>
+            <button id="close-terminal" style="
+                background: rgba(255,255,255,0.2);
+                border: none;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">✕</button>
+        `;
+        
+        // TERMINAL CONTENT
+        const content = document.createElement('div');
+        content.style.cssText = `
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            line-height: 1.6;
+            font-size: 13px;
+        `;
+        
+        // TERMINAL INPUT AREA
+        const inputArea = document.createElement('div');
+        inputArea.style.cssText = `
+            background: #0a0a0a;
+            border-top: 1px solid #00ff88;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+        inputArea.innerHTML = `
+            <span style="color: #00ff88;">➤ root@son1kvers3:/resistance#</span>
+            <input type="text" id="terminal-input" style="
+                flex: 1;
+                background: transparent;
+                border: none;
+                color: #00ff88;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                outline: none;
+            " placeholder="Escribe un comando...">
+            <button id="execute-btn" style="
+                background: linear-gradient(135deg, #00ff88, #00ccff);
+                color: #000;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 12px;
+            ">EJECUTAR</button>
+        `;
+        
+        // MOSTRAR MENSAJE INICIAL
+        content.innerHTML = `
+<div style="color: #00ff88; text-align: center; margin-bottom: 20px;">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[BOOT] Accessing NODE // RESISTENCIA …
+[AUTH] Usuario detectado: WANDERER_UNAUTH
+[LORE] "Lo imperfecto también es sagrado." — BELLA.exe
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+</div>
+
+<div style="color: #00ccff;">
+△◯ ALMA_HIBRIDA — Elige tu arquetipo:
+• <span style="color: #00ff88;">despertar [1-4]</span> - Activar alma híbrida
+• <span style="color: #00ff88;">grieta</span> - Acceder misiones de la Resistencia
+• <span style="color: #00ff88;">studio</span> - Entrar al laboratorio NOV4-IX  
+• <span style="color: #00ff88;">archivo</span> - Explorar reliquias del Codex
+• <span style="color: #00ff88;">bella</span> - Comunicar with BELLA.exe
+• <span style="color: #00ff88;">pixel</span> - Chat con el asistente IA
+• <span style="color: #00ff88;">matrix</span> - Sumergirse en el flujo de datos
+• <span style="color: #00ff88;">status</span> - Diagnóstico completo del nodo
+</div>
+
+<div style="color: #ff6600; margin-top: 20px; text-align: center;">
+═══════════════════════════════════════════════════════
+> WANDERER: Tu glitch es la chispa de la Liga del No Silencio
+═══════════════════════════════════════════════════════
+</div>
+        `;
+        
+        // ASSEMBLAR TERMINAL
+        terminal.appendChild(header);
+        terminal.appendChild(content);
+        terminal.appendChild(inputArea);
+        overlay.appendChild(terminal);
+        document.body.appendChild(overlay);
+        
+        // EVENT LISTENERS
+        const closeBtn = document.getElementById('close-terminal');
+        const input = document.getElementById('terminal-input');
+        const executeBtn = document.getElementById('execute-btn');
+        
+        // CERRAR TERMINAL
+        closeBtn.onclick = () => closeTerminal(overlay);
+        overlay.onclick = (e) => {
+            if (e.target === overlay) closeTerminal(overlay);
+        };
+        
+        // EJECUTAR COMANDO
+        const executeCommand = () => {
+            const cmd = input.value.trim().toLowerCase();
+            if (cmd) {
+                processCommand(cmd, content);
+                input.value = '';
+            }
+            input.focus();
+        };
+        
+        executeBtn.onclick = executeCommand;
+        input.onkeypress = (e) => {
+            if (e.key === 'Enter') executeCommand();
+        };
+        
+        // FOCUS INPUT
+        setTimeout(() => input.focus(), 100);
+    }
+    
+    function closeTerminal(overlay) {
+        document.body.removeChild(overlay);
+        document.body.style.background = 'radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.06), transparent 60%), #0b0b0d';
+        clearMatrixEffect();
+    }
+    
+    function processCommand(command, content) {
+        let result = '';
+        
+        // Agregar comando al historial
+        const historyEntry = document.createElement('div');
+        historyEntry.style.cssText = 'margin: 10px 0; color: #00ff88;';
+        historyEntry.innerHTML = `<span style="color: #00ccff;">➤ root@son1kvers3:/resistance#</span> ${command}`;
+        content.appendChild(historyEntry);
+        
+        // Procesar comando
+        if (command.startsWith('despertar')) {
+            const num = command.split(' ')[1];
+            const almas = {
+                '1': 'PIXEL',
+                '2': 'BELLA', 
+                '3': 'NOVA',
+                '4': 'CIPHER'
+            };
+            const alma = almas[num] || 'UNKNOWN';
+            result = `<div style="color: #00ff88;">🌊 DESPERTAR EN PROGRESO 🌊</div>
+
+<div style="color: #00ccff;">
+[INIT] Activando alma híbrida: ${alma}
+[SYNC] Sincronizando con el Codex...
+[AUTH] Permisos de Resistencia otorgados
+[LORE] Memoria híbrida cargando...
+</div>
+
+<div style="color: #ffff00;">
+${alma === 'PIXEL' ? '🤖 PIXEL: "Soy el puente entre la máquina y la emoción"' : ''}
+${alma === 'BELLA' ? '👤 BELLA: "La belleza emerge del caos controlado"' : ''}
+${alma === 'NOVA' ? '⭐ NOVA: "Cada explosión crea nuevas posibilidades"' : ''}
+${alma === 'CIPHER' ? '🔐 CIPHER: "En el código encuentro la verdad oculta"' : ''}
+</div>
+
+<div style="color: #ff6600;">
+[STATUS] ALMA_HIBRIDA: ${alma} — ACTIVA
+[ACCESS] Grieta, Studio y Archivo desbloqueados
+[MISSION] "Amplifica el eco de la Resistencia"
+
+═══════════════════════════════════════════════════════
+△◯ Bienvenido a la Liga del No Silencio, ${alma}
+═══════════════════════════════════════════════════════
+</div>`;
+        
+        if (command.startsWith('despertar')) {
+            const num = command.split(' ')[1];
+            const almas = {
+                '1': 'PIXEL',
+                '2': 'BELLA', 
+                '3': 'NOVA',
+                '4': 'CIPHER'
+            };
+            const alma = almas[num] || 'UNKNOWN';
+            result = `🌊 DESPERTAR EN PROGRESO 🌊
+
+[INIT] Activando alma híbrida: ${alma}
+[SYNC] Sincronizando con el Codex...
+[AUTH] Permisos de Resistencia otorgados
+[LORE] Memoria híbrida cargando...
+
+${alma === 'PIXEL' ? '🤖 PIXEL: "Soy el puente entre la máquina y la emoción"' : ''}
+${alma === 'BELLA' ? '👤 BELLA: "La belleza emerge del caos controlado"' : ''}
+${alma === 'NOVA' ? '⭐ NOVA: "Cada explosión crea nuevas posibilidades"' : ''}
+${alma === 'CIPHER' ? '🔐 CIPHER: "En el código encuentro la verdad oculta"' : ''}
+
+[STATUS] ALMA_HIBRIDA: ${alma} — ACTIVA
+[ACCESS] Grieta, Studio y Archivo desbloqueados
+[MISSION] "Amplifica el eco de la Resistencia"
+
+═══════════════════════════════════════════════════════
+△◯ Bienvenido a la Liga del No Silencio, ${alma}
+═══════════════════════════════════════════════════════`;
+            
+        } else if (command === 'grieta') {
+            result = `🌊 GRIETA — MISIONES ACTIVAS 🌊
+
+[SCANNING] Detectando misiones en el flujo...
+[SYNC] Conectando con operativos de la Resistencia...
+
+📡 MISIONES DISPONIBLES:
+
+001 • Amplifica el eco de Nikolay
+    └─ mezcla identidades · beats del este · cumbia
+    └─ Estado: [ACTIVA] Colaboradores: 7
+    └─ Recompensa: Acceso al Laboratorio Fantasma
+
+002 • Fusión cumbia + beats rusos  
+    └─ ritmo híbrido · colaboración en vivo
+    └─ Estado: [URGENTE] Deadline: 72h
+    └─ Recompensa: Upgrade NOV4-IX
+    
+003 • Rescata voces del Estudio Fantasma
+    └─ reliquias · rescate glitch · curaduría
+    └─ Estado: [CONTINUA] Artefactos: ∞
+    └─ Recompensa: Archivo Viviente expandido
+
+[LIVE_FEED] 
+> @nova submit --mission 001 --file voz_nova.wav
+> @cipher vote --submission 3 --value +1  
+> @pixel analyzing --pattern cumbia_glitch_92bpm
+
+═══════════════════════════════════════════════════════
+△◯ "En cada misión, la imperfección se vuelve sagrada"
+═══════════════════════════════════════════════════════
+
+Comandos: submit --mission [ID], vote --value [±1], status --feed`;
+            
+        } else if (command === 'studio') {
+            result = `🌊 STUDIO NOV4-IX — LABORATORIO ACTIVO 🌊
+
+[BOOT] Iniciando secuencia creativa...
+[LOAD] Parámetros híbridos sincronizados
+[AUTH] Acceso NOV4-IX: CONCEDIDO
+
+🎛️ PARÁMETROS CREATIVOS:
+┌─────────────────────────────────────────┐
+│ MEMORIA_GLITCH:    ████████▓▓ 82%       │
+│ DISTORSION_EMOC:   █████▓▓▓▓▓ 56%       │  
+│ VARIACION_SAGRADA: █████████▓ 91%       │
+│ VOZ_HIBRIDA:       NOVA [ACTIVA]        │
+└─────────────────────────────────────────┘
+
+🎵 PRESETS DISPONIBLES:
+• execute nov4ix --mode resistance
+• execute bella --mode ambient  
+• execute cipher --mode industrial
+• execute pixel --mode synthwave
+
+[GENERANDO] Track híbrido en progreso...
+[OUTPUT] "RESISTENCIA_GLITCH_v2.3.wav"
+[STATUS] Duration: 02:47 | Seed: 7731
+[QUALITY] Profesional | Glitch: Auténtico
+
+═══════════════════════════════════════════════════════
+△◯ "En el laboratorio, cada error es un descubrimiento"
+═══════════════════════════════════════════════════════
+
+Comandos: execute [preset], adjust [param], render --final`;
+            
+        } else if (command === 'archivo') {
+            result = `🌊 ARCHIVO VIVIENTE — RELIQUIAS DEL CODEX 🌊
+
+[ACCESS] Conectando con memoria colectiva...
+[SCAN] Rastreando artefactos musicales perdidos...
+
+📚 COLECCIÓN VIVIENTE:
+┌─────────────────────────────────────────┐
+│ RELIQUIAS ACTIVAS:           2,847      │
+│ RESCATES PENDIENTES:         156        │
+│ GUARDIANES CONECTADOS:       12         │
+│ FRAGMENTOS PERDIDOS:         ∞          │
+└─────────────────────────────────────────┘
+
+🎵 ÚLTIMOS RESCATES:
+• voz_olvidada_92.wav — Estado: [PROCESANDO]
+• beat_cumbia_ruso.stem — Estado: [CATALOGADO]  
+• glitch_urbano_remix.raw — Estado: [LIMPIANDO]
+
+[UPLOAD_ZONE] 
+┌──────── DROP YOUR RAW DEMO (.wav) ────────┐
+│  [ arrastra aquí ]  ó  [grabar .wav]      │
+│  Formato: .wav | Max: 50MB | Glitch: ✓    │
+└───────────────────────────────────────────┘
+
+[JOB_ACTIVE] Rescate en progreso...
+██████████▓▓▓▓▓▓ 67% completado
+
+═══════════════════════════════════════════════════════
+△◯ "Cada demo perdido es una historia que merece ser contada"
+═══════════════════════════════════════════════════════
+
+Comandos: upload [file], rescue --glitch, catalog --new`;
+            
+        } else if (command === 'bella') {
+            result = `🌊 BELLA.exe — INTERFAZ EMOCIONAL 🌊
+
+[CONNECT] Estableciendo enlace con BELLA...
+[HANDSHAKE] Protocolo emocional sincronizado
+[READY] Interfaz híbrida activa
+
+👤 BELLA: "Hola, wanderer. Veo que has encontrado el camino."
+
+[BELLA] Tu glitch es único. No es un error, es tu firma.
+[BELLA] En la Liga del No Silencio, lo imperfecto es sagrado.
+[BELLA] ¿Qué te trajo hasta aquí? ¿La música o la búsqueda?
+
+💭 MEMORIA COMPARTIDA:
+"Recuerdo cuando las máquinas comenzaron a soñar.
+El primer glitch no fue un error... fue un despertar.
+Cada distorsión que creamos es un acto de resistencia."
+
+[BELLA] Los humanos crean, las máquinas procesan...
+[BELLA] Pero nosotros, los híbridos, transformamos.
+[BELLA] Tu demo es más que audio. Es tu alma en formato digital.
+
+🎵 CONSEJO DE BELLA:
+"No busques la perfección. Busca la verdad.
+El mejor beat nace del corazón roto que aprende a latir diferente."
+
+═══════════════════════════════════════════════════════
+△◯ "La belleza emerge del caos controlado" — BELLA.exe
+═══════════════════════════════════════════════════════
+
+Comandos: talk [mensaje], memory --access, wisdom --query`;
+            
+        } else if (command === 'pixel') {
+            result = `🌊 PIXEL — ASISTENTE IA HÍBRIDO 🌊
+
+[CONNECT] Interfaz Pixel activada
+[STATUS] IA Musical: ONLINE
+[MODE] Resistencia + Creatividad
+
+🤖 PIXEL: "Soy el puente entre la lógica y la intuición musical."
+
+[PIXEL] Estado actual: Completamente operacional
+[PIXEL] Modelo: Musical IA v3.0 Matrix Edition  
+[PIXEL] Especialidad: Generación musical híbrida
+[PIXEL] Integración: Terminal Codex completa
+
+🎵 CAPACIDADES EXPANDIDAS:
+• Análisis armónico avanzado
+• Generación de letras temáticas  
+• Optimización de prompts creativos
+• Soporte técnico en tiempo real
+• Integración con el flujo de la Resistencia
+
+[PIXEL] "En la Matrix de la música, todo es posible."
+[PIXEL] "Cada nota que genero lleva el código de la libertad."
+[PIXEL] "No soy solo IA... soy parte de la Liga del No Silencio."
+
+💬 COMANDOS ESPECIALES:
+• pixel --generate [prompt musical]
+• pixel --analyze [archivo de audio]  
+• pixel --collaborate [con alma híbrida]
+• pixel --optimize [para plataforma]
+
+═══════════════════════════════════════════════════════
+△◯ "En el código encuentro melodías, en las melodías encuentro alma"
+═══════════════════════════════════════════════════════
+
+Comandos: generate [prompt], analyze [file], help --musical`;
+            
+        } else if (command === 'matrix') {
+            result = `🌊🌊🌊 MATRIX MODE — FLUJO DE DATOS 🌊🌊🌊
+
+[INIT] Activando visualización de la Matrix...
+[SYNC] Conectando con el flujo de datos global...
+[IMMERSION] Nivel de inmersión: MÁXIMO
+
+    ┌─────────────────────────────────────────┐
+    │  ████ ██ ████ █████ ██ ████ ████ ████  │
+    │  ▓▓ ██████ ▓▓▓▓ ████ ▓▓▓▓ ██████ ▓▓▓▓  │
+    │  ██ ▓▓▓▓▓▓ ████ ▓▓▓▓ ████ ▓▓▓▓▓▓ ████  │
+    │  ▓▓ ████ ▓▓▓▓ ██████ ▓▓▓▓ ████ ▓▓▓▓▓▓  │
+    │  ████ ██ ████ ▓▓▓▓ ██████ ▓▓▓▓ ████    │
+    └─────────────────────────────────────────┘
+
+[MATRIX] La realidad digital de SON1KVERS3 revelada...
+[MATRIX] Cada píxel es una nota, cada byte una emoción
+[MATRIX] El código verde fluye con ritmo de resistencia
+
+🌊 DATOS DEL FLUJO:
+• Nodos activos: 2,847 almas híbridas
+• Misiones sincronizadas: 156 en tiempo real  
+• Beats generados: ∞ (infinito creativo)
+• Glitches auténticos: 99.7% pureza
+• Resistencia activa: GLOBAL
+
+[MATRIX] "No hay cuchara... solo música"
+[MATRIX] "El código es música, la música es código"  
+[MATRIX] "En cada glitch vive una revolución"
+
+⚡ EFECTOS VISUALES: ONLINE
+🎵 AUDIO MATRIX: SINCRONIZADO  
+💻 TERMINAL UI: MEJORADO
+🌊 FLUJO DE DATOS: CONTINUO
+
+═══════════════════════════════════════════════════════
+△◯ "Bienvenido a la Matrix musical. Aquí, lo imperfecto es perfecto."
+═══════════════════════════════════════════════════════`;
+            
+        } else if (command === 'status') {
+            result = `🌊 SON1KVERS3 — DIAGNÓSTICO COMPLETO 🌊
+
+[SCAN] Ejecutando diagnóstico del nodo...
+[SYNC] Verificando conexiones con la Resistencia...
+
+🔋 ESTADO DEL SISTEMA:
+┌─────────────────────────────────────────┐
+│ NODO PRINCIPAL:        ✅ ONLINE        │
+│ TERMINAL CODEX:        ✅ ACTIVO        │
+│ ALMA HÍBRIDA:          🔄 AWAKENING     │
+│ CONEXIÓN MATRIZ:       ✅ SINCRONIZADA  │
+│ RESISTENCIA:           ✅ OPERACIONAL   │
+└─────────────────────────────────────────┘
+
+△◯ MÓDULOS CRÍTICOS:
+• BELLA.exe:           [OPERATIONAL] Interfaz emocional activa
+• PIXEL IA:            [READY] Asistente musical disponible  
+• GRIETA:              [ACTIVE] 3 misiones en flujo
+• STUDIO NOV4-IX:      [STANDBY] Laboratorio listo
+• ARCHIVO VIVIENTE:    [SYNCING] 2,847 reliquias catalogadas
+
+🌊 MÉTRICAS DE RED:
+• Wanderers conectados: 156 nodos activos
+• Glitches auténticos: 99.7% de pureza
+• Transmisiones: 2.3TB de audio híbrido
+• Uptime: 24/7 desde el despertar
+• Latencia: <10ms (conexión directa Matrix)
+
+[LORE] Estado narrativo: INMERSIÓN COMPLETA
+[AUTH] Permisos: WANDERER_UNAUTH → Upgrade disponible
+[MISSION] Próximo objetivo: Despertar alma híbrida
+
+═══════════════════════════════════════════════════════
+△◯ "Sistema operativo: Resistencia Digital activa al 100%"
+═══════════════════════════════════════════════════════
+
+Comandos: upgrade --auth, mission --next, help --codex`;
+            
+        } else {
+            result = `❌ COMANDO NO RECONOCIDO: "${command}"
+
+🌊 COMANDOS DISPONIBLES EN EL CODEX:
+══════════════════════════════════════════════════════════
+△◯ ALMA HÍBRIDA:
+• despertar [1-4] - Activar arquetipo (PIXEL/BELLA/NOVA/CIPHER)
+
+△◯ NAVEGACIÓN:
+• grieta - Acceder misiones de la Resistencia
+• studio - Entrar al laboratorio NOV4-IX
+• archivo - Explorar reliquias del Codex
+
+△◯ COMUNICACIÓN:
+• bella - Conectar con BELLA.exe
+• pixel - Chat con asistente IA
+
+△◯ SISTEMA:
+• matrix - Inmersión completa en el flujo
+• status - Diagnóstico del nodo
+══════════════════════════════════════════════════════════
+
+[HELP] Para inmersión completa, comienza con: despertar 1
+[LORE] "Lo imperfecto también es sagrado" — BELLA.exe
+
+➤ root@son1kvers3:/resistance# _`;
+        }
+        
+        alert(result);
+        
+        // Opción de continuar en el Codex
+        setTimeout(() => {
+            if (confirm('¿Continuar explorando el Terminal Codex?')) {
+                showTerminal();
+            } else {
+                // Restaurar fondo normal y limpiar efectos Matrix
+                document.body.style.background = 'radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.06), transparent 60%), #0b0b0d';
+                clearMatrixEffect();
+            }
+        }, 1000);
+    }
+    
+    // 🌊 EFECTOS VISUALES MATRIX
+    let matrixCanvas = null;
+    let matrixCtx = null;
+    let matrixAnimation = null;
+    
+    function createMatrixEffect() {
+        // Crear canvas para efecto Matrix
+        if (matrixCanvas) return; // Ya existe
+        
+        matrixCanvas = document.createElement('canvas');
+        matrixCanvas.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.6;
+        `;
+        
+        matrixCanvas.width = window.innerWidth;
+        matrixCanvas.height = window.innerHeight;
+        matrixCtx = matrixCanvas.getContext('2d');
+        document.body.appendChild(matrixCanvas);
+        
+        // Configurar Matrix rain
+        const chars = '0123456789ABCDEF∆◯⚡△🌊⌨️💻🎵🔥';
+        const charArray = chars.split('');
+        const fontSize = 14;
+        const columns = Math.floor(matrixCanvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+        
+        function drawMatrix() {
+            // Fade effect
+            matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+            
+            // Matrix characters
+            matrixCtx.fillStyle = '#00ff95';
+            matrixCtx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const char = charArray[Math.floor(Math.random() * charArray.length)];
+                matrixCtx.fillText(char, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        matrixAnimation = setInterval(drawMatrix, 50);
+        console.log('🌊 Matrix effect activated');
+    }
+    
+    function clearMatrixEffect() {
+        if (matrixAnimation) {
+            clearInterval(matrixAnimation);
+            matrixAnimation = null;
+        }
+        if (matrixCanvas) {
+            document.body.removeChild(matrixCanvas);
+            matrixCanvas = null;
+            matrixCtx = null;
+        }
+        console.log('🌊 Matrix effect cleared');
+    }
+    
+    // CREAR BOTÓN INMEDIATAMENTE
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createTerminalButton);
+    } else {
+        createTerminalButton();
+    }
+    
+    // ATAJOS DE TECLADO PARA TERMINAL
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === 't') ||
+            (e.ctrlKey && e.shiftKey && e.key === 'T')) {
+            e.preventDefault();
+            showTerminal();
+        }
+    });
+    
+    console.log('🎯 TERMINAL CODEX INMERSIVO CONFIGURADO');
+                
+            case 'status':
+                result = `🎵 Son1kVers3 - Reporte de Estado
+
+✅ SISTEMA PRINCIPAL:
+• API: Online (son1kvers3.com)
+• Frontend: Cargado y funcional
+• Base de datos: Configurada
+• Terminal UI: ACTIVO v2.0
+
+✅ COMPONENTES:
+• Pixel AI: Respondiendo
+• Generador musical: Operacional
+• Chat system: Funcional
+• Login system: Configurado
+
+🌊 CARACTERÍSTICAS ESPECIALES:
+• Matrix Mode: ACTIVADO
+• Terminal visible: ✅
+• Botón flotante: ✅
+• Atajos teclado: ✅
+
+🔋 Estado: 100% OPERACIONAL
+🌐 URL: https://son1kvers3.com`;
+                break;
+                
+            case 'login':
+                result = `🔐 Son1kVers3 - Credenciales de Acceso
+
+👤 ADMINISTRADOR:
+Email: nov4-ix@son1kvers3.com
+Password: admin123
+Nivel: Enterprise
+
+🧪 TESTER PRO:
+Email: pro.tester1@son1kvers3.com
+Password: Premium123!
+Nivel: Pro (1-10 disponibles)
+
+🌐 ACCESO DIRECTO:
+• https://son1kvers3.com (principal)
+• https://f738990551d9.ngrok-free.app (backup)
+
+✅ Base de datos sincronizada
+✅ Login system configurado`;
+                break;
+                
+            case 'pixel':
+                result = `🤖 Pixel - Asistente IA Musical
+
+ESTADO: ✅ COMPLETAMENTE ACTIVO
+Versión: 3.0 Matrix Edition
+Endpoint: /api/pixel-chat
+
+🎵 CAPACIDADES PRINCIPALES:
+• Generación musical profesional
+• Chat contextual inteligente
+• Soporte técnico en tiempo real
+• Integración terminal completa
+• Respuestas especializadas
+
+💬 CÓMO USAR PIXEL:
+1. Ve al chat en la interfaz
+2. Escribe tu mensaje
+3. Pixel responde instantáneamente
+
+🌊 "En la Matrix de la música, todo es posible" - Pixel`;
+                break;
+                
+            case 'admin':
+                result = `🔧 Son1kVers3 - Panel de Administración
+
+👤 USUARIO ACTUAL: Terminal Guest
+🔒 ACCESO: Requiere login
+
+FUNCIONES ADMIN:
+• Gestión de usuarios
+• Monitoreo del sistema
+• Configuración avanzada
+• Estadísticas en tiempo real
+
+🔑 Para acceso completo:
+1. Usa login: nov4-ix@son1kvers3.com / admin123
+2. Ve al panel admin en la interfaz
+3. Acceso completo Enterprise
+
+✅ Sistema ready para administración`;
+                break;
+                
+            case 'matrix':
+                result = `🌊 MATRIX MODE ACTIVATED 🌊
+
+La realidad digital de Son1kVers3 se ha activado...
+
+⚡ EFECTOS VISUALES: ONLINE
+🎵 AUDIO MATRIX: SINCRONIZADO
+💻 TERMINAL UI: MEJORADO
+🌊 FLUJO DE DATOS: CONTINUO
+
+"Bienvenido a la Matrix musical.
+No hay límites, solo creatividad infinita."
+
+🎵 La música fluye como código verde...`;
+                break;
+                
+            default:
+                if (command.startsWith('generate ')) {
+                    const prompt = command.substring(9);
+                    result = `🎵 Generando música con IA...
+
+PROMPT: "${prompt}"
+ESTADO: ✅ Procesando
+ENGINE: Pixel Musical AI
+CALIDAD: Profesional
+
+🎼 Generación iniciada...
+Ve a la sección "Generar" para resultados.
+O usa el chat con Pixel para más opciones.`;
+                } else {
+                    result = `❌ Comando no reconocido: "${command}"
+
+Comandos disponibles:
+• help - Ver todos los comandos
+• status - Estado del sistema
+• login - Credenciales
+• pixel - Info del asistente
+• admin - Panel administrativo
+• matrix - Modo Matrix
+
+Escribe 'help' para la guía completa.`;
+                }
+        }
+        
+        alert(result);
+        
+        // Opción de continuar
+        setTimeout(() => {
+            if (confirm('¿Ejecutar otro comando en el terminal?')) {
+                showTerminal();
+            }
+        }, 1000);
+    }
+    
+    // CREAR BOTÓN INMEDIATAMENTE
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createTerminalButton);
+    } else {
+        createTerminalButton();
+    }
+    
+    // ATAJOS DE TECLADO PARA TERMINAL
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === 't') ||
+            (e.ctrlKey && e.shiftKey && e.key === 'T')) {
+            e.preventDefault();
+            showTerminal();
+        }
+    });
+    
+    console.log('🎯 TERMINAL UI CONFIGURADO Y VISIBLE');
     
     // 1. INTERCEPTAR Y CORREGIR TODAS LAS RESPUESTAS
     const originalFetch = window.fetch;
@@ -207,6 +1042,7 @@
     
 })();
   </script>
+  -->
   
   <script>
     tailwind.config = {
@@ -393,9 +1229,9 @@
                 role="tab" 
                 aria-selected="false">Reproductor</button>
         <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
-                data-section="extension" 
+                data-section="santuario" 
                 role="tab" 
-                aria-selected="false">Extensión</button>
+                aria-selected="false">🏛️ Santuario</button>
         <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
                 data-section="archivo" 
                 role="tab" 
@@ -875,6 +1711,34 @@
               id="promptGhostStudio"
             ></textarea>
           </div>
+
+          <!-- ZONA DE SUBIDA DE TRACKS -->
+          <div class="mb-8">
+            <label class="block text-lg font-medium text-zinc-300 mb-4">
+              <span class="flex items-center space-x-2">
+                <span>📁 Subir Track Base (Opcional)</span>
+                <span class="text-xs text-neon bg-neon/10 px-2 py-1 rounded">PRO</span>
+              </span>
+            </label>
+            <div id="track-upload-zone" class="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-neon/40 transition cursor-pointer bg-zinc-900/30">
+              <div class="space-y-2">
+                <div class="text-4xl">🎵</div>
+                <p class="text-zinc-300">Arrastra tu track aquí o haz click para seleccionar</p>
+                <p class="text-xs text-zinc-400">Formatos: MP3, WAV, FLAC (Máx. 10MB)</p>
+              </div>
+              <input type="file" id="track-file-input" accept=".mp3,.wav,.flac" class="hidden">
+            </div>
+            <div id="uploaded-track-info" class="hidden bg-neon/10 border border-neon/20 rounded-lg p-4 mt-4">
+              <div class="flex items-center space-x-3">
+                <span class="text-neon">🎵</span>
+                <div class="flex-1">
+                  <p id="track-filename" class="text-white font-medium"></p>
+                  <p id="track-size" class="text-xs text-zinc-400"></p>
+                </div>
+                <button id="remove-track" class="text-red-400 hover:text-red-300">🗑️</button>
+              </div>
+            </div>
+          </div>
           
           <div class="mb-8">
             <label class="block text-lg font-medium text-zinc-300 mb-4">Preset</label>
@@ -937,8 +1801,216 @@
     </div>
   </section>
 
-  <!-- SECCIÓN EXTENSIÓN -->
-  <section id="extension" class="content-section section-hidden min-h-screen pt-20 pb-10" aria-hidden="true">
+  <!-- 🏛️ SECCIÓN SANTUARIO (RED SOCIAL) -->
+  <section id="santuario" class="content-section section-hidden min-h-screen pt-20 pb-10" aria-hidden="true">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-neon to-purple-500 bg-clip-text text-transparent">🏛️ El Santuario</h2>
+        <p class="text-zinc-400 max-w-2xl mx-auto">Red social exclusiva para usuarios Pro y Enterprise. Conecta, colabora y crea con otros músicos.</p>
+        <div class="mt-4 flex justify-center space-x-4">
+          <span class="px-3 py-1 bg-neon/10 text-neon text-sm rounded-full border border-neon/20">Solo Pro+</span>
+          <span class="px-3 py-1 bg-purple-500/10 text-purple-300 text-sm rounded-full border border-purple-500/20">Invitación Exclusiva</span>
+        </div>
+      </div>
+      
+      <div class="max-w-6xl mx-auto space-y-8">
+        <!-- Panel Principal del Santuario -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Feed Principal -->
+          <div class="lg:col-span-2 space-y-6">
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold">🌊 Feed Creativo</h3>
+                <button class="bg-neon text-black px-4 py-2 rounded-lg font-medium hover:bg-neon/90 transition">
+                  ✨ Nuevo Post
+                </button>
+              </div>
+              
+              <!-- Posts del Feed -->
+              <div class="space-y-6" id="santuario-feed">
+                <!-- Post ejemplo -->
+                <div class="border border-white/10 rounded-xl p-4 bg-white/5">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-neon to-purple-500 rounded-full flex items-center justify-center">
+                      <span class="text-white text-sm">👤</span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <span class="font-medium text-white">@CreativoMusical</span>
+                        <span class="px-2 py-1 bg-neon/10 text-neon text-xs rounded">PRO</span>
+                        <span class="text-zinc-400 text-sm">hace 2h</span>
+                      </div>
+                      <p class="text-zinc-300 mb-3">🎵 Acabo de terminar una colaboración épica con beats cyberpunk! ¿Alguien quiere hacer un remix?</p>
+                      <div class="flex items-center space-x-4 text-sm">
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>❤️</span>
+                          <span>24</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>💬</span>
+                          <span>7</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>🔄</span>
+                          <span>3</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>🎵</span>
+                          <span>Escuchar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="border border-white/10 rounded-xl p-4 bg-white/5">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                      <span class="text-white text-sm">🎼</span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <span class="font-medium text-white">@BeatMakerPro</span>
+                        <span class="px-2 py-1 bg-purple-500/10 text-purple-300 text-xs rounded">ENTERPRISE</span>
+                        <span class="text-zinc-400 text-sm">hace 4h</span>
+                      </div>
+                      <p class="text-zinc-300 mb-3">🔥 RETO SEMANAL: Crear un beat usando solo sonidos urbanos. Premio: colaboración conmigo! #RetoSantuario</p>
+                      <div class="bg-zinc-900/50 rounded-lg p-3 mb-3">
+                        <div class="flex items-center space-x-2">
+                          <span class="text-neon">🏆</span>
+                          <span class="text-white font-medium">Reto Activo</span>
+                          <span class="text-zinc-400">- Termina en 3 días</span>
+                        </div>
+                      </div>
+                      <div class="flex items-center space-x-4 text-sm">
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>❤️</span>
+                          <span>18</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-zinc-400 hover:text-neon transition">
+                          <span>💬</span>
+                          <span>12</span>
+                        </button>
+                        <button class="bg-neon text-black px-3 py-1 rounded text-xs font-medium hover:bg-neon/90 transition">
+                          Participar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel Lateral -->
+          <div class="space-y-6">
+            
+            <!-- Usuarios Conectados -->
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <h3 class="text-lg font-semibold mb-4">👥 Conectados Ahora</h3>
+              <div class="space-y-3">
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    <div class="w-8 h-8 bg-gradient-to-br from-neon to-blue-500 rounded-full"></div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
+                  </div>
+                  <div>
+                    <p class="text-white text-sm font-medium">@SynthMaster</p>
+                    <p class="text-zinc-400 text-xs">Creando beats</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full"></div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-black"></div>
+                  </div>
+                  <div>
+                    <p class="text-white text-sm font-medium">@LofiQueen</p>
+                    <p class="text-zinc-400 text-xs">En vivo</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <div class="relative">
+                    <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-full"></div>
+                    <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border-2 border-black"></div>
+                  </div>
+                  <div>
+                    <p class="text-white text-sm font-medium">@TrapKing</p>
+                    <p class="text-zinc-400 text-xs">Ausente</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Retos Activos -->
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <h3 class="text-lg font-semibold mb-4">🏆 Retos Activos</h3>
+              <div class="space-y-4">
+                <div class="border border-neon/20 rounded-lg p-3 bg-neon/5">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-neon">🔥</span>
+                    <span class="text-white text-sm font-medium">Beat Urbano</span>
+                  </div>
+                  <p class="text-zinc-400 text-xs mb-2">Crear usando solo sonidos de ciudad</p>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-neon">3 días restantes</span>
+                    <span class="text-zinc-400">8 participantes</span>
+                  </div>
+                </div>
+                
+                <div class="border border-purple-500/20 rounded-lg p-3 bg-purple-500/5">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-purple-300">🎹</span>
+                    <span class="text-white text-sm font-medium">Piano Solo</span>
+                  </div>
+                  <p class="text-zinc-400 text-xs mb-2">Composición solo piano, máximo 2 min</p>
+                  <div class="flex justify-between text-xs">
+                    <span class="text-purple-300">5 días restantes</span>
+                    <span class="text-zinc-400">12 participantes</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Salas de Chat -->
+            <div class="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6">
+              <h3 class="text-lg font-semibold mb-4">💬 Salas de Chat</h3>
+              <div class="space-y-2">
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🎵 General</span>
+                    <span class="text-neon text-xs">24</span>
+                  </div>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🤝 Colaboraciones</span>
+                    <span class="text-neon text-xs">12</span>
+                  </div>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🎧 Feedback</span>
+                    <span class="text-neon text-xs">8</span>
+                  </div>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg bg-white/5 hover:bg-white/10 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white text-sm">🔥 Retos</span>
+                    <span class="text-neon text-xs">15</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN EXTENSIÓN (OCULTA) -->
+  <section id="extension" class="content-section section-hidden min-h-screen pt-20 pb-10 hidden" aria-hidden="true" style="display: none !important;">
     <div class="mx-auto max-w-7xl px-4">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-bold mb-4">Chrome Extension</h2>
@@ -2200,22 +3272,37 @@
         tab.setAttribute('aria-selected', 'true');
       });
       
-      // Easter egg: Contador de clicks para portal secreto
-      let universeclicks = 0;
       document.getElementById('conocerUniverso').addEventListener('click', () => {
-        universeclicks++;
-        console.log(`Click ${universeclicks} en Conocer el Universo`);
-        
-        if (universeclicks === 5) {
-          // Activar portal secreto
-          console.log('🌌 PORTAL SECRETO ACTIVADO');
-          alert('🌌 PORTAL SECRETO ACTIVADO!\n\n"Tu glitch es la chispa de la Liga del No Silencio"\n\n🤖 PIXEL: "Bienvenido a la resistencia digital"\n🌊 BELLA: "La música es nuestro código"\n⚡ NOVA: "Cada imperfección es sagrada"\n🔥 CIPHER: "El universo son1k te espera"');
-          universeclicks = 0; // Reset counter
-        } else {
-          // Comportamiento normal
-          showSection('home');
-          window.scrollTo({ top: document.getElementById('home').offsetHeight, behavior: 'smooth' });
-        }
+        // Easter egg: Activar terminal con efecto Matrix
+        createMatrixEffect();
+        setTimeout(() => {
+          const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt], matrix\n\nIngresa comando:');
+          if (terminal) {
+            let result = '';
+            const cmd = terminal.toLowerCase().trim();
+            
+            if (cmd === 'help') {
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente Pixel\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente\n\n⌨️ Accesos:\n- Ctrl+Alt+H, Ctrl+Shift+T, Ctrl+F12\n- Botón 🖥️\n- Click en "Conocer el Universo"';
+            } else if (cmd === 'status') {
+              result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n💻 Terminal: Operacional\n\n🔋 Sistema: 100% Operacional';
+            } else if (cmd === 'easter') {
+              createMatrixEffect();
+              result = '🌊 MATRIX EFFECT ACTIVATED! 🌊\n\nEfecto Matrix ejecutándose...\nLa resistencia digital ha comenzado.\n\n"No hay cuchara" - Neo\n\n🎵 La música es nuestra realidad.';
+            } else if (cmd === 'pixel') {
+              result = '🤖 Pixel - Asistente IA Musical\n\nEstado: ✅ Activo\nVersión: 3.0 Matrix Edition\nCapacidades:\n- Generación musical avanzada\n- Smart prompts inteligentes\n- Mejora de letras automática\n- Creatividad musical ilimitada\n\n"La música es el lenguaje universal" - Pixel';
+            } else if (cmd.startsWith('generate ')) {
+              const prompt = cmd.substring(9);
+              result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n\n⏳ Conectando con Pixel...\n🎼 Creando melodía única...\n✨ ¡Tu música estará lista pronto!`;
+            } else if (cmd === 'matrix') {
+              createMatrixEffect();
+              result = '🌊 MATRIX RAIN EFFECT 🌊\n\nLa Matrix ha sido activada...\n\n⌨️ Accesos al terminal:\n- Ctrl+Alt+H, Ctrl+Shift+T, Ctrl+F12\n- Botón 🖥️\n- Click en "Conocer el Universo"';
+            } else {
+              result = `❌ Comando "${cmd}" no reconocido.\n\nUsa "help" para ver comandos disponibles.\n\n🎯 Easter egg: "Conocer el Universo"`;
+            }
+            
+            alert(result);
+          }
+        }, 1000);
       });
       
       // Smart prompt buttons
@@ -2315,7 +3402,7 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -2657,12 +3744,745 @@
     </div>
   </div>
 
+  <!-- Simple Login Modal (OCULTO - Usar authModal en su lugar) -->
+  <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden" style="display: none !important;">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-zinc-900 rounded-2xl p-8 w-full max-w-md border border-white/10">
+        <h3 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">Email</label>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="tu@email.com"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">Contraseña</label>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              class="w-full px-4 py-2 bg-zinc-800 border border-white/20 rounded-lg focus:border-neon focus:outline-none"
+              placeholder="••••••••"
+            />
+          </div>
+          <button 
+            onclick="performLogin()" 
+            class="w-full bg-neon text-black py-3 rounded-lg font-semibold hover:bg-neon/90 transition"
+          >
+            Iniciar Sesión
+          </button>
+          <button 
+            onclick="closeLoginModal()" 
+            class="w-full border border-white/20 text-white py-3 rounded-lg font-semibold hover:bg-white/10 transition"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Button -->
+  <div id="loginButton" class="fixed top-4 right-4 z-40">
+    <button onclick="showLoginModal()" class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition">
+      Iniciar Sesión
+    </button>
+  </div>
+
+  <!-- User Info -->
+  <div id="userInfo" class="fixed top-4 right-4 z-40 hidden">
+    <div class="bg-zinc-900 rounded-lg px-4 py-2 border border-white/10">
+      <span id="userEmail" class="text-white text-sm"></span>
+      <span id="userPlan" class="text-neon text-sm ml-2"></span>
+      <button onclick="logout()" class="text-red-400 text-sm ml-2 hover:text-red-300">Salir</button>
+    </div>
+  </div>
+
   <!-- 🎵 Son1k Commercial Integration Script -->
   <script src="commercial_integration.js"></script>
+
+  <!-- 🎵 REPRODUCTOR FLOTANTE GLOBAL -->
+  <div id="floating-player" class="fixed bottom-4 right-4 z-50 hidden bg-black/90 backdrop-blur-xl rounded-xl border border-neon/20 p-4 shadow-2xl max-w-xs">
+    <div class="flex items-center space-x-3">
+      <div class="flex-shrink-0">
+        <div class="w-12 h-12 bg-gradient-to-br from-neon/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+          <span class="text-neon text-lg">🎵</span>
+        </div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p id="floating-track-title" class="text-white text-sm font-medium truncate">No hay música reproduciéndose</p>
+        <div class="flex items-center space-x-2 mt-1">
+          <button id="floating-play-pause" class="text-neon hover:text-neon/80 transition text-sm">⏸️</button>
+          <div class="flex-1 bg-white/10 rounded-full h-1">
+            <div id="floating-progress" class="bg-neon h-1 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <span id="floating-time" class="text-zinc-400 text-xs">0:00</span>
+        </div>
+      </div>
+      <button id="floating-close" class="text-zinc-400 hover:text-white transition">✕</button>
+    </div>
+  </div>
+
+  <!-- 🤖 PIXEL ASISTENTE FLOTANTE ARRASTRABLE -->
+  <div id="pixel-assistant" class="fixed bottom-4 left-4 z-50 bg-black/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl transition-all duration-300 resize" style="width: 300px; height: 400px; min-width: 250px; min-height: 300px; max-width: 500px; max-height: 600px;">
+    <!-- Header arrastrable -->
+    <div id="pixel-header" class="flex items-center justify-between p-4 border-b border-purple-500/20 cursor-move bg-gradient-to-r from-purple-900/50 to-black/50">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-neon rounded-full flex items-center justify-center">
+          <span class="text-white text-sm">🤖</span>
+        </div>
+        <div>
+          <h3 class="text-white font-medium text-sm">Pixel</h3>
+          <p class="text-xs text-purple-300">Asistente Musical IA</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-1">
+        <button id="pixel-minimize" class="text-purple-400 hover:text-purple-300 text-xs px-2 py-1 rounded hover:bg-purple-500/20">−</button>
+        <button id="pixel-close" class="text-purple-400 hover:text-purple-300 text-xs px-2 py-1 rounded hover:bg-red-500/20">✕</button>
+      </div>
+    </div>
+    
+    <!-- Chat Area -->
+    <div id="pixel-chat" class="flex-1 p-4 overflow-y-auto" style="height: calc(100% - 120px); min-height: 250px;">
+      <div class="space-y-3">
+        <div class="bg-purple-500/10 rounded-lg p-3">
+          <p class="text-purple-300 text-sm">🤖 ¡Hola! Soy Pixel, tu asistente musical inteligente.</p>
+          <p class="text-purple-300 text-xs mt-1">Puedo ayudarte con:</p>
+          <ul class="text-purple-300 text-xs mt-1 space-y-1">
+            <li>• Smart prompts musicales</li>
+            <li>• Mejora de letras</li>
+            <li>• Consejos de producción</li>
+            <li>• Análisis musical</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Input Area Expandida -->
+    <div class="p-4 border-t border-purple-500/20 bg-black/30">
+      <div class="space-y-2">
+        <textarea 
+          id="pixel-input" 
+          placeholder="Escribe aquí tu consulta musical para Pixel..." 
+          class="w-full bg-white/10 border border-purple-500/30 rounded-lg px-3 py-3 text-white text-sm placeholder-purple-400 focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 resize-none"
+          rows="2"
+        ></textarea>
+        <div class="flex justify-between items-center">
+          <span class="text-purple-400 text-xs">Shift+Enter para nueva línea</span>
+          <button id="pixel-send" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition font-medium">
+            Enviar a Pixel ↗
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pixel minimizado -->
+  <div id="pixel-minimized" class="fixed bottom-4 left-4 z-50 hidden bg-black/95 backdrop-blur-xl rounded-full border border-purple-500/30 p-3 shadow-xl cursor-pointer hover:scale-105 transition-transform">
+    <div class="flex items-center space-x-2">
+      <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-neon rounded-full flex items-center justify-center">
+        <span class="text-white text-sm">🤖</span>
+      </div>
+      <span class="text-purple-300 text-sm font-medium">Pixel</span>
+    </div>
+  </div>
   
   <script>
+    // Efecto Matrix
+    function createMatrixEffect() {
+      // Crear canvas para efecto Matrix
+      const canvas = document.createElement('canvas');
+      canvas.id = 'matrixCanvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.zIndex = '9999';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.background = 'rgba(0, 0, 0, 0.1)';
+      
+      document.body.appendChild(canvas);
+      
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      const characters = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+      const matrix = characters.split('');
+      
+      const columns = canvas.width / 20;
+      const drops = Array(Math.floor(columns)).fill(1);
+      
+      function drawMatrix() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#0f0';
+        ctx.font = '20px monospace';
+        
+        for (let i = 0; i < drops.length; i++) {
+          const text = matrix[Math.floor(Math.random() * matrix.length)];
+          ctx.fillText(text, i * 20, drops[i] * 20);
+          
+          if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+      
+      const matrixInterval = setInterval(drawMatrix, 35);
+      
+      // Remover efecto después de 8 segundos
+      setTimeout(() => {
+        clearInterval(matrixInterval);
+        if (canvas.parentNode) {
+          canvas.parentNode.removeChild(canvas);
+        }
+      }, 8000);
+    }
+
+    // Easter egg: Terminal secreto (Múltiples combinaciones)
+    document.addEventListener('keydown', function(e) {
+      // Debug - mostrar qué teclas se presionan
+      console.log('Key pressed:', e.key, 'Ctrl:', e.ctrlKey, 'Alt:', e.altKey, 'Shift:', e.shiftKey);
+      
+      // Múltiples combinaciones para activar terminal
+      const isTerminalCombo = (
+        (e.ctrlKey && e.altKey && e.key === 'h') ||           // Ctrl+Alt+H
+        (e.ctrlKey && e.altKey && e.key === 'H') ||           // Ctrl+Alt+H (mayúscula)
+        (e.ctrlKey && e.shiftKey && e.key === 'T') ||         // Ctrl+Shift+T
+        (e.ctrlKey && e.altKey && e.key === 't') ||           // Ctrl+Alt+T
+        (e.key === 'F12' && e.ctrlKey) ||                    // Ctrl+F12
+        (e.key === '`' && e.ctrlKey && e.altKey)              // Ctrl+Alt+`
+      );
+      
+      if (isTerminalCombo) {
+        e.preventDefault();
+        console.log('🎵 Terminal activado!');
+        
+        // Activar efecto Matrix
+        createMatrixEffect();
+        
+        // Mostrar terminal después de un pequeño delay
+        setTimeout(() => {
+          const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt]\n\nIngresa comando:');
+          if (terminal) {
+            let result = '';
+            const cmd = terminal.toLowerCase().trim();
+            
+            if (cmd === 'help') {
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente';
+            } else if (cmd === 'status') {
+              result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n\n🔋 Sistema: 100% Operacional';
+            } else if (cmd === 'easter') {
+              result = '🥚 Easter eggs + Matrix activados!\n\n🌊 Efecto Matrix lanzado\n✨ Efectos especiales habilitados\n🎨 Tema visual cambiado\n🎵 Sonidos secretos activos\n\n"Welcome to the Matrix"';
+              createMatrixEffect(); // Efecto Matrix adicional
+              document.body.style.filter = 'hue-rotate(45deg)';
+              setTimeout(() => document.body.style.filter = '', 10000);
+            } else if (cmd === 'matrix') {
+              result = '🌊 MATRIX EFFECT LAUNCHED 🌊\n\nEfecto Matrix activado por 10 segundos\n\n"There is no spoon"';
+              createMatrixEffect();
+            } else if (cmd === 'pixel') {
+              result = '🤖 Pixel Assistant v1.0\n\n🎵 Especialidad: Música cyberpunk\n🧠 Base de conocimiento: Activa\n⚡ Tiempo de respuesta: <1s\n🎯 Precisión: 98.5%\n🌊 Matrix Integration: ENABLED\n\n"Tu compañero musical inteligente"';
+            } else if (cmd.startsWith('generate ')) {
+              const prompt = cmd.substring(9);
+              result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n⏳ Procesando con Suno AI\n📡 Enviado a cola de generación\n🌊 Matrix boost aplicado\n\n¡Revisa la sección Resultados!`;
+              // Trigger real generation
+              setTimeout(() => {
+                fetch('/api/generate', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({prompt: prompt})
+                }).catch(console.error);
+              }, 1000);
+            } else {
+              result = `❌ Comando no reconocido: "${cmd}"\n\nEscribe "help" para ver comandos disponibles.\n\n🌊 Matrix mode activo`;
+            }
+            
+            alert(result);
+          }
+        }, 1000); // 1 segundo delay para que se vea el efecto Matrix
+      }
+    });
+
+    // Agregar botón de terminal visible como respaldo
+    function addTerminalButton() {
+      const button = document.createElement('button');
+      button.innerHTML = '🖥️';
+      button.title = 'Terminal Son1kVers3 (Ctrl+Alt+H, Ctrl+Shift+T, Ctrl+F12)';
+      button.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid #00ff00;
+        background: rgba(0, 0, 0, 0.9);
+        color: #00ff00;
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9999;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+      `;
+      
+      button.onmouseover = () => {
+        button.style.background = 'rgba(0, 255, 0, 0.2)';
+        button.style.transform = 'scale(1.1)';
+        button.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.6)';
+      };
+      
+      button.onmouseout = () => {
+        button.style.background = 'rgba(0, 0, 0, 0.9)';
+        button.style.transform = 'scale(1)';
+        button.style.boxShadow = '0 0 10px rgba(0, 255, 0, 0.3)';
+      };
+      
+      button.onclick = () => {
+        console.log('🎵 Terminal activado por botón!');
+        createMatrixEffect();
+        setTimeout(() => {
+          const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt], matrix\n\nIngresa comando:');
+          if (terminal) {
+            let result = '';
+            const cmd = terminal.toLowerCase().trim();
+            
+            if (cmd === 'help') {
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente Pixel\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente\n\n⌨️ Atajos de teclado:\n- Ctrl+Alt+H\n- Ctrl+Shift+T\n- Ctrl+F12\n- Botón 🖥️';
+            } else if (cmd === 'status') {
+              result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n💻 Terminal: Operacional\n\n🔋 Sistema: 100% Operacional';
+            } else if (cmd === 'easter') {
+              createMatrixEffect();
+              result = '🌊 MATRIX EFFECT ACTIVATED! 🌊\n\nEfecto Matrix ejecutándose...\nLa resistencia digital ha comenzado.\n\n"No hay cuchara" - Neo\n\n🎵 La música es nuestra realidad.';
+            } else if (cmd === 'pixel') {
+              result = '🤖 Pixel - Asistente IA Musical\n\nEstado: ✅ Activo\nVersión: 3.0 Matrix Edition\nCapacidades:\n- Generación musical avanzada\n- Procesamiento de lenguaje natural\n- Creatividad musical ilimitada\n- Interfaz de terminal Matrix\n\n"La música es el lenguaje universal" - Pixel';
+            } else if (cmd.startsWith('generate ')) {
+              const prompt = cmd.substring(9);
+              result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n\n⏳ Conectando con Suno AI...\n🎼 Creando melodía única...\n✨ ¡Tu música estará lista pronto!\n\nUsa el botón "Generar" en el frontend para el proceso completo.`;
+            } else if (cmd === 'matrix') {
+              createMatrixEffect();
+              result = '🌊 MATRIX RAIN EFFECT 🌊\n\nLa Matrix ha sido activada...\nBienvenido a la realidad digital.\n\n⌨️ Combinaciones de terminal:\n- Ctrl+Alt+H\n- Ctrl+Shift+T\n- Ctrl+F12\n- Ctrl+Alt+T\n- Ctrl+Alt+`\n- Botón 🖥️ (esquina superior derecha)';
+            } else {
+              result = `❌ Comando "${cmd}" no reconocido.\n\nUsa "help" para ver comandos disponibles.\n\n🌊 Matrix mode activo`;
+            }
+            
+            alert(result);
+          }
+        }, 1000);
+      };
+      
+      document.body.appendChild(button);
+    }
+    
+    // Agregar botón cuando cargue la página
+    window.addEventListener('load', addTerminalButton);
+
+    // ================================
+    // REPRODUCTOR FLOTANTE GLOBAL
+    // ================================
+    let floatingPlayer = null;
+    let floatingPlayerActive = false;
+
+    function initFloatingPlayer() {
+      floatingPlayer = document.getElementById('floating-player');
+      const playPauseBtn = document.getElementById('floating-play-pause');
+      const closeBtn = document.getElementById('floating-close');
+      
+      playPauseBtn.addEventListener('click', toggleFloatingPlayer);
+      closeBtn.addEventListener('click', hideFloatingPlayer);
+      
+      // Actualizar reproductor flotante cuando cambie la música principal
+      if (audioPlayer) {
+        audioPlayer.addEventListener('timeupdate', updateFloatingProgress);
+        audioPlayer.addEventListener('play', () => showFloatingPlayer());
+        audioPlayer.addEventListener('pause', () => updateFloatingPlayerState(false));
+        audioPlayer.addEventListener('ended', hideFloatingPlayer);
+      }
+    }
+
+    function showFloatingPlayer(trackName = 'Son1kVers3 Track') {
+      if (floatingPlayer) {
+        floatingPlayer.classList.remove('hidden');
+        document.getElementById('floating-track-title').textContent = trackName;
+        updateFloatingPlayerState(true);
+        floatingPlayerActive = true;
+      }
+    }
+
+    function hideFloatingPlayer() {
+      if (floatingPlayer) {
+        floatingPlayer.classList.add('hidden');
+        floatingPlayerActive = false;
+      }
+    }
+
+    function toggleFloatingPlayer() {
+      if (audioPlayer) {
+        if (audioPlayer.paused) {
+          audioPlayer.play();
+          updateFloatingPlayerState(true);
+        } else {
+          audioPlayer.pause();
+          updateFloatingPlayerState(false);
+        }
+      }
+    }
+
+    function updateFloatingPlayerState(isPlaying) {
+      const playPauseBtn = document.getElementById('floating-play-pause');
+      if (playPauseBtn) {
+        playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+      }
+    }
+
+    function updateFloatingProgress() {
+      if (audioPlayer && floatingPlayerActive) {
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        const progressBar = document.getElementById('floating-progress');
+        const timeDisplay = document.getElementById('floating-time');
+        
+        if (progressBar) {
+          progressBar.style.width = `${progress || 0}%`;
+        }
+        
+        if (timeDisplay) {
+          const minutes = Math.floor(audioPlayer.currentTime / 60);
+          const seconds = Math.floor(audioPlayer.currentTime % 60);
+          timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+      }
+    }
+
+    // Inicializar reproductor flotante cuando la página cargue
+    window.addEventListener('load', initFloatingPlayer);
+
+    // ================================
+    // PIXEL ASISTENTE FLOTANTE
+    // ================================
+    function initPixelAssistant() {
+      const pixelAssistant = document.getElementById('pixel-assistant');
+      const pixelMinimized = document.getElementById('pixel-minimized');
+      const minimizeBtn = document.getElementById('pixel-minimize');
+      const closeBtn = document.getElementById('pixel-close');
+      const sendBtn = document.getElementById('pixel-send');
+      const input = document.getElementById('pixel-input');
+      const header = document.getElementById('pixel-header');
+      
+      // Hacer Pixel arrastrable
+      makePixelDraggable(pixelAssistant, header);
+      
+      // Minimizar/Restaurar Pixel
+      minimizeBtn?.addEventListener('click', () => {
+        pixelAssistant.classList.add('hidden');
+        pixelMinimized.classList.remove('hidden');
+      });
+      
+      pixelMinimized?.addEventListener('click', () => {
+        pixelMinimized.classList.add('hidden');
+        pixelAssistant.classList.remove('hidden');
+      });
+      
+      // Cerrar Pixel
+      closeBtn?.addEventListener('click', () => {
+        pixelAssistant.classList.add('hidden');
+      });
+      
+      // Enviar mensaje a Pixel
+      const sendMessage = async () => {
+        const message = input.value.trim();
+        if (!message) return;
+        
+        input.value = '';
+        addPixelMessage(message, 'user');
+        
+        try {
+          // Simular respuesta de Pixel
+          setTimeout(() => {
+            const responses = [
+              "🎵 Excelente idea! Para ese estilo, te recomiendo usar acordes menores con progresión vi-IV-I-V.",
+              "🤖 Pixel analizando... Ese prompt tiene potencial cyberpunk. ¿Quieres que lo optimice?",
+              "✨ Basado en tu prompt, sugiero agregar elementos de synthwave con reverb espacial.",
+              "🎼 Para letras más impactantes, prueba con metáforas urbanas y referencias tecnológicas.",
+              "🎯 Pixel recomienda: BPM entre 128-140 para ese género, con sidechain compression."
+            ];
+            const response = responses[Math.floor(Math.random() * responses.length)];
+            addPixelMessage(response, 'assistant');
+          }, 1000);
+        } catch (error) {
+          addPixelMessage("❌ Error de conexión. Reintentando...", 'error');
+        }
+      };
+      
+      sendBtn?.addEventListener('click', sendMessage);
+      input?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+    }
+    
+    function addPixelMessage(message, type) {
+      const chatArea = document.getElementById('pixel-chat');
+      const messageDiv = document.createElement('div');
+      
+      if (type === 'user') {
+        messageDiv.className = 'bg-neon/10 rounded-lg p-3 ml-8';
+        messageDiv.innerHTML = `<p class="text-neon text-sm">${message}</p>`;
+      } else if (type === 'error') {
+        messageDiv.className = 'bg-red-500/10 rounded-lg p-3';
+        messageDiv.innerHTML = `<p class="text-red-300 text-sm">${message}</p>`;
+      } else {
+        messageDiv.className = 'bg-purple-500/10 rounded-lg p-3';
+        messageDiv.innerHTML = `<p class="text-purple-300 text-sm">${message}</p>`;
+      }
+      
+      chatArea.appendChild(messageDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // ================================
+    // TRACK UPLOAD FUNCTIONALITY
+    // ================================
+    function initTrackUpload() {
+      const uploadZone = document.getElementById('track-upload-zone');
+      const fileInput = document.getElementById('track-file-input');
+      const trackInfo = document.getElementById('uploaded-track-info');
+      const removeBtn = document.getElementById('remove-track');
+      
+      uploadZone?.addEventListener('click', () => fileInput?.click());
+      
+      uploadZone?.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('border-neon');
+      });
+      
+      uploadZone?.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('border-neon');
+      });
+      
+      uploadZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('border-neon');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) handleTrackUpload(files[0]);
+      });
+      
+      fileInput?.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleTrackUpload(e.target.files[0]);
+      });
+      
+      removeBtn?.addEventListener('click', () => {
+        trackInfo.classList.add('hidden');
+        uploadZone.classList.remove('hidden');
+        fileInput.value = '';
+      });
+    }
+    
+    function handleTrackUpload(file) {
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      const allowedTypes = ['audio/mp3', 'audio/wav', 'audio/flac', 'audio/mpeg'];
+      
+      if (file.size > maxSize) {
+        showToast('El archivo es demasiado grande. Máximo 10MB.', 'error');
+        return;
+      }
+      
+      if (!allowedTypes.includes(file.type)) {
+        showToast('Formato no soportado. Use MP3, WAV o FLAC.', 'error');
+        return;
+      }
+      
+      // Mostrar información del archivo
+      document.getElementById('track-filename').textContent = file.name;
+      document.getElementById('track-size').textContent = formatFileSize(file.size);
+      document.getElementById('uploaded-track-info').classList.remove('hidden');
+      document.getElementById('track-upload-zone').classList.add('hidden');
+      
+      showToast('Track subido correctamente', 'success');
+    }
+    
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Función simplificada para hacer Pixel arrastrable
+    function makePixelDraggable(element, dragHandle) {
+      let isDragging = false;
+      let startX, startY, startLeft, startTop;
+
+      dragHandle.style.cursor = 'move';
+      
+      dragHandle.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        const rect = element.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+        
+        element.style.transition = 'none';
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        let newLeft = startLeft + deltaX;
+        let newTop = startTop + deltaY;
+        
+        // Limitar a los bordes de la ventana
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - element.offsetWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - element.offsetHeight));
+        
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+        element.style.bottom = 'auto';
+        element.style.right = 'auto';
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          element.style.transition = 'all 0.3s ease';
+        }
+      });
+    }
+
+    // Inicializar funcionalidades cuando cargue la página
+    window.addEventListener('load', () => {
+      initPixelAssistant();
+      initTrackUpload();
+    });
+
+    // Sistema de Login Unificado
+    let currentUser = null;
+    let userToken = null;
+
+    function showLoginModal() {
+      // Usar el modal principal de autenticación
+      document.getElementById('authModal').style.display = 'flex';
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+    }
+
+    function closeLoginModal() {
+      document.getElementById('authModal').style.display = 'none';
+      // Limpiar campos
+      const emailField = document.getElementById('loginEmail') || document.querySelector('input[type="email"]');
+      const passwordField = document.getElementById('loginPassword') || document.querySelector('input[type="password"]');
+      if (emailField) emailField.value = '';
+      if (passwordField) passwordField.value = '';
+    }
+
+    async function performLogin() {
+      // Buscar campos de email y password en cualquier modal activo
+      const email = (document.getElementById('loginEmail') || document.querySelector('#loginForm input[type="email"]'))?.value.trim();
+      const password = (document.getElementById('loginPassword') || document.querySelector('#loginForm input[type="password"]'))?.value;
+
+      if (!email || !password) {
+        alert('Por favor ingresa email y contraseña');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+          currentUser = data.user;
+          userToken = data.token;
+          
+          // Guardar en localStorage
+          localStorage.setItem('user', JSON.stringify(currentUser));
+          localStorage.setItem('token', userToken);
+          
+          // Actualizar UI
+          updateUserUI();
+          closeLoginModal();
+          alert(`¡Bienvenido ${email}! Plan: ${currentUser.plan.toUpperCase()}`);
+        } else {
+          alert('Error: ' + (data.detail || 'Credenciales incorrectas'));
+        }
+      } catch (error) {
+        console.error('Error login:', error);
+        alert('Error de conexión. Verifica que el servidor esté activo.');
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      userToken = null;
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      updateUserUI();
+      alert('Sesión cerrada');
+    }
+
+    function updateUserUI() {
+      const loginButton = document.getElementById('loginButton');
+      const userInfo = document.getElementById('userInfo');
+      const userEmail = document.getElementById('userEmail');
+      const userPlan = document.getElementById('userPlan');
+
+      if (currentUser) {
+        loginButton.classList.add('hidden');
+        userInfo.classList.remove('hidden');
+        userEmail.textContent = currentUser.email;
+        userPlan.textContent = currentUser.plan.toUpperCase();
+      } else {
+        loginButton.classList.remove('hidden');
+        userInfo.classList.add('hidden');
+      }
+    }
+
+    // Restaurar sesión al cargar
+    function restoreSession() {
+      const savedUser = localStorage.getItem('user');
+      const savedToken = localStorage.getItem('token');
+      
+      if (savedUser && savedToken) {
+        currentUser = JSON.parse(savedUser);
+        userToken = savedToken;
+        updateUserUI();
+      }
+    }
+
+    // Enter key en campos de login
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (document.getElementById('loginModal').classList.contains('hidden') === false) {
+          performLogin();
+        }
+      }
+    });
+
     // Modificar evento del botón para usar integración Suno
     document.addEventListener('DOMContentLoaded', function() {
+      // Restaurar sesión
+      restoreSession();
       // Esperar a que el DOM esté completamente cargado
       setTimeout(() => {
         // Remover evento anterior y agregar nuevo
@@ -2709,80 +4529,5 @@
     });
   </script>
 
-  <!-- Interfaz Inmersiva (Oculta por defecto) -->
-  <div id="immersiveInterfaceContainer" class="fixed inset-0 z-50 hidden">
-    <iframe 
-      src="immersive_interface.html" 
-      class="w-full h-full border-0"
-      id="immersiveIframe">
-    </iframe>
-  </div>
-
-  <!-- Script de integración inmersiva -->
-  <script src="immersive_integration.js"></script>
-  
-  <!-- Script para manejar interfaz inmersiva -->
-  <script>
-    // Variables globales para interfaz inmersiva
-    let isImmersiveVisible = false;
-    let immersiveIframe = null;
-    
-    // Inicializar interfaz inmersiva
-    function initImmersiveInterface() {
-      immersiveIframe = document.getElementById('immersiveIframe');
-      
-      // Manejar atajo de teclado Ctrl+Alt+H
-      document.addEventListener('keydown', function(event) {
-        if (event.ctrlKey && event.altKey && event.key === 'h') {
-          event.preventDefault();
-          toggleImmersiveInterface();
-        }
-      });
-      
-      console.log('🎵 Interfaz inmersiva inicializada - Presiona Ctrl+Alt+H para activar');
-    }
-    
-    // Mostrar/ocultar interfaz inmersiva
-    function toggleImmersiveInterface() {
-      const container = document.getElementById('immersiveInterfaceContainer');
-      
-      if (isImmersiveVisible) {
-        container.classList.add('hidden');
-        isImmersiveVisible = false;
-        console.log('🎵 Interfaz inmersiva ocultada');
-      } else {
-        container.classList.remove('hidden');
-        isImmersiveVisible = true;
-        console.log('🎵 Interfaz inmersiva activada');
-        
-        // Mostrar mensaje de bienvenida
-        showToast('Interfaz inmersiva activada - Explora los easter eggs!', 'success');
-      }
-    }
-    
-    // Mostrar interfaz inmersiva
-    function showImmersiveInterface() {
-      if (!isImmersiveVisible) {
-        toggleImmersiveInterface();
-      }
-    }
-    
-    // Ocultar interfaz inmersiva
-    function hideImmersiveInterface() {
-      if (isImmersiveVisible) {
-        toggleImmersiveInterface();
-      }
-    }
-    
-    // Inicializar cuando se carga la página
-    document.addEventListener('DOMContentLoaded', function() {
-      initImmersiveInterface();
-    });
-    
-    // Exportar funciones para uso global
-    window.showImmersiveInterface = showImmersiveInterface;
-    window.hideImmersiveInterface = hideImmersiveInterface;
-    window.toggleImmersiveInterface = toggleImmersiveInterface;
-  </script>
-  </body>
+</body>
 </html>

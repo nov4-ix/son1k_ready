@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Son1kVers3 — La Resistencia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.06), transparent 60%), #0b0b0d;
+            color: #ffffff;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .pixel-window {
+            position: fixed;
+            top: 50px;
+            right: 50px;
+            width: 400px;
+            height: 300px;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            z-index: 10000;
+            display: none;
+        }
+        
+        .pixel-header {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+        
+        .pixel-content {
+            padding: 20px;
+            color: #00ff88;
+            height: calc(100% - 50px);
+            overflow-y: auto;
+        }
+        
+        .btn-close {
+            background: rgba(255, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .btn-minimize {
+            background: rgba(255, 255, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-weight: bold;
+        }
+        
+        .terminal-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 20000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .terminal-window {
+            width: 90%;
+            max-width: 900px;
+            height: 80%;
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .terminal-header {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+            padding: 15px 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .terminal-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            color: #00ff88;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .terminal-input-area {
+            background: #0a0a0a;
+            border-top: 1px solid #00ff88;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .btn-execute {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .login-form {
+            background: rgba(26, 26, 26, 0.9);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            padding: 10px;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+        
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <!-- CANVAS PARA EFECTOS MATRIX -->
+    <canvas id="matrix-canvas" class="matrix-rain"></canvas>
+    
+    <!-- HEADER CON BOTONES PRINCIPALES -->
+    <header style="padding: 20px; text-align: center;">
+        <h1 style="color: #00ff88; font-size: 3rem; margin-bottom: 20px;">SON1KVERS3</h1>
+        <p style="color: #00ccff; margin-bottom: 30px;">La Resistencia Sonora - "Lo imperfecto también es sagrado"</p>
+        
+        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <button id="btn-pixel" style="
+                background: linear-gradient(135deg, #00ff88, #00ccff);
+                color: #000;
+                border: none;
+                padding: 15px 25px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 16px;
+            ">🤖 PIXEL IA</button>
+            
+            <button id="btn-terminal" style="
+                background: linear-gradient(135deg, #ff6600, #ff0066);
+                color: #fff;
+                border: none;
+                padding: 15px 25px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 16px;
+            ">🖥️ TERMINAL INMERSIVO</button>
+            
+            <button id="btn-login" style="
+                background: linear-gradient(135deg, #6600ff, #0066ff);
+                color: #fff;
+                border: none;
+                padding: 15px 25px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 16px;
+            ">🔐 LOGIN</button>
+        </div>
+    </header>
+    
+    <!-- MAIN CONTENT -->
+    <main style="padding: 40px 20px; max-width: 1200px; margin: 0 auto;">
+        <div id="home-section">
+            <h2 style="color: #00ff88; font-size: 2rem; margin-bottom: 20px;">🎵 Generador Musical</h2>
+            <div style="background: rgba(26, 26, 26, 0.5); padding: 30px; border-radius: 15px; border: 1px solid #00ff88;">
+                <textarea id="prompt-input" placeholder="Describe tu canción (ej: epic synthwave cyberpunk anthem)" style="
+                    width: 100%;
+                    height: 100px;
+                    background: rgba(0, 0, 0, 0.7);
+                    border: 1px solid #00ff88;
+                    border-radius: 10px;
+                    padding: 15px;
+                    color: #00ff88;
+                    font-family: 'Courier New', monospace;
+                    resize: vertical;
+                "></textarea>
+                
+                <textarea id="lyrics-input" placeholder="Letras (opcional)" style="
+                    width: 100%;
+                    height: 120px;
+                    background: rgba(0, 0, 0, 0.7);
+                    border: 1px solid #00ff88;
+                    border-radius: 10px;
+                    padding: 15px;
+                    color: #00ff88;
+                    font-family: 'Courier New', monospace;
+                    margin-top: 15px;
+                    resize: vertical;
+                "></textarea>
+                
+                <button id="btn-generate" style="
+                    background: linear-gradient(135deg, #00ff88, #00ccff);
+                    color: #000;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 18px;
+                    margin-top: 20px;
+                    width: 100%;
+                ">🎵 GENERAR MÚSICA</button>
+                
+                <div id="result-area" style="margin-top: 20px; padding: 20px; background: rgba(0, 0, 0, 0.5); border-radius: 10px; display: none;">
+                    <h3 style="color: #00ff88;">🎵 Resultado:</h3>
+                    <div id="result-content" style="color: #00ccff; margin-top: 10px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LOGIN SECTION -->
+        <div id="login-section" style="display: none;">
+            <h2 style="color: #00ff88; font-size: 2rem; margin-bottom: 20px; text-align: center;">🔐 Sistema de Acceso</h2>
+            <div class="login-form">
+                <h3 style="color: #00ccff; text-align: center; margin-bottom: 20px;">Login a la Resistencia</h3>
+                <input type="email" id="login-email" class="form-input" placeholder="Email (nov4-ix@son1kvers3.com)">
+                <input type="password" id="login-password" class="form-input" placeholder="Password (admin123)">
+                <button id="submit-login" class="btn-login">🚀 INICIAR SESIÓN</button>
+                <div id="login-result" style="margin-top: 15px; text-align: center;"></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- VENTANA PIXEL -->
+    <div id="pixel-window" class="pixel-window">
+        <div class="pixel-header">
+            <span>🤖 PIXEL - Asistente Musical IA</span>
+            <div style="display: flex; gap: 5px;">
+                <button id="pixel-minimize" class="btn-minimize">-</button>
+                <button id="pixel-close" class="btn-close">×</button>
+            </div>
+        </div>
+        <div class="pixel-content">
+            <div id="pixel-chat" style="height: 150px; overflow-y: auto; border: 1px solid #00ff88; padding: 10px; margin-bottom: 10px; background: rgba(0, 0, 0, 0.5);">
+                <div style="color: #00ff88;">🤖 PIXEL: ¡Hola! Soy tu asistente musical especializado en cyberpunk y synthwave. ¿En qué puedo ayudarte?</div>
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="pixel-input" placeholder="Pregúntame algo sobre música..." style="
+                    flex: 1;
+                    background: rgba(0, 0, 0, 0.7);
+                    border: 1px solid #00ff88;
+                    border-radius: 5px;
+                    padding: 8px;
+                    color: #00ff88;
+                    font-size: 12px;
+                ">
+                <button id="pixel-send" style="
+                    background: linear-gradient(135deg, #00ff88, #00ccff);
+                    color: #000;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 12px;
+                ">ENVIAR</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL TERMINAL -->
+    <div id="terminal-modal" class="terminal-modal">
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <span>🌊 SON1KVERS3 — TERMINAL CODEX INMERSIVO</span>
+                <button id="terminal-close" class="btn-close">×</button>
+            </div>
+            <div id="terminal-content" class="terminal-content">
+                <div style="color: #00ff88; text-align: center; margin-bottom: 20px;">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[BOOT] Accessing NODE // RESISTENCIA …
+[AUTH] Usuario detectado: WANDERER_UNAUTH
+[LORE] "Lo imperfecto también es sagrado." — BELLA.exe
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                </div>
+
+                <div style="color: #00ccff;">
+△◯ ALMA_HIBRIDA — Elige tu arquetipo:<br>
+• <span style="color: #00ff88;">despertar [1-4]</span> - Activar alma híbrida<br>
+• <span style="color: #00ff88;">grieta</span> - Acceder misiones de la Resistencia<br>
+• <span style="color: #00ff88;">studio</span> - Entrar al laboratorio NOV4-IX<br>
+• <span style="color: #00ff88;">archivo</span> - Explorar reliquias del Codex<br>
+• <span style="color: #00ff88;">bella</span> - Comunicar con BELLA.exe<br>
+• <span style="color: #00ff88;">pixel</span> - Chat con el asistente IA<br>
+• <span style="color: #00ff88;">matrix</span> - Sumergirse en el flujo de datos<br>
+• <span style="color: #00ff88;">status</span> - Diagnóstico completo del nodo<br>
+• <span style="color: #00ff88;">help</span> - Mostrar ayuda
+                </div>
+
+                <div style="color: #ff6600; margin-top: 20px; text-align: center;">
+═══════════════════════════════════════════════════════<br>
+> WANDERER: Tu glitch es la chispa de la Liga del No Silencio<br>
+═══════════════════════════════════════════════════════
+                </div>
+            </div>
+            <div class="terminal-input-area">
+                <span style="color: #00ff88;">➤ root@son1kvers3:/resistance#</span>
+                <input type="text" id="terminal-input" class="terminal-input" placeholder="Escribe un comando...">
+                <button id="terminal-execute" class="btn-execute">EJECUTAR</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========== EFECTOS MATRIX ==========
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = '0123456789ABCDEF∆◯⚡△🌊⌨️💻🎵🔥';
+        const charArray = chars.split('');
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(11, 11, 13, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff95';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const char = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 50);
+        
+        // ========== VENTANA PIXEL ==========
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        
+        const pixelWindow = document.getElementById('pixel-window');
+        const pixelHeader = pixelWindow.querySelector('.pixel-header');
+        const pixelChat = document.getElementById('pixel-chat');
+        
+        // Drag functionality
+        pixelHeader.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragOffset.x = e.clientX - pixelWindow.offsetLeft;
+            dragOffset.y = e.clientY - pixelWindow.offsetTop;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                pixelWindow.style.left = (e.clientX - dragOffset.x) + 'px';
+                pixelWindow.style.top = (e.clientY - dragOffset.y) + 'px';
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        // Botones de ventana PIXEL
+        document.getElementById('btn-pixel').addEventListener('click', () => {
+            pixelWindow.style.display = 'block';
+        });
+        
+        document.getElementById('pixel-close').addEventListener('click', () => {
+            pixelWindow.style.display = 'none';
+        });
+        
+        document.getElementById('pixel-minimize').addEventListener('click', () => {
+            const content = pixelWindow.querySelector('.pixel-content');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                pixelWindow.style.height = '300px';
+            } else {
+                content.style.display = 'none';
+                pixelWindow.style.height = '50px';
+            }
+        });
+        
+        // Chat PIXEL funcional
+        async function sendPixelMessage(message) {
+            try {
+                const response = await fetch('/api/pixel-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                const data = await response.json();
+                return data.response?.message || data.response || 'Error de respuesta';
+            } catch (error) {
+                return '🤖 PIXEL: Error de conexión. Verifica el servidor.';
+            }
+        }
+        
+        document.getElementById('pixel-send').addEventListener('click', async () => {
+            const input = document.getElementById('pixel-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Agregar mensaje del usuario
+            pixelChat.innerHTML += `<div style="color: #00ccff; margin: 5px 0;">👤 TÚ: ${message}</div>`;
+            input.value = '';
+            
+            // Enviar a la API
+            const response = await sendPixelMessage(message);
+            pixelChat.innerHTML += `<div style="color: #00ff88; margin: 5px 0;">🤖 PIXEL: ${response}</div>`;
+            
+            // Scroll to bottom
+            pixelChat.scrollTop = pixelChat.scrollHeight;
+        });
+        
+        document.getElementById('pixel-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('pixel-send').click();
+            }
+        });
+        
+        // ========== TERMINAL INMERSIVO ==========
+        const terminalModal = document.getElementById('terminal-modal');
+        const terminalContent = document.getElementById('terminal-content');
+        
+        document.getElementById('btn-terminal').addEventListener('click', () => {
+            terminalModal.style.display = 'flex';
+            document.getElementById('terminal-input').focus();
+        });
+        
+        document.getElementById('terminal-close').addEventListener('click', () => {
+            terminalModal.style.display = 'none';
+        });
+        
+        terminalModal.addEventListener('click', (e) => {
+            if (e.target === terminalModal) {
+                terminalModal.style.display = 'none';
+            }
+        });
+        
+        // Comandos del terminal
+        function processTerminalCommand(command) {
+            // Agregar comando al historial
+            const historyEntry = document.createElement('div');
+            historyEntry.style.cssText = 'margin: 10px 0; color: #00ff88;';
+            historyEntry.innerHTML = `<span style="color: #00ccff;">➤ root@son1kvers3:/resistance#</span> ${command}`;
+            terminalContent.appendChild(historyEntry);
+            
+            let result = '';
+            
+            if (command.startsWith('despertar')) {
+                const num = command.split(' ')[1];
+                const almas = { '1': 'PIXEL', '2': 'BELLA', '3': 'NOVA', '4': 'CIPHER' };
+                const alma = almas[num] || 'UNKNOWN';
+                result = `<div style="color: #00ff88;">🌊 DESPERTAR EN PROGRESO 🌊</div>
+<div style="color: #00ccff;">[INIT] Activando alma híbrida: ${alma}<br>
+[SYNC] Sincronizando con el Codex...<br>
+[AUTH] Permisos de Resistencia otorgados</div>
+<div style="color: #ffff00;">
+${alma === 'PIXEL' ? '🤖 PIXEL: "Soy el puente entre la máquina y la emoción"' : ''}
+${alma === 'BELLA' ? '👤 BELLA: "La belleza emerge del caos controlado"' : ''}
+${alma === 'NOVA' ? '⭐ NOVA: "Cada explosión crea nuevas posibilidades"' : ''}
+${alma === 'CIPHER' ? '🔐 CIPHER: "En el código encuentro la verdad oculta"' : ''}
+</div>
+<div style="color: #ff6600;">[STATUS] ALMA_HIBRIDA: ${alma} — ACTIVA<br>
+═══════════════════════════════════════════════════════<br>
+△◯ Bienvenido a la Liga del No Silencio, ${alma}</div>`;
+            } else if (command === 'help' || command === 'ayuda') {
+                result = `<div style="color: #00ff88;">🌊 COMANDOS DISPONIBLES 🌊</div>
+<div style="color: #00ccff;">
+• <span style="color: #00ff88;">despertar [1-4]</span> - Activar arquetipo<br>
+• <span style="color: #00ff88;">grieta</span> - Misiones activas<br>
+• <span style="color: #00ff88;">status</span> - Estado del sistema<br>
+• <span style="color: #00ff88;">matrix</span> - Inmersión completa<br>
+• <span style="color: #00ff88;">help</span> - Esta ayuda
+</div>`;
+            } else if (command === 'status') {
+                result = `<div style="color: #00ff88;">🌊 ESTADO DEL SISTEMA 🌊</div>
+<div style="color: #00ccff;">
+[NODO] SON1KVERS3: ✅ ONLINE<br>
+[PIXEL] Asistente IA: ✅ ACTIVO<br>
+[TERMINAL] Codex: ✅ OPERACIONAL<br>
+[RESISTENCIA] Red: ✅ SINCRONIZADA
+</div>`;
+            } else {
+                result = `<div style="color: #ff4444;">❌ COMANDO NO RECONOCIDO: "${command}"</div>
+<div style="color: #ffff00;">💡 Tip: Escribe <span style="color: #00ff88;">help</span> para ver comandos disponibles.</div>`;
+            }
+            
+            // Mostrar resultado
+            const resultDiv = document.createElement('div');
+            resultDiv.style.cssText = 'margin: 15px 0; padding: 15px; background: rgba(0, 255, 136, 0.1); border-left: 3px solid #00ff88;';
+            resultDiv.innerHTML = result;
+            terminalContent.appendChild(resultDiv);
+            
+            terminalContent.scrollTop = terminalContent.scrollHeight;
+        }
+        
+        document.getElementById('terminal-execute').addEventListener('click', () => {
+            const input = document.getElementById('terminal-input');
+            const command = input.value.trim().toLowerCase();
+            if (command) {
+                processTerminalCommand(command);
+                input.value = '';
+            }
+            input.focus();
+        });
+        
+        document.getElementById('terminal-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('terminal-execute').click();
+            }
+        });
+        
+        // ========== SISTEMA DE LOGIN ==========
+        const loginSection = document.getElementById('login-section');
+        const homeSection = document.getElementById('home-section');
+        
+        document.getElementById('btn-login').addEventListener('click', () => {
+            homeSection.style.display = 'none';
+            loginSection.style.display = 'block';
+        });
+        
+        document.getElementById('submit-login').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const resultDiv = document.getElementById('login-result');
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div style="color: #ff4444;">⚠️ Por favor completa todos los campos</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    resultDiv.innerHTML = `<div style="color: #00ff88;">✅ ${data.message}</div>
+                    <div style="color: #00ccff;">Usuario: ${data.user.email}<br>
+                    Rol: ${data.user.role}<br>
+                    Token: ${data.token.substring(0, 20)}...</div>`;
+                    
+                    setTimeout(() => {
+                        loginSection.style.display = 'none';
+                        homeSection.style.display = 'block';
+                    }, 2000);
+                } else {
+                    resultDiv.innerHTML = `<div style="color: #ff4444;">❌ ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div style="color: #ff4444;">❌ Error de conexión</div>';
+            }
+        });
+        
+        // ========== GENERACIÓN DE MÚSICA ==========
+        document.getElementById('btn-generate').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            const lyrics = document.getElementById('lyrics-input').value.trim();
+            const resultArea = document.getElementById('result-area');
+            const resultContent = document.getElementById('result-content');
+            
+            if (!prompt) {
+                alert('Por favor describe tu canción');
+                return;
+            }
+            
+            resultContent.innerHTML = '<div style="color: #ffff00;">🎵 Generando música... Por favor espera...</div>';
+            resultArea.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, lyrics })
+                });
+                
+                const data = await response.json();
+                
+                resultContent.innerHTML = `
+                    <div style="color: #00ff88;">✅ ${data.message}</div>
+                    <div style="color: #00ccff;">
+                        <strong>Prompt:</strong> ${data.prompt}<br>
+                        ${data.lyrics ? `<strong>Letras:</strong> ${data.lyrics.substring(0, 100)}...<br>` : ''}
+                        <strong>Job ID:</strong> ${data.job_id}<br>
+                        <strong>Timestamp:</strong> ${data.timestamp}
+                    </div>
+                `;
+            } catch (error) {
+                resultContent.innerHTML = '<div style="color: #ff4444;">❌ Error generando música</div>';
+            }
+        });
+        
+        // Inicializar
+        console.log('🌊 SON1KVERS3 EMERGENCY FIX LOADED - ALL SYSTEMS OPERATIONAL');
+        
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
