@@ -18,7 +18,10 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- 🎯 TERMINAL UI + TRANSPARENCIA -->
+  <!-- 🎯 TERMINAL UI CORREGIDO -->
+  <script src="terminal_fix.js"></script>
+  
+  <!-- SCRIPT ANTERIOR (DESHABILITADO) 
   <script>
 /**
  * 🎯 TERMINAL UI VISIBLE + TRANSPARENCIA TOTAL
@@ -67,41 +70,236 @@
         console.log('🖥️ Terminal button created and visible');
     }
     
-    // 💻 TERMINAL CODEX INMERSIVO CON EFECTOS MATRIX
+    // 💻 TERMINAL CODEX INMERSIVO CON MODAL FUNCIONAL
     function showTerminal() {
+        // CREAR MODAL TERMINAL FUNCIONAL
+        createTerminalModal();
+    }
+    
+    function createTerminalModal() {
         // ACTIVAR MODO INMERSIVO COMPLETO CON EFECTOS MATRIX
         document.body.style.background = 'radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.15), #020304 60%)';
-        
-        // CREAR EFECTO MATRIX VISUAL
         createMatrixEffect();
         
-        const cmd = prompt(`🌊 SON1KVERS3 — TERMINAL CODEX 🌊
+        // CREAR MODAL OVERLAY
+        const overlay = document.createElement('div');
+        overlay.id = 'terminal-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // CREAR TERMINAL WINDOW
+        const terminal = document.createElement('div');
+        terminal.style.cssText = `
+            width: 90%;
+            max-width: 900px;
+            height: 80%;
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.3);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            overflow: hidden;
+        `;
+        
+        // TERMINAL HEADER
+        const header = document.createElement('div');
+        header.style.cssText = `
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+            color: #000;
+            padding: 15px 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        `;
+        header.innerHTML = `
+            <span>🌊 SON1KVERS3 — TERMINAL CODEX</span>
+            <button id="close-terminal" style="
+                background: rgba(255,255,255,0.2);
+                border: none;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                cursor: pointer;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">✕</button>
+        `;
+        
+        // TERMINAL CONTENT
+        const content = document.createElement('div');
+        content.style.cssText = `
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            line-height: 1.6;
+            font-size: 13px;
+        `;
+        
+        // TERMINAL INPUT AREA
+        const inputArea = document.createElement('div');
+        inputArea.style.cssText = `
+            background: #0a0a0a;
+            border-top: 1px solid #00ff88;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        `;
+        inputArea.innerHTML = `
+            <span style="color: #00ff88;">➤ root@son1kvers3:/resistance#</span>
+            <input type="text" id="terminal-input" style="
+                flex: 1;
+                background: transparent;
+                border: none;
+                color: #00ff88;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                outline: none;
+            " placeholder="Escribe un comando...">
+            <button id="execute-btn" style="
+                background: linear-gradient(135deg, #00ff88, #00ccff);
+                color: #000;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 12px;
+            ">EJECUTAR</button>
+        `;
+        
+        // MOSTRAR MENSAJE INICIAL
+        content.innerHTML = `
+<div style="color: #00ff88; text-align: center; margin-bottom: 20px;">
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 [BOOT] Accessing NODE // RESISTENCIA …
 [AUTH] Usuario detectado: WANDERER_UNAUTH
 [LORE] "Lo imperfecto también es sagrado." — BELLA.exe
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+</div>
 
+<div style="color: #00ccff;">
 △◯ ALMA_HIBRIDA — Elige tu arquetipo:
-• despertar [1-4] - Activar alma híbrida
-• grieta - Acceder misiones de la Resistencia
-• studio - Entrar al laboratorio NOV4-IX  
-• archivo - Explorar reliquias del Codex
-• bella - Comunicar con BELLA.exe
-• pixel - Chat con el asistente IA
-• matrix - Sumergirse en el flujo de datos
-• status - Diagnóstico completo del nodo
+• <span style="color: #00ff88;">despertar [1-4]</span> - Activar alma híbrida
+• <span style="color: #00ff88;">grieta</span> - Acceder misiones de la Resistencia
+• <span style="color: #00ff88;">studio</span> - Entrar al laboratorio NOV4-IX  
+• <span style="color: #00ff88;">archivo</span> - Explorar reliquias del Codex
+• <span style="color: #00ff88;">bella</span> - Comunicar with BELLA.exe
+• <span style="color: #00ff88;">pixel</span> - Chat con el asistente IA
+• <span style="color: #00ff88;">matrix</span> - Sumergirse en el flujo de datos
+• <span style="color: #00ff88;">status</span> - Diagnóstico completo del nodo
+</div>
 
+<div style="color: #ff6600; margin-top: 20px; text-align: center;">
 ═══════════════════════════════════════════════════════
 > WANDERER: Tu glitch es la chispa de la Liga del No Silencio
 ═══════════════════════════════════════════════════════
-
-➤ root@son1kvers3:/resistance# `);
+</div>
+        `;
         
-        if (!cmd) return;
+        // ASSEMBLAR TERMINAL
+        terminal.appendChild(header);
+        terminal.appendChild(content);
+        terminal.appendChild(inputArea);
+        overlay.appendChild(terminal);
+        document.body.appendChild(overlay);
         
-        const command = cmd.toLowerCase().trim();
+        // EVENT LISTENERS
+        const closeBtn = document.getElementById('close-terminal');
+        const input = document.getElementById('terminal-input');
+        const executeBtn = document.getElementById('execute-btn');
+        
+        // CERRAR TERMINAL
+        closeBtn.onclick = () => closeTerminal(overlay);
+        overlay.onclick = (e) => {
+            if (e.target === overlay) closeTerminal(overlay);
+        };
+        
+        // EJECUTAR COMANDO
+        const executeCommand = () => {
+            const cmd = input.value.trim().toLowerCase();
+            if (cmd) {
+                processCommand(cmd, content);
+                input.value = '';
+            }
+            input.focus();
+        };
+        
+        executeBtn.onclick = executeCommand;
+        input.onkeypress = (e) => {
+            if (e.key === 'Enter') executeCommand();
+        };
+        
+        // FOCUS INPUT
+        setTimeout(() => input.focus(), 100);
+    }
+    
+    function closeTerminal(overlay) {
+        document.body.removeChild(overlay);
+        document.body.style.background = 'radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.06), transparent 60%), #0b0b0d';
+        clearMatrixEffect();
+    }
+    
+    function processCommand(command, content) {
         let result = '';
+        
+        // Agregar comando al historial
+        const historyEntry = document.createElement('div');
+        historyEntry.style.cssText = 'margin: 10px 0; color: #00ff88;';
+        historyEntry.innerHTML = `<span style="color: #00ccff;">➤ root@son1kvers3:/resistance#</span> ${command}`;
+        content.appendChild(historyEntry);
+        
+        // Procesar comando
+        if (command.startsWith('despertar')) {
+            const num = command.split(' ')[1];
+            const almas = {
+                '1': 'PIXEL',
+                '2': 'BELLA', 
+                '3': 'NOVA',
+                '4': 'CIPHER'
+            };
+            const alma = almas[num] || 'UNKNOWN';
+            result = `<div style="color: #00ff88;">🌊 DESPERTAR EN PROGRESO 🌊</div>
+
+<div style="color: #00ccff;">
+[INIT] Activando alma híbrida: ${alma}
+[SYNC] Sincronizando con el Codex...
+[AUTH] Permisos de Resistencia otorgados
+[LORE] Memoria híbrida cargando...
+</div>
+
+<div style="color: #ffff00;">
+${alma === 'PIXEL' ? '🤖 PIXEL: "Soy el puente entre la máquina y la emoción"' : ''}
+${alma === 'BELLA' ? '👤 BELLA: "La belleza emerge del caos controlado"' : ''}
+${alma === 'NOVA' ? '⭐ NOVA: "Cada explosión crea nuevas posibilidades"' : ''}
+${alma === 'CIPHER' ? '🔐 CIPHER: "En el código encuentro la verdad oculta"' : ''}
+</div>
+
+<div style="color: #ff6600;">
+[STATUS] ALMA_HIBRIDA: ${alma} — ACTIVA
+[ACCESS] Grieta, Studio y Archivo desbloqueados
+[MISSION] "Amplifica el eco de la Resistencia"
+
+═══════════════════════════════════════════════════════
+△◯ Bienvenido a la Liga del No Silencio, ${alma}
+═══════════════════════════════════════════════════════
+</div>`;
         
         if (command.startsWith('despertar')) {
             const num = command.split(' ')[1];
@@ -844,6 +1042,7 @@ Escribe 'help' para la guía completa.`;
     
 })();
   </script>
+  -->
   
   <script>
     tailwind.config = {
