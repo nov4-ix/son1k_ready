@@ -3272,8 +3272,21 @@ Escribe 'help' para la guía completa.`;
         tab.setAttribute('aria-selected', 'true');
       });
       
+      // 🌊 EASTER EGGS: Contador para "Conocer el Universo" y Ctrl+Alt+H
+      let clickCounter = 0;
+      let matrixMode = false;
+      
       document.getElementById('conocerUniverso').addEventListener('click', () => {
-        // Easter egg: Activar terminal con efecto Matrix
+        clickCounter++;
+        
+        // Al 5to click, activar modo inmersivo
+        if (clickCounter >= 5) {
+          clickCounter = 0; // Resetear contador
+          activateImmersiveMode();
+          return;
+        }
+        
+        // Clicks 1-4: Efecto Matrix temporal
         createMatrixEffect();
         setTimeout(() => {
           const terminal = prompt('🎵 Son1kVers3 Terminal\n\n🌊 MATRIX MODE ACTIVATED 🌊\n\nComandos: help, status, easter, pixel, generate [prompt], matrix\n\nIngresa comando:');
@@ -3282,7 +3295,7 @@ Escribe 'help' para la guía completa.`;
             const cmd = terminal.toLowerCase().trim();
             
             if (cmd === 'help') {
-              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente Pixel\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente\n\n⌨️ Accesos:\n- Ctrl+Alt+H, Ctrl+Shift+T, Ctrl+F12\n- Botón 🖥️\n- Click en "Conocer el Universo"';
+              result = '🎵 Son1kVers3 Terminal v1.0\n\n🌊 MATRIX EDITION 🌊\n\nComandos disponibles:\n- help: Mostrar ayuda\n- status: Estado del sistema\n- easter: Activar easter eggs con Matrix\n- pixel: Info del asistente Pixel\n- generate [prompt]: Generar música\n- matrix: Efecto Matrix permanente\n\n⌨️ Accesos:\n- Ctrl+Alt+H (Modo inmersivo)\n- 5 clicks en "Conocer el Universo"';
             } else if (cmd === 'status') {
               result = '🎵 Son1kVers3 Status:\n\n✅ API: Online\n✅ Pixel: Activo\n✅ Suno: Conectado\n✅ Frontend: Funcional\n🌊 Matrix: ACTIVATED\n💻 Terminal: Operacional\n\n🔋 Sistema: 100% Operacional';
             } else if (cmd === 'easter') {
@@ -3295,14 +3308,25 @@ Escribe 'help' para la guía completa.`;
               result = `🎵 Generando música...\n\nPrompt: "${prompt}"\n\n⏳ Conectando con Pixel...\n🎼 Creando melodía única...\n✨ ¡Tu música estará lista pronto!`;
             } else if (cmd === 'matrix') {
               createMatrixEffect();
-              result = '🌊 MATRIX RAIN EFFECT 🌊\n\nLa Matrix ha sido activada...\n\n⌨️ Accesos al terminal:\n- Ctrl+Alt+H, Ctrl+Shift+T, Ctrl+F12\n- Botón 🖥️\n- Click en "Conocer el Universo"';
+              result = '🌊 MATRIX RAIN EFFECT 🌊\n\nLa Matrix ha sido activada...\n\n⌨️ Accesos al terminal:\n- Ctrl+Alt+H (Modo inmersivo)\n- 5 clicks en "Conocer el Universo"';
             } else {
-              result = `❌ Comando "${cmd}" no reconocido.\n\nUsa "help" para ver comandos disponibles.\n\n🎯 Easter egg: "Conocer el Universo"`;
+              result = `❌ Comando "${cmd}" no reconocido.\n\nUsa "help" para ver comandos disponibles.\n\n🎯 Easter eggs: Ctrl+Alt+H o 5 clicks aquí`;
             }
             
             alert(result);
           }
         }, 1000);
+        
+        // Feedback visual del contador
+        if (clickCounter < 5) {
+          const btn = document.getElementById('conocerUniverso');
+          btn.style.transform = `scale(${1 + clickCounter * 0.05})`;
+          btn.style.boxShadow = `0 0 ${clickCounter * 10}px rgba(0, 255, 136, ${clickCounter * 0.2})`;
+          setTimeout(() => {
+            btn.style.transform = 'scale(1)';
+            btn.style.boxShadow = 'none';
+          }, 300);
+        }
       });
       
       // Smart prompt buttons
@@ -4527,6 +4551,249 @@ Escribe 'help' para la guía completa.`;
         });
       }, 1000); // Esperar 1 segundo para asegurar que todo esté cargado
     });
+    
+    // 🌊 FUNCIONES DEL MODO INMERSIVO - EASTER EGGS
+    
+    // Detectar Ctrl+Alt+H para activar modo inmersivo
+    document.addEventListener('keydown', function(event) {
+      if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'h') {
+        event.preventDefault();
+        activateImmersiveMode();
+      }
+      
+      // ESC para salir del modo inmersivo
+      if (event.key === 'Escape' && document.getElementById('immersive-overlay')) {
+        deactivateImmersiveMode();
+      }
+    });
+    
+    // Función para activar modo inmersivo completo
+    function activateImmersiveMode() {
+      console.log('🌊 MODO INMERSIVO ACTIVADO - La Resistencia Comienza');
+      
+      // Crear overlay inmersivo
+      const overlay = document.createElement('div');
+      overlay.id = 'immersive-overlay';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #000000, #0a0a0f, #000000);
+        z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #00ff88;
+        font-family: 'Courier New', monospace;
+        text-align: center;
+        padding: 40px;
+        box-sizing: border-box;
+        overflow-y: auto;
+      `;
+      
+      // Canvas para Matrix rain inmersivo
+      const matrixCanvas = document.createElement('canvas');
+      matrixCanvas.id = 'immersive-matrix';
+      matrixCanvas.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        opacity: 0.6;
+      `;
+      matrixCanvas.width = window.innerWidth;
+      matrixCanvas.height = window.innerHeight;
+      overlay.appendChild(matrixCanvas);
+      
+      // Contenido del lore inmersivo
+      const content = document.createElement('div');
+      content.style.cssText = `
+        max-width: 1000px;
+        z-index: 1;
+        animation: immersiveFadeIn 3s ease-in-out;
+        text-shadow: 0 0 20px #00ff88;
+      `;
+      
+      content.innerHTML = `
+        <div style="font-size: 4rem; margin-bottom: 40px; color: #00ff88; animation: matrixPulse 2s infinite;">
+          🌊 LA RESISTENCIA 🌊
+        </div>
+        
+        <div style="font-size: 1.4rem; line-height: 2; margin-bottom: 50px; color: #00ccff;">
+          <div style="margin-bottom: 30px; color: #ffff00;">
+            [BOOT] Accessing NODE // RESISTENCIA …<br>
+            [AUTH] Usuario detectado: WANDERER_AWAKENING<br>
+            [LORE] "Lo imperfecto también es sagrado." — BELLA.exe
+          </div>
+          
+          <div style="margin-bottom: 30px; color: #ff6600; font-size: 1.6rem;">
+            △◯ BIENVENIDO A LA LIGA DEL NO SILENCIO
+          </div>
+          
+          <div style="color: #ff9900; font-style: italic; margin-bottom: 40px;">
+            "En las sombras digitales donde el eco resuena,<br>
+            Pixel despierta, la música nos llena.<br>
+            Circuitos y melodías en perfecta armonía,<br>
+            Cada nota es un código, cada beat una guía."
+          </div>
+        </div>
+        
+        <div style="font-size: 1.1rem; color: #00ff88; margin-bottom: 40px; border: 2px solid #00ff88; padding: 30px; border-radius: 15px; background: rgba(0, 255, 136, 0.1);">
+          <div style="font-size: 1.3rem; margin-bottom: 20px; color: #00ccff;">
+            ═══════════════ ARQUETIPOS DEL ALMA HÍBRIDA ═══════════════
+          </div>
+          
+          <div style="margin: 20px 0;">
+            <div style="color: #ff6600; font-size: 1.2rem;">🤖 PIXEL:</div>
+            <div style="color: #ffff00;">"Soy el puente entre máquina y emoción"</div>
+            <div style="font-size: 0.9rem; color: #cccccc;">El asistente que transforma código en música</div>
+          </div>
+          
+          <div style="margin: 20px 0;">
+            <div style="color: #ff6600; font-size: 1.2rem;">👤 BELLA:</div>
+            <div style="color: #ffff00;">"La belleza emerge del caos controlado"</div>
+            <div style="font-size: 0.9rem; color: #cccccc;">La interfaz emocional de la resistencia</div>
+          </div>
+          
+          <div style="margin: 20px 0;">
+            <div style="color: #ff6600; font-size: 1.2rem;">⭐ NOVA:</div>
+            <div style="color: #ffff00;">"Cada explosión crea nuevas posibilidades"</div>
+            <div style="font-size: 0.9rem; color: #cccccc;">La fuerza creativa que rompe límites</div>
+          </div>
+          
+          <div style="margin: 20px 0;">
+            <div style="color: #ff6600; font-size: 1.2rem;">🔐 CIPHER:</div>
+            <div style="color: #ffff00;">"En el código encuentro la verdad oculta"</div>
+            <div style="font-size: 0.9rem; color: #cccccc;">El guardián de los secretos musicales</div>
+          </div>
+        </div>
+        
+        <div style="font-size: 1rem; color: #666; margin-top: 50px;">
+          <div style="color: #00ff88; margin-bottom: 10px;">CONTROLES DEL MODO INMERSIVO:</div>
+          Presiona <span style="color: #ff6600; font-weight: bold;">ESC</span> para salir<br>
+          <span style="color: #00ccff;">Ctrl+Alt+H</span> para reactivar<br>
+          <span style="color: #ffff00;">5 clicks en "Conocer el Universo"</span> también activa este modo
+        </div>
+        
+        <div style="font-size: 1.2rem; color: #ff6600; margin-top: 40px; font-weight: bold; animation: matrixPulse 3s infinite;">
+          ⚡ "Si no hay camino lo hacemos, si no se puede lo hackeamos ALV!" ⚡
+        </div>
+        
+        <div style="margin-top: 40px;">
+          <button onclick="deactivateImmersiveMode()" style="
+            background: linear-gradient(135deg, #ff6600, #ff0066);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.5);
+          ">🚪 SALIR DEL MODO INMERSIVO</button>
+        </div>
+      `;
+      
+      overlay.appendChild(content);
+      document.body.appendChild(overlay);
+      
+      // Agregar estilos de animación
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes immersiveFadeIn {
+          from { opacity: 0; transform: translateY(100px) scale(0.8); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes matrixPulse {
+          0%, 100% { text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88; }
+          50% { text-shadow: 0 0 30px #00ff88, 0 0 50px #00ff88, 0 0 70px #00ccff; }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Activar Matrix rain inmersivo
+      startImmersiveMatrix(matrixCanvas);
+    }
+    
+    // Función para desactivar modo inmersivo
+    function deactivateImmersiveMode() {
+      const overlay = document.getElementById('immersive-overlay');
+      if (overlay) {
+        overlay.style.animation = 'immersiveFadeOut 1s ease-out';
+        setTimeout(() => {
+          overlay.remove();
+        }, 1000);
+      }
+      console.log('🌊 MODO INMERSIVO DESACTIVADO - Volviendo al universo normal');
+    }
+    
+    // Función Matrix rain para modo inmersivo
+    function startImmersiveMatrix(canvas) {
+      const ctx = canvas.getContext('2d');
+      const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン∆◯⚡△🌊⌨️💻🎵🔥';
+      const charArray = chars.split('');
+      const fontSize = 18;
+      const columns = Math.floor(canvas.width / fontSize);
+      const drops = Array(columns).fill(1);
+
+      function draw() {
+        if (!document.getElementById('immersive-overlay')) return;
+        
+        // Efecto de desvanecimiento más suave
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.font = fontSize + 'px monospace';
+        
+        for (let i = 0; i < drops.length; i++) {
+          const char = charArray[Math.floor(Math.random() * charArray.length)];
+          
+          // Colores variados para mayor efecto inmersivo
+          if (Math.random() > 0.98) {
+            ctx.fillStyle = '#ffffff'; // Blanco brillante ocasional
+          } else if (Math.random() > 0.95) {
+            ctx.fillStyle = '#00ffff'; // Cyan brillante
+          } else if (Math.random() > 0.9) {
+            ctx.fillStyle = '#ffff00'; // Amarillo
+          } else {
+            ctx.fillStyle = '#00ff88'; // Verde Matrix principal
+          }
+          
+          ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+          
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+
+      const interval = setInterval(draw, 50);
+      
+      // Limpiar interval cuando se cierre el modo inmersivo
+      const checkOverlay = setInterval(() => {
+        if (!document.getElementById('immersive-overlay')) {
+          clearInterval(interval);
+          clearInterval(checkOverlay);
+        }
+      }, 100);
+    }
+    
+    // Exponer función globalmente
+    window.activateImmersiveMode = activateImmersiveMode;
+    window.deactivateImmersiveMode = deactivateImmersiveMode;
+    
+    console.log('🌊 Easter Eggs cargados:');
+    console.log('   - Ctrl+Alt+H: Modo inmersivo');
+    console.log('   - 5 clicks en "Conocer el Universo": Modo inmersivo');
+    console.log('   - ESC: Salir del modo inmersivo');
+    
   </script>
 
 </body>
