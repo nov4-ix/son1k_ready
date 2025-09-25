@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: ui-monospace, SFMono-Regular, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  }
+  
+  body {
+    @apply bg-bg text-fg;
+    background: radial-gradient(1200px 800px at 70% 10%, rgba(0,255,149,.06), transparent 60%), #020304;
+    font-family: ui-monospace, SFMono-Regular, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    letter-spacing: 0.3px;
+  }
+}
+
+@layer components {
+  .neon-glow {
+    text-shadow: 0 0 10px rgba(0,255,149,0.5);
+  }
+  
+  .scanlines {
+    background: 
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px) 0 0/100% 20px,
+      linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px) 0 0/20px 100%;
+  }
+}
+

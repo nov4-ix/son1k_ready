@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node suno_wrapper_server.js",
     "dev": "nodemon suno_wrapper_server.js",
+    "frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
     "setup": "chmod +x setup_suno_stealth.sh && ./setup_suno_stealth.sh"
   },
   "dependencies": {

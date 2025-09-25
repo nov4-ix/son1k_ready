@@ -2,10 +2,10 @@
 builder = "nixpacks"
 
 [deploy]
-healthcheckPath = "/salud"
+healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
 
 [[services]]
-name = "son1kvers3-api"
+name = "son1kvers3-hybrid"
 source = "."
