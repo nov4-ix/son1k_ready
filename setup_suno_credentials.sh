@@ -34,3 +34,4 @@ echo "pkill -f son1k_simple_stable.py && python3 son1k_simple_stable.py &"
 
 
 
+

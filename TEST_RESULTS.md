@@ -172,3 +172,4 @@ Para activar la generación real:
 **Sistema probado y verificado el 24 de Septiembre, 2025** ✅
 
 
+

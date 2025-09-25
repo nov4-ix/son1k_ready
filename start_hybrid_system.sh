@@ -177,3 +177,4 @@ log_info "⏹️  Presiona Ctrl+C para detener el sistema"
 wait $HYBRID_PID $API_PID
 
 
+
