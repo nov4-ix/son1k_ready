@@ -1,1 +1,1 @@
-web: python3 main_production.py
+web: npm start
