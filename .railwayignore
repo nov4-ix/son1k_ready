@@ -1,5 +1,5 @@
-node_modules/
-package-lock.json
-yarn.lock
-*.log
-.DS_Store
+requirements.txt
+*.py
+__pycache__/
+.env
+*.pyc
