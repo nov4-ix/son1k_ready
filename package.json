@@ -14,8 +14,6 @@
     "axios": "^1.12.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "glob": "^11.0.3",
-    "lodash": "^4.17.21",
     "puppeteer": "^24.22.2",
     "suno-api": "github:gcui-art/suno-api"
   },
