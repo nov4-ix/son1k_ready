@@ -18,6 +18,10 @@ import uuid
 
 app = FastAPI(title="Resistance Social Network API", version="1.0.0")
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "Resistance Social Network", "version": "1.0.0"}
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,

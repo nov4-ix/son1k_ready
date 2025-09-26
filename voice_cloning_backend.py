@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Voice Cloning API", version="1.0.0")
 security = HTTPBearer()
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "Voice Cloning API", "version": "1.0.0"}
+
 # Configuration
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
@@ -536,4 +540,4 @@ async def serve_audio(audio_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8002)

@@ -3,7 +3,7 @@ const { Api } = require('suno-api');
 const cors = require('cors');
 const crypto = require('crypto');
 const path = require('path');
-const app = express();
+const app = express();y bien
 
 // Middleware avanzado con evasión
 app.use(express.json({ limit: '50mb' }));

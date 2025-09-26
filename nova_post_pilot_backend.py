@@ -20,7 +20,7 @@ app = FastAPI(title="Nova Post Pilot API", version="1.0.0")
 
 # Ollama configuration
 OLLAMA_BASE_URL = "http://localhost:11434"
-OLLAMA_MODEL = "llama3.1:8b"
+OLLAMA_MODEL = "qwen2.5:7b"
 
 class CreatorProfile(BaseModel):
     content_type: str
