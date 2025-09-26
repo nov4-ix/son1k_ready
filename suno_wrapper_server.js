@@ -406,6 +406,12 @@ app.get('/index.html', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  // Redirigir al frontend principal
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Ruta de prueba (mantener para testing)
+app.get('/test', (req, res) => {
   res.send(`
 <!DOCTYPE html>
 <html>
