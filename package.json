@@ -4,7 +4,7 @@
   "description": "Son1kVers3 - Ultra-Indetectable Music Generator",
   "main": "son1k_production_system.js",
   "scripts": {
-    "start": "node son1k_production_system.js",
+    "start": "node suno_wrapper_server.js",
     "dev": "node son1k_production_system.js",
     "test": "node test_production_system.js"
   },

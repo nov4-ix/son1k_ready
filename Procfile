@@ -1,1 +1,1 @@
-web: python main.py
+web: node suno_wrapper_server.js
