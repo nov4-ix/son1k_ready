@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Generación Musical Real - Son1kVers3</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px #00ff88;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff88, 0 0 30px #00ff88, 0 0 40px #00ff88; }
+            to { text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 30px #00ff88; }
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .test-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff88;
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .test-result {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .status.error {
+            background: #ff4444;
+            color: #fff;
+        }
+        
+        .status.warning {
+            background: #ffaa00;
+            color: #000;
+        }
+        
+        .status.info {
+            background: #00ccff;
+            color: #000;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #00ff88;
+            font-family: monospace;
+        }
+        
+        .input-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .track-info {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00ccff);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🎵 TEST GENERACIÓN MUSICAL REAL</h1>
+        
+        <div class="test-section">
+            <h2>🔧 Configuración de Prueba</h2>
+            <div class="input-group">
+                <label for="testPrompt">Prompt Musical (incluye estilo, mood, tempo, etc.):</label>
+                <input type="text" id="testPrompt" value="una canción épica de synthwave con tempo 140 BPM, mood nostálgico, instrumentos sintéticos y atmosfera retro-futurista" placeholder="Describe la música que quieres generar...">
+                <div class="text-xs text-gray-400 mt-2">
+                    💡 <strong>Puedes incluir:</strong> estilos, mood, tempo, instrumentos, atmosfera, género, época, etc.
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="testLyrics">Letras (opcional):</label>
+                <textarea id="testLyrics" placeholder="Escribe las letras de la canción..."></textarea>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Controles de Prueba</h2>
+            <div class="controls">
+                <button class="test-button" onclick="testInitialization()">Inicializar Sistema</button>
+                <button class="test-button" onclick="testGeneration()" id="generateBtn">Generar Música</button>
+                <button class="test-button" onclick="testPlay()" id="playBtn" disabled>▶️ Reproducir</button>
+                <button class="test-button" onclick="testPause()" id="pauseBtn" disabled>⏸️ Pausar</button>
+                <button class="test-button" onclick="testStop()" id="stopBtn" disabled>⏹️ Detener</button>
+                <button class="test-button" onclick="testDownload()" id="downloadBtn" disabled>💾 Descargar</button>
+            </div>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Estado del Sistema</h2>
+            <div id="systemStatus">
+                <span class="status warning">Inicializando...</span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎵 Información del Track</h2>
+            <div id="trackInfo" class="track-info" style="display: none;">
+                <div>No hay track generado</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 Logs del Sistema</h2>
+            <div id="testLogs" class="test-result">Sistema iniciado...\n</div>
+        </div>
+    </div>
+
+    <!-- Scripts de generación musical real -->
+    <script src="web_audio_generator.js"></script>
+    <script src="real_music_integration.js"></script>
+
+    <script>
+        let testResults = [];
+        let currentTrack = null;
+        let isGenerating = false;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            testResults.push({ message: logMessage, type });
+            
+            const logsDiv = document.getElementById('testLogs');
+            logsDiv.textContent = testResults.map(r => r.message).join('\n');
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            console.log(`🎵 Test: ${logMessage}`);
+        }
+        
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            const statuses = [];
+            
+            if (window.WebAudioGenerator) {
+                statuses.push('<span class="status success">Web Audio Generator: Disponible</span>');
+            } else {
+                statuses.push('<span class="status error">Web Audio Generator: No disponible</span>');
+            }
+            
+            if (window.realMusicIntegration && window.realMusicIntegration.isInitialized) {
+                statuses.push('<span class="status success">Real Music Integration: Activo</span>');
+            } else {
+                statuses.push('<span class="status warning">Real Music Integration: Inicializando...</span>');
+            }
+            
+            if (currentTrack) {
+                statuses.push('<span class="status info">Track Actual: Generado</span>');
+            } else {
+                statuses.push('<span class="status warning">Track Actual: Ninguno</span>');
+            }
+            
+            statusDiv.innerHTML = statuses.join(' ');
+        }
+        
+        function updateTrackInfo(track) {
+            const trackInfoDiv = document.getElementById('trackInfo');
+            trackInfoDiv.style.display = 'block';
+            
+            trackInfoDiv.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 10px;">🎵 ${track.id}</div>
+                <div><strong>Prompt:</strong> ${track.prompt}</div>
+                <div><strong>Estilo:</strong> ${track.style}</div>
+                <div><strong>Duración:</strong> ${track.duration.toFixed(2)}s</div>
+                <div><strong>Tempo:</strong> ${track.analysis.tempo} BPM</div>
+                <div><strong>Escala:</strong> ${track.analysis.scale}</div>
+                <div><strong>Mood:</strong> ${track.analysis.mood}</div>
+                <div><strong>Instrumentos:</strong> ${track.analysis.instruments.join(', ')}</div>
+                <div><strong>Generado:</strong> ${new Date(track.createdAt).toLocaleString()}</div>
+            `;
+        }
+        
+        function updateProgress(percent) {
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            if (percent > 0) {
+                progressBar.style.display = 'block';
+                progressFill.style.width = percent + '%';
+            } else {
+                progressBar.style.display = 'none';
+            }
+        }
+        
+        function updateButtons() {
+            const generateBtn = document.getElementById('generateBtn');
+            const playBtn = document.getElementById('playBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            generateBtn.disabled = isGenerating;
+            playBtn.disabled = !currentTrack || isGenerating;
+            pauseBtn.disabled = !currentTrack || isGenerating;
+            stopBtn.disabled = !currentTrack || isGenerating;
+            downloadBtn.disabled = !currentTrack || isGenerating;
+        }
+        
+        async function testInitialization() {
+            log('Iniciando prueba de inicialización...');
+            
+            try {
+                if (window.realMusicIntegration) {
+                    await window.realMusicIntegration.init();
+                    log('✅ Real Music Integration inicializado correctamente', 'success');
+                } else {
+                    log('❌ Real Music Integration no disponible', 'error');
+                }
+                
+                updateSystemStatus();
+                updateButtons();
+                
+            } catch (error) {
+                log(`❌ Error en inicialización: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGeneration() {
+            if (isGenerating) return;
+            
+            isGenerating = true;
+            updateButtons();
+            updateProgress(0);
+            
+            try {
+                const prompt = document.getElementById('testPrompt').value;
+                const lyrics = document.getElementById('testLyrics').value;
+                
+                log(`Iniciando generación: "${prompt}"`);
+                updateProgress(10);
+                
+                // Simular progreso
+                const progressInterval = setInterval(() => {
+                    const currentProgress = Math.min(90, (Date.now() - startTime) / 100);
+                    updateProgress(currentProgress);
+                }, 100);
+                
+                const startTime = Date.now();
+                
+                // Generar música (el estilo se extrae automáticamente del prompt)
+                const track = await window.realMusicIntegration.generateMusic(prompt, 'auto', lyrics);
+                
+                clearInterval(progressInterval);
+                updateProgress(100);
+                
+                currentTrack = track;
+                updateTrackInfo(track);
+                updateSystemStatus();
+                updateButtons();
+                
+                log(`✅ Música generada exitosamente: ${track.duration.toFixed(2)}s`, 'success');
+                
+                // Auto-reproducir
+                setTimeout(() => {
+                    testPlay();
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ Error generando música: ${error.message}`, 'error');
+                updateProgress(0);
+            } finally {
+                isGenerating = false;
+                updateButtons();
+            }
+        }
+        
+        function testPlay() {
+            if (currentTrack && window.realMusicIntegration) {
+                window.realMusicIntegration.play();
+                log('▶️ Reproduciendo música...', 'info');
+            }
+        }
+        
+        function testPause() {
+            if (window.realMusicIntegration) {
+                window.realMusicIntegration.pause();
+                log('⏸️ Música pausada', 'info');
+            }
+        }
+        
+        function testStop() {
+            if (window.realMusicIntegration) {
+                window.realMusicIntegration.stop();
+                log('⏹️ Música detenida', 'info');
+            }
+        }
+        
+        function testDownload() {
+            if (currentTrack && window.realMusicIntegration) {
+                window.realMusicIntegration.download();
+                log('💾 Descargando música...', 'info');
+            }
+        }
+        
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Sistema de prueba iniciado');
+            updateSystemStatus();
+            updateButtons();
+            
+            // Verificar estado cada 2 segundos
+            setInterval(() => {
+                updateSystemStatus();
+                updateButtons();
+            }, 2000);
+            
+            // Escuchar eventos de música generada
+            document.addEventListener('realMusicGenerated', function(event) {
+                log('🎵 Evento de música generada recibido', 'success');
+                currentTrack = event.detail.track;
+                updateTrackInfo(currentTrack);
+                updateSystemStatus();
+                updateButtons();
+            });
+        });
+    </script>
+</body>
+</html>

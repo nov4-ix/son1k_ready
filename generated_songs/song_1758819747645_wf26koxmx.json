@@ -1,0 +1,35 @@
+{
+  "id": "song_1758819747645_wf26koxmx",
+  "title": "Una Canción Épica",
+  "prompt": "una canción épica de synthwave sobre la resistencia",
+  "lyrics": "",
+  "style": "profesional",
+  "instrumental": true,
+  "genre": "synthwave",
+  "mood": "epic",
+  "tempo": 131,
+  "key": "D",
+  "structure": [
+    "Intro",
+    "Verse",
+    "Chorus",
+    "Verse",
+    "Chorus",
+    "Bridge",
+    "Chorus",
+    "Outro"
+  ],
+  "duration": "3:45",
+  "audioUrl": "https://demo.son1k.com/audio/song_1758819747645_wf26koxmx.mp3",
+  "imageUrl": "https://demo.son1k.com/images/song_1758819747645_wf26koxmx.jpg",
+  "createdAt": "2025-09-25T17:02:27.645Z",
+  "status": "completed",
+  "method": "son1k_demo",
+  "features": [
+    "Análisis inteligente de prompts",
+    "Generación de estructura musical",
+    "Creación automática de letras",
+    "Metadatos completos",
+    "Sistema ultra-indetectable"
+  ]
+}

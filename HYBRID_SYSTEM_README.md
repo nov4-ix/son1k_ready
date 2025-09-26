@@ -162,3 +162,6 @@ El sistema mantiene estadísticas detalladas:
 
 
 
+
+
+

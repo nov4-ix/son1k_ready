@@ -388,27 +388,27 @@
       </div>
       
       <div class="flex space-x-6" role="tablist">
-        <button class="nav-tab tab-active px-4 py-2 rounded-lg transition btn" 
+        <button class="nav-tab tab-active px-3 py-1 rounded-lg transition btn" 
                 data-section="home" 
                 role="tab" 
                 aria-selected="true">Historia</button>
-        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+        <button class="nav-tab px-3 py-1 rounded-lg transition btn" 
                 data-section="ghost-studio" 
                 role="tab" 
                 aria-selected="false">Ghost Studio</button>
-        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+        <button class="nav-tab px-3 py-1 rounded-lg transition btn" 
                 data-section="generacion" 
                 role="tab" 
                 aria-selected="false">Generación</button>
-        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+        <button class="nav-tab px-3 py-1 rounded-lg transition btn" 
                 data-section="resultados" 
                 role="tab" 
                 aria-selected="false">Reproductor</button>
-        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+        <button class="nav-tab px-3 py-1 rounded-lg transition btn" 
                 data-section="extension" 
                 role="tab" 
                 aria-selected="false">Extensión</button>
-        <button class="nav-tab px-4 py-2 rounded-lg transition btn" 
+        <button class="nav-tab px-3 py-1 rounded-lg transition btn" 
                 data-section="archivo" 
                 role="tab" 
                 aria-selected="false">Archivo</button>
@@ -416,10 +416,10 @@
       
       <!-- Botones de autenticación -->
       <div id="authButtons" class="flex space-x-3">
-        <button onclick="showLoginModal()" class="border border-white/20 px-4 py-2 rounded-lg hover:bg-white/5 transition btn">
+        <button onclick="showLoginModal()" class="border border-white/20 px-3 py-1 rounded-lg hover:bg-white/5 transition btn">
           Login
         </button>
-        <button onclick="showRegisterModal()" class="bg-neon text-black px-4 py-2 rounded-lg font-semibold hover:bg-neon/90 transition btn">
+        <button onclick="showRegisterModal()" class="bg-neon text-black px-3 py-1 rounded-lg font-semibold hover:bg-neon/90 transition btn">
           Registro
         </button>
       </div>
@@ -598,42 +598,39 @@
                 id="letraCancion"
               ></textarea>
               <div class="flex space-x-2 mt-2">
-                <button id="generarLetraIA" class="text-xs bg-neon-purple/20 text-neon-purple px-3 py-2 rounded-lg hover:bg-neon-purple/30 transition btn">
+                <button id="generarLetraIA" class="text-xs bg-neon-purple/20 text-neon-purple px-2 py-1 rounded-md hover:bg-neon-purple/30 transition btn">
                   🤖 Generar Letra con IA
                 </button>
-                <button id="mejorarLetra" class="text-xs bg-neon-blue/20 text-neon-blue px-3 py-2 rounded-lg hover:bg-neon-blue/30 transition btn">
+                <button id="mejorarLetra" class="text-xs bg-neon-blue/20 text-neon-blue px-2 py-1 rounded-md hover:bg-neon-blue/30 transition btn">
                   ✨ Mejorar Letra
                 </button>
               </div>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-zinc-300 mb-2">Prompt de estilo musical</label>
-              <input 
-                type="text" 
-                class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white"
-                placeholder="Ej: una balada emotiva con piano y cuerdas, estilo neo-soul, tempo 70 BPM"
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Prompt Musical (incluye estilo, mood, tempo, etc.)</label>
+              <textarea 
+                class="w-full h-24 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                placeholder="Ej: una balada emotiva con piano y cuerdas, estilo neo-soul, tempo 70 BPM, voz masculina expresiva"
                 id="promptEstilo"
-              >
-              <div class="flex space-x-2 mt-2">
-                <button id="promptInteligente" class="text-xs bg-neon/20 text-neon px-3 py-2 rounded-lg hover:bg-neon/30 transition btn">
+              ></textarea>
+              <div class="text-xs text-zinc-400 mt-2 p-2 bg-zinc-800/50 rounded-lg">
+                💡 <strong>Puedes incluir:</strong> estilos, mood, tempo, instrumentos, atmosfera, género, época, etc.
+              </div>
+              <div class="flex space-x-2 mt-3">
+                <button id="generarPromptIA" class="text-xs bg-neon-purple/20 text-neon-purple px-2 py-1 rounded-md hover:bg-neon-purple/30 transition btn">
+                  🤖 Generar Prompt con IA
+                </button>
+                <button id="mejorarPrompt" class="text-xs bg-neon-blue/20 text-neon-blue px-2 py-1 rounded-md hover:bg-neon-blue/30 transition btn">
+                  ⚡ Mejorar Prompt
+                </button>
+                <button id="promptInteligente" class="text-xs bg-neon/20 text-neon px-2 py-1 rounded-md hover:bg-neon/30 transition btn">
                   🎯 Prompt Inteligente
                 </button>
-                <button id="analizarTexto" class="text-xs bg-yellow-500/20 text-yellow-500 px-3 py-2 rounded-lg hover:bg-yellow-500/30 transition btn">
+                <button id="analizarTexto" class="text-xs bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-md hover:bg-yellow-500/30 transition btn">
                   📊 Analizar Texto
                 </button>
               </div>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-zinc-300 mb-2">Preset de generación</label>
-              <select class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white" id="presetGeneracion">
-                <option>Profesional</option>
-                <option>Experimental</option>
-                <option>Vintage</option>
-                <option>Moderno</option>
-                <option>Cinematográfico</option>
-              </select>
             </div>
             
             <!-- Toggle instrumental añadido -->
@@ -903,21 +900,41 @@
           <div class="mb-8">
             <label class="block text-lg font-medium text-zinc-300 mb-4">Prompt de Generación Musical</label>
             <textarea 
-              class="w-full h-24 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
-              placeholder="Ej: una balada emotiva con piano y cuerdas, estilo neo-soul, tempo 70 BPM, voz masculina expresiva"
+              class="w-full h-32 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+              placeholder="Ej: una canción épica de synthwave con tempo 140 BPM, mood nostálgico, instrumentos sintéticos y atmosfera retro-futurista"
               id="promptGhostStudio"
             ></textarea>
+            <div class="text-xs text-zinc-400 mt-3 p-3 bg-zinc-800/50 rounded-lg">
+              💡 <strong>Puedes incluir:</strong> estilos, mood, tempo, instrumentos, atmosfera, género, época, etc.
+            </div>
+            <div class="flex space-x-2 mt-3">
+              <button id="generarPromptIA" class="text-xs bg-neon-purple/20 text-neon-purple px-2 py-1 rounded-md hover:bg-neon-purple/30 transition btn">
+                🤖 Generar Prompt con IA
+              </button>
+              <button id="mejorarPrompt" class="text-xs bg-neon-blue/20 text-neon-blue px-2 py-1 rounded-md hover:bg-neon-blue/30 transition btn">
+                ⚡ Mejorar Prompt
+              </button>
+            </div>
           </div>
           
           <div class="mb-8">
-            <label class="block text-lg font-medium text-zinc-300 mb-4">Preset</label>
-            <select class="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white" id="presetGhost">
-              <option>Profesional</option>
-              <option>Experimental</option>
-              <option>Vintage</option>
-              <option>Crudo</option>
-              <option>Cinematográfico</option>
-            </select>
+            <label class="block text-lg font-medium text-zinc-300 mb-4">Letras (opcional)</label>
+            <textarea 
+              class="w-full h-24 bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+              placeholder="Escribe las letras de la canción (opcional)..."
+              id="letraMusical"
+            ></textarea>
+            <div class="text-xs text-zinc-400 mt-2">
+              💡 Si no proporcionas letras, el sistema generará automáticamente letras basadas en el prompt
+            </div>
+            <div class="flex space-x-2 mt-3">
+              <button id="generarLetraIA" class="text-xs bg-neon-purple/20 text-neon-purple px-2 py-1 rounded-md hover:bg-neon-purple/30 transition btn">
+                🤖 Generar Letra con IA
+              </button>
+              <button id="mejorarLetra" class="text-xs bg-neon-blue/20 text-neon-blue px-2 py-1 rounded-md hover:bg-neon-blue/30 transition btn">
+                ✨ Mejorar Letra
+              </button>
+            </div>
           </div>
           
           <div class="mb-8">
@@ -1320,9 +1337,12 @@
 
     // AI Functions for Smart Prompts and Lyrics
     async function generarLetraIA() {
-      const prompt = sanitizeInput(document.getElementById('promptEstilo').value);
+      // Intentar obtener prompt del campo principal primero, luego del secundario
+      let prompt = document.getElementById('promptGhostStudio')?.value || document.getElementById('promptEstilo')?.value;
+      prompt = sanitizeInput(prompt);
+      
       if (!prompt) {
-        showToast('Ingresa un prompt de estilo primero para generar la letra', 'warning');
+        showToast('Ingresa un prompt primero para generar la letra', 'warning');
         return;
       }
 
@@ -1340,16 +1360,26 @@
 
         if (response.ok) {
           const data = await response.json();
-          document.getElementById('letraCancion').value = data.lyrics || "Letra generada basada en tu prompt...";
+          // Actualizar el campo de letras correspondiente
+          const lyricsField = document.getElementById('letraMusical') || document.getElementById('letraCancion');
+          if (lyricsField) {
+            lyricsField.value = data.lyrics || "Letra generada basada en tu prompt...";
+          }
           showToast('¡Letra generada con IA!', 'success');
         } else {
           // Fallback si no hay endpoint
-          document.getElementById('letraCancion').value = "Verso 1:\n" + prompt + " me inspira\nCada nota que suena\nEn mi corazón vibra\n\nCoro:\nEsta es mi canción\nNacida del alma\nCon tu inspiración\nHallé la calma";
+          const lyricsField = document.getElementById('letraMusical') || document.getElementById('letraCancion');
+          if (lyricsField) {
+            lyricsField.value = "Verso 1:\n" + prompt + " me inspira\nCada nota que suena\nEn mi corazón vibra\n\nCoro:\nEsta es mi canción\nNacida del alma\nCon tu inspiración\nHallé la calma";
+          }
           showToast('Letra generada (modo demo)', 'info');
         }
       } catch (error) {
         // Fallback si hay error
-        document.getElementById('letraCancion').value = "Verso 1:\n" + prompt + " me inspira\nCada nota que suena\nEn mi corazón vibra\n\nCoro:\nEsta es mi canción\nNacida del alma\nCon tu inspiración\nHallé la calma";
+        const lyricsField = document.getElementById('letraMusical') || document.getElementById('letraCancion');
+        if (lyricsField) {
+          lyricsField.value = "Verso 1:\n" + prompt + " me inspira\nCada nota que suena\nEn mi corazón vibra\n\nCoro:\nEsta es mi canción\nNacida del alma\nCon tu inspiración\nHallé la calma";
+        }
         showToast('Letra generada (modo demo)', 'info');
       } finally {
         btn.disabled = false;
@@ -1358,7 +1388,10 @@
     }
 
     async function mejorarLetra() {
-      const letra = sanitizeInput(document.getElementById('letraCancion').value);
+      // Intentar obtener letra del campo principal primero, luego del secundario
+      let letra = document.getElementById('letraMusical')?.value || document.getElementById('letraCancion')?.value;
+      letra = sanitizeInput(letra);
+      
       if (!letra) {
         showToast('Escribe una letra primero para mejorarla', 'warning');
         return;
@@ -1377,7 +1410,11 @@
 
         if (response.ok) {
           const data = await response.json();
-          document.getElementById('letraCancion').value = data.improved_lyrics || letra;
+          // Actualizar el campo de letras correspondiente
+          const lyricsField = document.getElementById('letraMusical') || document.getElementById('letraCancion');
+          if (lyricsField) {
+            lyricsField.value = data.improved_lyrics || letra;
+          }
           showToast('¡Letra mejorada!', 'success');
         } else {
           showToast('Letra procesada (modo demo)', 'info');
@@ -1479,10 +1516,10 @@
         const esInstrumental = document.getElementById('modoInstrumental').checked;
         const letra = sanitizeInput(document.getElementById('letraCancion').value);
         const estilo = sanitizeInput(document.getElementById('promptEstilo').value);
-        const preset = document.getElementById('presetGeneracion').value;
+        // El estilo ahora se extrae automáticamente del prompt
         
         if (!esInstrumental && !letra && !estilo) {
-          showToast('Por favor ingresa una letra o prompt de estilo, o activa modo instrumental', 'warning');
+          showToast('Por favor ingresa una letra o prompt musical, o activa modo instrumental', 'warning');
           return;
         }
         
@@ -1497,11 +1534,11 @@
         
         console.log('🎵 Iniciando generación con Suno Wrapper...');
         
-        // Usar la nueva integración con wrapper de Suno
+        // Usar la nueva integración con wrapper de Suno (el estilo se extrae automáticamente del prompt)
         const result = await generateMusicWithSuno(
           estilo || 'música instrumental',
           letra,
-          preset,
+          'auto', // El estilo se extrae automáticamente del prompt
           esInstrumental
         );
         
@@ -2294,6 +2331,10 @@
       document.getElementById('promptInteligente').addEventListener('click', promptInteligente);
       document.getElementById('analizarTexto').addEventListener('click', analizarTexto);
       
+      // Botones de la sección de generación musical
+      document.getElementById('generarPromptIA').addEventListener('click', generarPromptIA);
+      document.getElementById('mejorarPrompt').addEventListener('click', mejorarPrompt);
+      
       // Botones de generación
       document.getElementById('generarMusica').addEventListener('click', generarMusica);
       document.getElementById('generarMusicaGhost').addEventListener('click', generarMusicaGhost);
@@ -2730,11 +2771,21 @@
   <!-- 🎵 Son1k Commercial Integration Script -->
   <script src="commercial_integration.js"></script>
   
+  <!-- 🎵 Real Music Generation Scripts -->
+  <script src="web_audio_generator.js"></script>
+  <script src="real_music_integration.js"></script>
+  
+  <!-- 🤖 Ollama AI Integration Scripts -->
+  <script src="ollama_integration.js"></script>
+  
+  <!-- 📊 Analytics Scripts -->
+  <script src="analytics_client.js"></script>
+  
   <!-- 🎵 Suno Wrapper Integration Script -->
   <script src="suno_wrapper_integration.js"></script>
   
   <script>
-    // Modificar evento del botón para usar integración Suno
+    // Modificar evento del botón para usar generación musical real
     document.addEventListener('DOMContentLoaded', function() {
       // Esperar a que el DOM esté completamente cargado
       setTimeout(() => {
@@ -2745,41 +2796,305 @@
           const newBtn = btnGenerar.cloneNode(true);
           btnGenerar.parentNode.replaceChild(newBtn, btnGenerar);
           
-          // Agregar nuevo evento que use el sistema comercial
+          // Agregar nuevo evento que use el sistema de generación real
           newBtn.addEventListener('click', async function() {
-            // Verificar disponibilidad del sistema comercial
-            const sistemaDisponible = await checkCommercialSystemAvailability();
-            if (!sistemaDisponible) {
-              showToast('⚠️ Motor avanzado no disponible. Usando modo estándar...', 'warning');
+            // Verificar disponibilidad del sistema de generación real
+            if (window.realMusicIntegration && window.realMusicIntegration.isInitialized) {
+              await generateRealMusic();
+            } else {
+              showToast('⚠️ Generador real no disponible. Usando modo estándar...', 'warning');
               // Fallback a función original
               generarMusica();
               return;
             }
-            
-            // Usar motor comercial
-            generateMusicCommercial();
           });
           
           // Mantener texto original del botón
-          newBtn.innerHTML = '🎵 Generar Música';
+          newBtn.innerHTML = '🎵 Generar Música Real';
         }
         
-        // Verificar estado del motor comercial al cargar
-        checkCommercialSystemAvailability().then(disponible => {
+        // Verificar estado del generador real al cargar
+        setTimeout(() => {
           const statusIndicator = document.createElement('div');
           statusIndicator.className = 'fixed top-4 right-4 z-40 px-3 py-1 rounded-full text-xs font-medium';
-          statusIndicator.innerHTML = disponible 
-            ? '🟢 Sistema Listo' 
-            : '🔴 Modo Básico';
-          statusIndicator.style.backgroundColor = disponible ? '#10b981' : '#ef4444';
-          statusIndicator.style.color = 'white';
+          
+          if (window.realMusicIntegration && window.realMusicIntegration.isInitialized) {
+            statusIndicator.innerHTML = '🟢 Generador Real Activo';
+            statusIndicator.style.backgroundColor = '#10b981';
+            statusIndicator.style.color = 'white';
+          } else {
+            statusIndicator.innerHTML = '🔴 Modo Básico';
+            statusIndicator.style.backgroundColor = '#ef4444';
+            statusIndicator.style.color = 'white';
+          }
+          
           document.body.appendChild(statusIndicator);
           
           // Auto-hide después de 3 segundos
           setTimeout(() => statusIndicator.remove(), 3000);
-        });
+        }, 2000);
       }, 1000); // Esperar 1 segundo para asegurar que todo esté cargado
     });
+    
+    // Función para generar prompt con IA
+    async function generarPromptIA() {
+      // Intentar obtener prompt del campo principal primero, luego del secundario
+      let prompt = document.getElementById('promptGhostStudio')?.value || document.getElementById('promptEstilo')?.value;
+      if (!prompt.trim()) {
+        showToast('Escribe una idea básica primero para generar el prompt', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('generarPromptIA');
+      btn.disabled = true;
+      btn.textContent = '🤖 Generando...';
+
+      try {
+        // Verificar si IA está disponible
+        const aiAvailable = window.enhancedMusicGenerator && window.enhancedMusicGenerator.ollamaAI.isAvailable;
+        
+        if (aiAvailable) {
+          // Usar IA local para generar prompt
+          const response = await fetch('http://localhost:8001/ai/optimize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Actualizar el campo de prompt correspondiente
+            const promptField = document.getElementById('promptGhostStudio') || document.getElementById('promptEstilo');
+            if (promptField) {
+              promptField.value = data.optimized_prompt || data.prompt;
+            }
+            showToast('✅ Prompt generado con IA', 'success');
+          } else {
+            throw new Error('Error en la API de IA');
+          }
+        } else {
+          // Fallback: generar prompt básico
+          const enhancedPrompt = `una canción ${prompt} con tempo dinámico, instrumentos variados y atmosfera envolvente`;
+          const promptField = document.getElementById('promptGhostStudio') || document.getElementById('promptEstilo');
+          if (promptField) {
+            promptField.value = enhancedPrompt;
+          }
+          showToast('✅ Prompt mejorado (modo básico)', 'info');
+        }
+      } catch (error) {
+        console.error('Error generando prompt:', error);
+        showToast('❌ Error generando prompt', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🤖 Generar Prompt con IA';
+      }
+    }
+
+    // Función para mejorar prompt existente
+    async function mejorarPrompt() {
+      // Intentar obtener prompt del campo principal primero, luego del secundario
+      let prompt = document.getElementById('promptGhostStudio')?.value || document.getElementById('promptEstilo')?.value;
+      if (!prompt.trim()) {
+        showToast('Escribe un prompt primero para mejorarlo', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('mejorarPrompt');
+      btn.disabled = true;
+      btn.textContent = '⚡ Mejorando...';
+
+      try {
+        // Verificar si IA está disponible
+        const aiAvailable = window.enhancedMusicGenerator && window.enhancedMusicGenerator.ollamaAI.isAvailable;
+        
+        if (aiAvailable) {
+          // Usar IA local para optimizar prompt
+          const response = await fetch('http://localhost:8001/ai/optimize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Actualizar el campo de prompt correspondiente
+            const promptField = document.getElementById('promptGhostStudio') || document.getElementById('promptEstilo');
+            if (promptField) {
+              promptField.value = data.optimized_prompt || data.prompt;
+            }
+            showToast('✅ Prompt optimizado con IA', 'success');
+          } else {
+            throw new Error('Error en la API de IA');
+          }
+        } else {
+          // Fallback: mejorar prompt básicamente
+          const improvedPrompt = prompt + ', con detalles musicales específicos y atmosfera única';
+          const promptField = document.getElementById('promptGhostStudio') || document.getElementById('promptEstilo');
+          if (promptField) {
+            promptField.value = improvedPrompt;
+          }
+          showToast('✅ Prompt mejorado (modo básico)', 'info');
+        }
+      } catch (error) {
+        console.error('Error mejorando prompt:', error);
+        showToast('❌ Error mejorando prompt', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Mejorar Prompt';
+      }
+    }
+
+    // Función para generar música real con IA
+    async function generateRealMusic() {
+      try {
+        // Obtener datos del formulario
+        const prompt = document.getElementById('promptGhostStudio')?.value || 'una canción épica de synthwave con tempo 140 BPM';
+        const lyrics = document.getElementById('letraMusical')?.value || '';
+        // El estilo ahora se extrae del prompt automáticamente
+        
+        // Verificar si IA está disponible
+        const aiAvailable = window.enhancedMusicGenerator && window.enhancedMusicGenerator.ollamaAI.isAvailable;
+        
+        if (aiAvailable) {
+          showToast('🤖 Generando música con IA local...', 'info');
+          
+          // Generar música con IA (el estilo se extrae del prompt)
+          const track = await window.enhancedMusicGenerator.generateMusicWithAI(prompt, 'auto', lyrics);
+          
+          // Mostrar información del track con IA
+          showToast(`✅ Música generada con IA: ${track.duration.toFixed(2)}s`, 'success');
+          updateUIWithAITrackInfo(track);
+          
+        } else {
+          showToast('🎵 Generando música real con Web Audio API...', 'info');
+          
+          // Generar música sin IA (el estilo se extrae del prompt)
+          const track = await window.realMusicIntegration.generateMusic(prompt, 'auto', lyrics);
+          
+          // Mostrar información del track
+          showToast(`✅ Música generada: ${track.duration.toFixed(2)}s`, 'success');
+          updateUIWithTrackInfo(track);
+        }
+        
+        // Reproducir automáticamente
+        window.realMusicIntegration.play();
+        
+      } catch (error) {
+        console.error('❌ Error generando música real:', error);
+        showToast('Error generando música real', 'error');
+      }
+    }
+    
+    // Función para actualizar UI con información del track con IA
+    function updateUIWithAITrackInfo(track) {
+      const trackInfo = document.createElement('div');
+      trackInfo.className = 'track-info ai-enhanced';
+      trackInfo.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.9);
+        color: #00ff88;
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #00ff88;
+        font-family: monospace;
+        font-size: 12px;
+        z-index: 1000;
+        max-width: 350px;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      `;
+      
+      const aiAnalysis = track.aiAnalysis || {};
+      const optimization = track.optimization || {};
+      
+      trackInfo.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 10px; color: #00ccff;">
+          🤖 Track Generado con IA
+        </div>
+        <div><strong>ID:</strong> ${track.id}</div>
+        <div><strong>Duración:</strong> ${track.duration.toFixed(2)}s</div>
+        <div><strong>Estilo:</strong> ${aiAnalysis.primary_style || track.style}</div>
+        <div><strong>Tempo:</strong> ${aiAnalysis.tempo || 'N/A'} BPM</div>
+        <div><strong>Escala:</strong> ${aiAnalysis.scale || 'N/A'}</div>
+        <div><strong>Mood:</strong> ${aiAnalysis.mood || 'N/A'}</div>
+        <div><strong>Instrumentos:</strong> ${(aiAnalysis.instruments || []).join(', ')}</div>
+        <div><strong>Confianza IA:</strong> ${aiAnalysis.confidence ? (aiAnalysis.confidence * 100).toFixed(0) + '%' : 'N/A'}</div>
+        <div><strong>Mejoras:</strong> ${(optimization.improvements || []).join(', ') || 'N/A'}</div>
+        ${track.generatedLyrics ? `<div><strong>Letras IA:</strong> ${track.generatedLyrics.substring(0, 50)}...</div>` : ''}
+        <div style="margin-top: 10px;">
+          <button onclick="window.realMusicIntegration.play()" style="background: #00ff88; color: #000; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer;">▶️ Play</button>
+          <button onclick="window.realMusicIntegration.pause()" style="background: #ffaa00; color: #000; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer;">⏸️ Pause</button>
+          <button onclick="window.realMusicIntegration.download()" style="background: #00ccff; color: #000; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer;">💾 Download</button>
+        </div>
+      `;
+      
+      // Remover track info anterior si existe
+      const existingTrackInfo = document.querySelector('.track-info');
+      if (existingTrackInfo) {
+        existingTrackInfo.remove();
+      }
+      
+      document.body.appendChild(trackInfo);
+      
+      // Auto-remover después de 15 segundos (más tiempo para IA)
+      setTimeout(() => {
+        if (trackInfo.parentNode) {
+          trackInfo.remove();
+        }
+      }, 15000);
+    }
+    
+    // Función para actualizar UI con información del track
+    function updateUIWithTrackInfo(track) {
+      // Crear elemento para mostrar información del track
+      const trackInfo = document.createElement('div');
+      trackInfo.className = 'track-info';
+      trackInfo.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.9);
+        color: #00ff88;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #00ff88;
+        font-family: monospace;
+        font-size: 12px;
+        z-index: 1000;
+        max-width: 300px;
+      `;
+      
+      trackInfo.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 10px;">🎵 Track Generado</div>
+        <div><strong>ID:</strong> ${track.id}</div>
+        <div><strong>Duración:</strong> ${track.duration.toFixed(2)}s</div>
+        <div><strong>Estilo:</strong> ${track.style}</div>
+        <div><strong>Tempo:</strong> ${track.analysis.tempo} BPM</div>
+        <div><strong>Escala:</strong> ${track.analysis.scale}</div>
+        <div><strong>Mood:</strong> ${track.analysis.mood}</div>
+        <div style="margin-top: 10px;">
+          <button onclick="window.realMusicIntegration.play()" style="background: #00ff88; color: #000; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer;">▶️ Play</button>
+          <button onclick="window.realMusicIntegration.pause()" style="background: #ffaa00; color: #000; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer;">⏸️ Pause</button>
+          <button onclick="window.realMusicIntegration.download()" style="background: #00ccff; color: #000; border: none; padding: 5px 10px; margin: 2px; border-radius: 3px; cursor: pointer;">💾 Download</button>
+        </div>
+      `;
+      
+      // Remover track info anterior si existe
+      const existingTrackInfo = document.querySelector('.track-info');
+      if (existingTrackInfo) {
+        existingTrackInfo.remove();
+      }
+      
+      document.body.appendChild(trackInfo);
+      
+      // Auto-remover después de 10 segundos
+      setTimeout(() => {
+        if (trackInfo.parentNode) {
+          trackInfo.remove();
+        }
+      }, 10000);
+    }
   </script>
 
   <!-- Interfaz Inmersiva (Oculta por defecto) -->

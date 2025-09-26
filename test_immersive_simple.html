@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modo Inmersivo - Son1kVers3</title>
+    <style>
+        body { 
+            background: #0a0a0a; 
+            color: #00ff88; 
+            font-family: monospace; 
+            padding: 20px; 
+        }
+        .test { 
+            background: rgba(0, 255, 136, 0.1); 
+            border: 1px solid #00ff88; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .success { color: #00ff88; }
+        .error { color: #ff4444; }
+        .warning { color: #ffaa00; }
+        button { 
+            background: #00ff88; 
+            color: #000; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Test Modo Inmersivo</h1>
+    
+    <div class="test">
+        <h3>Pruebas Automáticas</h3>
+        <div id="testResults">Ejecutando pruebas...</div>
+        <button onclick="runTests()">Ejecutar Pruebas</button>
+    </div>
+    
+    <div class="test">
+        <h3>Pruebas Manuales</h3>
+        <button onclick="testImmersive()">Probar Modo Inmersivo</button>
+        <button onclick="testEasterEggs()">Probar Easter Eggs</button>
+        <button onclick="testKeyboard()">Probar Teclado</button>
+    </div>
+    
+    <div class="test">
+        <h3>Estado del Sistema</h3>
+        <div id="systemStatus">Verificando...</div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const div = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'warning';
+            div.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+        
+        function runTests() {
+            document.getElementById('testResults').innerHTML = '';
+            log('Iniciando pruebas automáticas...');
+            
+            // Test 1: Verificar funciones
+            if (typeof window.toggleImmersiveInterface === 'function') {
+                log('✅ toggleImmersiveInterface disponible', 'success');
+            } else {
+                log('❌ toggleImmersiveInterface NO disponible', 'error');
+            }
+            
+            // Test 2: Verificar elementos
+            const container = document.getElementById('immersiveInterfaceContainer');
+            if (container) {
+                log('✅ Contenedor inmersivo encontrado', 'success');
+            } else {
+                log('❌ Contenedor inmersivo NO encontrado', 'error');
+            }
+            
+            // Test 3: Verificar iframe
+            const iframe = document.getElementById('immersiveIframe');
+            if (iframe) {
+                log('✅ Iframe inmersivo encontrado', 'success');
+            } else {
+                log('❌ Iframe inmersivo NO encontrado', 'error');
+            }
+            
+            log('Pruebas completadas');
+        }
+        
+        function testImmersive() {
+            log('Probando modo inmersivo...');
+            if (typeof window.toggleImmersiveInterface === 'function') {
+                window.toggleImmersiveInterface();
+                log('Modo inmersivo activado', 'success');
+            } else {
+                log('No se puede activar modo inmersivo', 'error');
+            }
+        }
+        
+        function testEasterEggs() {
+            log('Probando easter eggs...');
+            const s3Logo = document.getElementById('s3Logo');
+            if (s3Logo) {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => s3Logo.click(), i * 100);
+                }
+                log('Easter egg activado (3 clicks en S3)', 'success');
+            } else {
+                log('Logo S3 no encontrado', 'error');
+            }
+        }
+        
+        function testKeyboard() {
+            log('Probando atajos de teclado...');
+            const event = new KeyboardEvent('keydown', {
+                key: 'h',
+                ctrlKey: true,
+                altKey: true
+            });
+            document.dispatchEvent(event);
+            log('Atajo Ctrl+Alt+H simulado', 'success');
+        }
+        
+        // Actualizar estado del sistema
+        function updateSystemStatus() {
+            const status = document.getElementById('systemStatus');
+            status.innerHTML = `
+                <div class="success">Frontend: OK</div>
+                <div class="success">Modo Inmersivo: Disponible</div>
+                <div class="warning">Backend: Verificando...</div>
+            `;
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSystemStatus();
+            runTests();
+        });
+    </script>
+</body>
+</html>

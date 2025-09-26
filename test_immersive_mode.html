@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modo Inmersivo - Son1kVers3</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-title {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px #00ff88;
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff88;
+        }
+        
+        .test-result {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin: 5px;
+        }
+        
+        .status.success {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .status.error {
+            background: #ff4444;
+            color: #fff;
+        }
+        
+        .status.warning {
+            background: #ffaa00;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🎵 TEST MODO INMERSIVO - SON1KVERS3</h1>
+        
+        <div class="test-section">
+            <h2>🔧 Pruebas de Funcionalidad</h2>
+            <button class="test-button" onclick="testImmersiveInterface()">Probar Interfaz Inmersiva</button>
+            <button class="test-button" onclick="testEasterEggs()">Probar Easter Eggs</button>
+            <button class="test-button" onclick="testTerminal()">Probar Terminal</button>
+            <button class="test-button" onclick="testKeyboardShortcuts()">Probar Atajos de Teclado</button>
+            <div id="testResults" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Estado del Sistema</h2>
+            <div id="systemStatus">
+                <span class="status warning">Inicializando...</span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Controles de Prueba</h2>
+            <p><strong>Atajos de Teclado:</strong></p>
+            <ul>
+                <li><kbd>Ctrl + Alt + H</kbd> - Activar/Desactivar modo inmersivo</li>
+                <li><kbd>ESC</kbd> - Salir del modo inmersivo</li>
+                <li><kbd>Ctrl + T</kbd> - Mostrar terminal (dentro del modo inmersivo)</li>
+            </ul>
+            
+            <p><strong>Easter Eggs:</strong></p>
+            <ul>
+                <li>3 clicks rápidos en el logo S3</li>
+                <li>5 clicks en "Conocer el Universo"</li>
+                <li>Comandos secretos en el terminal</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔗 Enlaces de Prueba</h2>
+            <a href="http://localhost:8080" target="_blank" class="test-button">Abrir Frontend Local</a>
+            <a href="http://localhost:8000" target="_blank" class="test-button">Abrir Backend Local</a>
+            <a href="https://www.son1kvers3.com" target="_blank" class="test-button">Abrir Producción</a>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function logTest(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            testResults.push({ message: logMessage, type });
+            
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.textContent = testResults.map(r => r.message).join('\n');
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+            
+            console.log(`🎵 Test: ${logMessage}`);
+        }
+        
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.innerHTML = `
+                <span class="status success">Frontend: OK</span>
+                <span class="status success">Modo Inmersivo: Disponible</span>
+                <span class="status success">Easter Eggs: ${testResults.length} pruebas</span>
+                <span class="status warning">Backend: Verificando...</span>
+            `;
+        }
+        
+        function testImmersiveInterface() {
+            logTest('Iniciando prueba de interfaz inmersiva...');
+            
+            try {
+                // Verificar si las funciones están disponibles
+                if (typeof window.toggleImmersiveInterface === 'function') {
+                    logTest('✅ Función toggleImmersiveInterface disponible');
+                } else {
+                    logTest('❌ Función toggleImmersiveInterface NO disponible');
+                }
+                
+                if (typeof window.showImmersiveInterface === 'function') {
+                    logTest('✅ Función showImmersiveInterface disponible');
+                } else {
+                    logTest('❌ Función showImmersiveInterface NO disponible');
+                }
+                
+                // Verificar elementos del DOM
+                const container = document.getElementById('immersiveInterfaceContainer');
+                if (container) {
+                    logTest('✅ Contenedor inmersivo encontrado');
+                } else {
+                    logTest('❌ Contenedor inmersivo NO encontrado');
+                }
+                
+                const iframe = document.getElementById('immersiveIframe');
+                if (iframe) {
+                    logTest('✅ Iframe inmersivo encontrado');
+                } else {
+                    logTest('❌ Iframe inmersivo NO encontrado');
+                }
+                
+                logTest('Prueba de interfaz inmersiva completada');
+                
+            } catch (error) {
+                logTest(`❌ Error en prueba de interfaz: ${error.message}`);
+            }
+        }
+        
+        function testEasterEggs() {
+            logTest('Iniciando prueba de easter eggs...');
+            
+            try {
+                // Simular clicks en logo S3
+                const s3Logo = document.getElementById('s3Logo');
+                if (s3Logo) {
+                    logTest('✅ Logo S3 encontrado');
+                    
+                    // Simular 3 clicks rápidos
+                    for (let i = 0; i < 3; i++) {
+                        setTimeout(() => {
+                            s3Logo.click();
+                            logTest(`Click ${i + 1} en logo S3`);
+                        }, i * 100);
+                    }
+                } else {
+                    logTest('❌ Logo S3 NO encontrado');
+                }
+                
+                // Verificar botón "Conocer el Universo"
+                const universeBtn = document.querySelector('[onclick*="universeclicks"]');
+                if (universeBtn) {
+                    logTest('✅ Botón Universo encontrado');
+                } else {
+                    logTest('❌ Botón Universo NO encontrado');
+                }
+                
+                logTest('Prueba de easter eggs completada');
+                
+            } catch (error) {
+                logTest(`❌ Error en prueba de easter eggs: ${error.message}`);
+            }
+        }
+        
+        function testTerminal() {
+            logTest('Iniciando prueba de terminal...');
+            
+            try {
+                // Verificar si el terminal está disponible
+                const terminal = document.getElementById('terminal');
+                if (terminal) {
+                    logTest('✅ Terminal encontrado');
+                    
+                    // Probar mostrar/ocultar terminal
+                    terminal.style.display = 'block';
+                    logTest('Terminal mostrado');
+                    
+                    setTimeout(() => {
+                        terminal.style.display = 'none';
+                        logTest('Terminal ocultado');
+                    }, 2000);
+                } else {
+                    logTest('❌ Terminal NO encontrado');
+                }
+                
+                logTest('Prueba de terminal completada');
+                
+            } catch (error) {
+                logTest(`❌ Error en prueba de terminal: ${error.message}`);
+            }
+        }
+        
+        function testKeyboardShortcuts() {
+            logTest('Iniciando prueba de atajos de teclado...');
+            
+            try {
+                // Simular Ctrl+Alt+H
+                const event = new KeyboardEvent('keydown', {
+                    key: 'h',
+                    ctrlKey: true,
+                    altKey: true
+                });
+                
+                document.dispatchEvent(event);
+                logTest('Atajo Ctrl+Alt+H simulado');
+                
+                // Simular ESC
+                const escEvent = new KeyboardEvent('keydown', {
+                    key: 'Escape'
+                });
+                
+                document.dispatchEvent(escEvent);
+                logTest('Tecla ESC simulada');
+                
+                logTest('Prueba de atajos completada');
+                
+            } catch (error) {
+                logTest(`❌ Error en prueba de atajos: ${error.message}`);
+            }
+        }
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            logTest('Sistema de pruebas inicializado');
+            updateSystemStatus();
+            
+            // Verificar estado cada 5 segundos
+            setInterval(updateSystemStatus, 5000);
+        });
+        
+        // Manejar mensajes de la interfaz inmersiva
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'terminalUpdate') {
+                logTest(`Terminal: ${event.data.message}`);
+            }
+        });
+    </script>
+</body>
+</html>

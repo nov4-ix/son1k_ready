@@ -1,31 +1,30 @@
 {
-  "name": "suno-wrapper-server",
-  "version": "1.0.0",
-  "description": "Wrapper server para Suno API",
-  "main": "suno_wrapper_server.js",
+  "name": "son1kvers3-music-generator",
+  "version": "3.0.0",
+  "description": "Son1kVers3 - Ultra-Indetectable Music Generator",
+  "main": "son1k_production_system.js",
   "scripts": {
-    "start": "node suno_wrapper_server.js",
-    "dev": "nodemon suno_wrapper_server.js",
-    "frontend": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "setup": "chmod +x setup_suno_stealth.sh && ./setup_suno_stealth.sh"
-  },
-  "dependencies": {
-    "axios": "^1.12.2",
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "puppeteer": "^24.22.2",
-    "suno-api": "github:gcui-art/suno-api"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+    "start": "node son1k_production_system.js",
+    "dev": "node son1k_production_system.js",
+    "test": "node test_production_system.js"
   },
   "keywords": [
-    "suno",
     "music",
+    "generator",
     "ai",
-    "api"
+    "suno",
+    "stealth",
+    "indetectable"
   ],
   "author": "Son1k Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "osc-js": "^2.4.1",
+    "suno-api": "^0.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

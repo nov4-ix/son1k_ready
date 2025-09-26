@@ -1,0 +1,175 @@
+{
+  "waves_plugins": {
+    "ssl_e_channel": {
+      "name": "SSL E-Channel",
+      "type": "eq",
+      "parameters": {
+        "high": {
+          "min": 0,
+          "max": 100,
+          "default": 50,
+          "unit": "%",
+          "description": "High frequency boost/cut"
+        },
+        "highmid": {
+          "min": 0,
+          "max": 100,
+          "default": 50,
+          "unit": "%",
+          "description": "High-mid frequency boost/cut"
+        },
+        "mid": {
+          "min": 0,
+          "max": 100,
+          "default": 50,
+          "unit": "%",
+          "description": "Mid frequency boost/cut"
+        },
+        "lowmid": {
+          "min": 0,
+          "max": 100,
+          "default": 50,
+          "unit": "%",
+          "description": "Low-mid frequency boost/cut"
+        },
+        "low": {
+          "min": 0,
+          "max": 100,
+          "default": 50,
+          "unit": "%",
+          "description": "Low frequency boost/cut"
+        }
+      }
+    },
+    "api_2500": {
+      "name": "API 2500",
+      "type": "compressor",
+      "parameters": {
+        "ratio": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Compression ratio"
+        },
+        "attack": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Attack time"
+        },
+        "release": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Release time"
+        },
+        "threshold": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Compression threshold"
+        }
+      }
+    },
+    "cla_2a": {
+      "name": "CLA-2A",
+      "type": "compressor",
+      "parameters": {
+        "gain": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Gain reduction"
+        },
+        "peak_reduction": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Peak reduction amount"
+        }
+      }
+    },
+    "cla_76": {
+      "name": "CLA-76",
+      "type": "compressor",
+      "parameters": {
+        "input": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Input gain"
+        },
+        "output": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Output gain"
+        },
+        "attack": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Attack time"
+        },
+        "release": {
+          "min": 0,
+          "max": 100,
+          "default": 0,
+          "unit": "%",
+          "description": "Release time"
+        }
+      }
+    }
+  },
+  "knob_mappings": {
+    "expresividad": {
+      "plugin": "api_2500",
+      "parameter": "ratio",
+      "description": "Controls compression ratio for expression"
+    },
+    "rareza": {
+      "plugin": "cla_2a",
+      "parameter": "gain",
+      "description": "Controls gain for unique character"
+    },
+    "garage": {
+      "plugin": "ssl_e_channel",
+      "parameter": "high",
+      "description": "Controls high frequency for garage sound"
+    },
+    "afinacion": {
+      "plugin": "ssl_e_channel",
+      "parameter": "mid",
+      "description": "Controls mid frequency for tuning"
+    },
+    "analog": {
+      "plugin": "cla_76",
+      "parameter": "input",
+      "description": "Controls analog saturation input"
+    }
+  },
+  "connection_methods": {
+    "osc": {
+      "enabled": true,
+      "port": 57120,
+      "host": "localhost"
+    },
+    "vst_bridge": {
+      "enabled": false,
+      "path": "/Applications/Waves/Plugins"
+    },
+    "web_audio": {
+      "enabled": true,
+      "sample_rate": 44100
+    }
+  }
+}

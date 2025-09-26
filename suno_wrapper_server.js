@@ -2,6 +2,7 @@ const express = require('express');
 const { Api } = require('suno-api');
 const cors = require('cors');
 const crypto = require('crypto');
+const path = require('path');
 const app = express();
 
 // Middleware avanzado con evasión
@@ -12,6 +13,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'User-Agent']
 }));
+
+// Servir archivos estáticos
+app.use(express.static('.'));
+app.use(express.static('frontend'));
 
 // Headers de evasión
 app.use((req, res, next) => {
@@ -95,6 +100,10 @@ const cookiePool = new CookiePool();
 if (process.env.SUNO_COOKIE) {
   cookiePool.addCookie(process.env.SUNO_COOKIE);
 }
+
+// Cookie principal actualizada (2025-01-26)
+const mainCookie = "singular_device_id=7fc059fe-34d2-4536-8406-f0b36aa40b7b; ajs_anonymous_id=f0f2cc3c-29fc-4994-b313-c6395f7f01c0; _gcl_au=1.1.868511209.1758919509; _axwrt=9b9ba50d-e181-42f3-b3ba-6e29ab3d8e52; _ga=GA1.1.770110903.1758919511; _fbp=fb.1.1758919510661.328611565502541669; _tt_enable_cookie=1; _ttp=01K63WBJXB88ET2RC9E2A9KYHB_.tt.1; _clck=8earmg%5E2%5Efzn%5E0%5E2095; _clsk=1f1uf60%5E1758919512719%5E1%5E1%5Ed.clarity.ms%2Fcollect; __client_uat=1758919517; __client_uat_U9tcbTPE=1758919517; clerk_active_context=sess_33Fj3jxICNV1wYuq68Oe1uGlOkE:; ax_visitor=%7B%22firstVisitTs%22%3A1758919509759%2C%22lastVisitTs%22%3Anull%2C%22currentVisitStartTs%22%3A1758919509759%2C%22ts%22%3A1758919521043%2C%22visitCount%22%3A1%7D; has_logged_in_before=true; _ga_7B0KEDD7XP=GS2.1.s1758919510$o1$g1$t1758919521$j49$l0$h0; _uetsid=6618fc20927811f0bf1e9b526665403c|uzkp91|2|fzn|0|2084; ttcsid=1758919510980::O9iz4ZcNze1EwWuHscqC.1.1758919522519.0; ttcsid_CT67HURC77UB52N3JFBG=1758919510980::yf4HoWwGiszr_EvqtWuF.1.1758919522519.0; _uetvid=75e947607c9711f0a0a265429931a928|1d4160k|1758919523618|2|1|bat.bing.com/p/conversions/c/b; afUserId=5bf63ba8-447a-4a22-a1f8-14ea1144d9d1-p; AF_SYNC=1758919525121; __stripe_mid=3ba32b8c-8f46-4645-aa1e-4005841991d0e5a982; __stripe_sid=7a9b36cc-af86-4d38-bf1c-edeeb4acb60dfac6ee; __session=eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18yT1o2eU1EZzhscWRKRWloMXJvemY4T3ptZG4iLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJzdW5vLWFwaSIsImF6cCI6Imh0dHBzOi8vc3Vuby5jb20iLCJleHAiOjE3NTg5MjMyMDksImZ2YSI6WzEsLTFdLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2NsZXJrX2lkIjoidXNlcl8ycXBaSFh1U05Ta0t2ZUFoa2Z6RVMxNGRnVEgiLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2VtYWlsIjoic295cGVwZWphaW1lc0BnbWFpbC5jb20iLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL3Bob25lIjpudWxsLCJpYXQiOjE3NTg5MTk2MDksImlzcyI6Imh0dHBzOi8vY2xlcmsuc3Vuby5jb20iLCJqdGkiOiJjMDdiMDE1NmQ1YTcwMDE4YTE1ZSIsIm5iZiI6MTc1ODkxOTU5OSwic2lkIjoic2Vzc18zM0ZqM2p4SUNOVjF3WXVxNjhPZTF1R2xPa0UiLCJzdHMiOiJhY3RpdmUiLCJzdWIiOiJ1c2VyXzJxcFpIWHVTTlNrS3ZlQWhrZnpFUzE0ZGdUSCJ9.QUxsK2NMBP1Sa9JCuolkPKc6awWT9XoAyeVFbySe3_rJB_gRf4aX18lDRTfM2KlkcFeTWpGuvsA1OW-BUWzmdOhgXKECmrC8YJN2Y0GeS-wGgTHUTQ2HnP6L3r2va8Fp_aJeo9t864paqYeZCI14BhhQdDMp3WHtvubKGkKOGWs7mB2PcrXJ_YRVAeHj5RrRMBOWSy6xWbG7il8EVBRVZRyOorJQvoRzoIfOXKysIAQq87YwSCQqgYAm5VbyGCIuuYBYZV2ZC0tptMtuTkbdXFZ7f0_OCPzV0u36aCsKKvnKpxjn3j-b5v_egu-FkjvOQJhyvyu8ZYeuAmg7COLUZQ; __session_U9tcbTPE=eyJhbGciOiJSUzI1NiIsImNhdCI6ImNsX0I3ZDRQRDExMUFBQSIsImtpZCI6Imluc18yT1o2eU1EZzhscWRKRWloMXJvemY4T3ptZG4iLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJzdW5vLWFwaSIsImF6cCI6Imh0dHBzOi8vc3Vuby5jb20iLCJleHAiOjE3NTg5MjMyMDksImZ2YSI6WzEsLTFdLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2NsZXJrX2lkIjoidXNlcl8ycXBaSFh1U05Ta0t2ZUFoa2Z6RVMxNGRnVEgiLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL2VtYWlsIjoic295cGVwZWphaW1lc0BnbWFpbC5jb20iLCJodHRwczovL3N1bm8uYWkvY2xhaW1zL3Bob25lIjpudWxsLCJpYXQiOjE3NTg5MTk2MDksImlzcyI6Imh0dHBzOi8vY2xlcmsuc3Vuby5jb20iLCJqdGkiOiJjMDdiMDE1NmQ1YTcwMDE4YTE1ZSIsIm5iZiI6MTc1ODkxOTU5OSwic2lkIjoic2Vzc18zM0ZqM2p4SUNOVjF3WXVxNjhPZTF1R2xPa0UiLCJzdHMiOiJhY3RpdmUiLCJzdWIiOiJ1c2VyXzJxcFpIWHVTTlNrS3ZlQWhrZnpFUzE0ZGdUSCJ9.QUxsK2NMBP1Sa9JCuolkPKc6awWT9XoAyeVFbySe3_rJB_gRf4aX18lDRTfM2KlkcFeTWpGuvsA1OW-BUWzmdOhgXKECmrC8YJN2Y0GeS-wGgTHUTQ2HnP6L3r2va8Fp_aJeo9t864paqYeZCI14BhhQdDMp3WHtvubKGkKOGWs7mB2PcrXJ_YRVAeHj5RrRMBOWSy6xWbG7il8EVBRVZRyOorJQvoRzoIfOXKysIAQq87YwSCQqgYAm5VbyGCIuuYBYZV2ZC0tptMtuTkbdXFZ7f0_OCPzV0u36aCsKKvnKpxjn3j-b5v_egu-FkjvOQJhyvyu8ZYeuAmg7COLUZQ; _dd_s=aid=c3847edb-6f52-40e7-a0d5-5d74a0d7c5e6&rum=0&expire=1758920660406";
+cookiePool.addCookie(mainCookie);
 
 // Agregar cookies adicionales si están disponibles
 if (process.env.SUNO_COOKIE_2) {
@@ -383,6 +392,19 @@ app.post('/add-cookie', (req, res) => {
 });
 
 // Servir página de prueba
+// Rutas específicas para archivos importantes
+app.get('/immersive_interface.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'immersive_interface.html'));
+});
+
+app.get('/son1kvers3_frontend.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'son1kvers3_frontend.html'));
+});
+
+app.get('/index.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.get('/', (req, res) => {
   res.send(`
 <!DOCTYPE html>

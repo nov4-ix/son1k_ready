@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Frontend Analytics - Son1kVers3</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px #00ff88;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #00ff88, 0 0 30px #00ff88, 0 0 40px #00ff88; }
+            to { text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88, 0 0 30px #00ff88; }
+        }
+        
+        .test-section {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .test-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #00ff88;
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .analytics-button {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            border: none;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .analytics-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px #ff6b6b;
+        }
+        
+        .test-result {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .analytics-result {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #00ff88;
+            color: #000;
+        }
+        
+        .status.error {
+            background: #ff4444;
+            color: #fff;
+        }
+        
+        .status.warning {
+            background: #ffaa00;
+            color: #000;
+        }
+        
+        .status.info {
+            background: #00ccff;
+            color: #000;
+        }
+        
+        .status.analytics {
+            background: #ff6b6b;
+            color: #fff;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #00ff88;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #00ff88;
+            font-family: monospace;
+        }
+        
+        .input-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">📊 TEST FRONTEND ANALYTICS</h1>
+        
+        <div class="test-section">
+            <h2>🔧 Configuración de Prueba</h2>
+            <div class="input-group">
+                <label for="testPrompt">Prompt Musical:</label>
+                <input type="text" id="testPrompt" value="una canción épica de synthwave sobre la resistencia digital" placeholder="Describe la música que quieres generar...">
+            </div>
+            
+            <div class="input-group">
+                <label for="testStyle">Estilo:</label>
+                <select id="testStyle">
+                    <option value="electronic">Electronic</option>
+                    <option value="synthwave">Synthwave</option>
+                    <option value="cyberpunk">Cyberpunk</option>
+                    <option value="ambient">Ambient</option>
+                    <option value="epic">Epic</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Controles de Prueba</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 15px 0;">
+                <button class="test-button" onclick="testInitialization()">Inicializar Sistema</button>
+                <button class="test-button" onclick="testMusicGeneration()" id="generateBtn">🎵 Generar Música</button>
+                <button class="analytics-button" onclick="testAnalyticsTracking()" id="trackBtn">📊 Probar Tracking</button>
+                <button class="analytics-button" onclick="testAnalyticsDashboard()" id="dashboardBtn">📈 Ver Dashboard</button>
+                <button class="analytics-button" onclick="testAnalyticsData()" id="dataBtn">📊 Ver Datos</button>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="test-section">
+                <h2>📊 Estado del Sistema</h2>
+                <div id="systemStatus">
+                    <span class="status warning">Inicializando...</span>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h2>📈 Estado de Analytics</h2>
+                <div id="analyticsStatus">
+                    <span class="status warning">Verificando...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="test-section">
+                <h2>📝 Logs del Sistema</h2>
+                <div id="testLogs" class="test-result">Sistema iniciado...\n</div>
+            </div>
+            
+            <div class="test-section">
+                <h2>📊 Logs de Analytics</h2>
+                <div id="analyticsLogs" class="analytics-result">Analytics iniciado...\n</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts necesarios -->
+    <script src="web_audio_generator.js"></script>
+    <script src="real_music_integration.js"></script>
+    <script src="ollama_integration.js"></script>
+    <script src="analytics_client.js"></script>
+
+    <script>
+        let testResults = [];
+        let analyticsResults = [];
+        let currentTrack = null;
+        let isGenerating = false;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            testResults.push({ message: logMessage, type });
+            
+            const logsDiv = document.getElementById('testLogs');
+            logsDiv.textContent = testResults.map(r => r.message).join('\n');
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            console.log(`🎵 Test: ${logMessage}`);
+        }
+        
+        function analyticsLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            analyticsResults.push({ message: logMessage, type });
+            
+            const logsDiv = document.getElementById('analyticsLogs');
+            logsDiv.textContent = analyticsResults.map(r => r.message).join('\n');
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            console.log(`📊 Analytics: ${logMessage}`);
+        }
+        
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            const statuses = [];
+            
+            if (window.WebAudioGenerator) {
+                statuses.push('<span class="status success">Web Audio Generator: Disponible</span>');
+            } else {
+                statuses.push('<span class="status error">Web Audio Generator: No disponible</span>');
+            }
+            
+            if (window.realMusicIntegration && window.realMusicIntegration.isInitialized) {
+                statuses.push('<span class="status success">Real Music Integration: Activo</span>');
+            } else {
+                statuses.push('<span class="status warning">Real Music Integration: Inicializando...</span>');
+            }
+            
+            if (window.enhancedMusicGenerator) {
+                statuses.push('<span class="status success">Enhanced Generator: Activo</span>');
+            } else {
+                statuses.push('<span class="status warning">Enhanced Generator: Inicializando...</span>');
+            }
+            
+            if (currentTrack) {
+                statuses.push('<span class="status info">Track Actual: Generado</span>');
+            } else {
+                statuses.push('<span class="status warning">Track Actual: Ninguno</span>');
+            }
+            
+            statusDiv.innerHTML = statuses.join(' ');
+        }
+        
+        function updateAnalyticsStatus() {
+            const statusDiv = document.getElementById('analyticsStatus');
+            const statuses = [];
+            
+            if (window.analyticsClient) {
+                const status = window.analyticsClient.getStatus();
+                if (status.enabled) {
+                    statuses.push('<span class="status analytics">Analytics Client: Activo</span>');
+                } else {
+                    statuses.push('<span class="status warning">Analytics Client: Deshabilitado</span>');
+                }
+                statuses.push(`<span class="status info">Sesión: ${status.sessionId ? 'Activa' : 'Inactiva'}</span>`);
+                statuses.push(`<span class="status info">Usuario: ${status.userId}</span>`);
+                statuses.push(`<span class="status info">Online: ${status.isOnline ? 'Sí' : 'No'}</span>`);
+                statuses.push(`<span class="status info">Cola: ${status.queueLength} eventos</span>`);
+            } else {
+                statuses.push('<span class="status error">Analytics Client: No disponible</span>');
+            }
+            
+            statusDiv.innerHTML = statuses.join(' ');
+        }
+        
+        function updateButtons() {
+            const generateBtn = document.getElementById('generateBtn');
+            const trackBtn = document.getElementById('trackBtn');
+            const dashboardBtn = document.getElementById('dashboardBtn');
+            const dataBtn = document.getElementById('dataBtn');
+            
+            generateBtn.disabled = isGenerating;
+            trackBtn.disabled = !currentTrack;
+            dashboardBtn.disabled = false;
+            dataBtn.disabled = false;
+        }
+        
+        async function testInitialization() {
+            log('Iniciando prueba de inicialización...');
+            
+            try {
+                if (window.realMusicIntegration) {
+                    await window.realMusicIntegration.init();
+                    log('✅ Real Music Integration inicializado correctamente', 'success');
+                } else {
+                    log('❌ Real Music Integration no disponible', 'error');
+                }
+                
+                if (window.enhancedMusicGenerator) {
+                    await window.enhancedMusicGenerator.init();
+                    log('✅ Enhanced Music Generator inicializado correctamente', 'success');
+                } else {
+                    log('❌ Enhanced Music Generator no disponible', 'error');
+                }
+                
+                updateSystemStatus();
+                updateAnalyticsStatus();
+                updateButtons();
+                
+            } catch (error) {
+                log(`❌ Error en inicialización: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMusicGeneration() {
+            if (isGenerating) return;
+            
+            isGenerating = true;
+            updateButtons();
+            
+            try {
+                const prompt = document.getElementById('testPrompt').value;
+                const style = document.getElementById('testStyle').value;
+                
+                log(`Iniciando generación: "${prompt}" (${style})`);
+                
+                // Verificar si IA está disponible
+                const aiAvailable = window.enhancedMusicGenerator && window.enhancedMusicGenerator.ollamaAI.isAvailable;
+                
+                if (aiAvailable) {
+                    log('🤖 Generando música con IA local...', 'info');
+                    currentTrack = await window.enhancedMusicGenerator.generateMusicWithAI(prompt, style);
+                } else {
+                    log('🎵 Generando música con Web Audio API...', 'info');
+                    currentTrack = await window.realMusicIntegration.generateMusic(prompt, style);
+                }
+                
+                log(`✅ Música generada: ${currentTrack.duration.toFixed(2)}s`, 'success');
+                
+                // Reproducir automáticamente
+                window.realMusicIntegration.play();
+                
+            } catch (error) {
+                log(`❌ Error generando música: ${error.message}`, 'error');
+            } finally {
+                isGenerating = false;
+                updateButtons();
+                updateSystemStatus();
+            }
+        }
+        
+        async function testAnalyticsTracking() {
+            if (!currentTrack) {
+                analyticsLog('❌ No hay track generado para rastrear', 'error');
+                return;
+            }
+            
+            try {
+                analyticsLog('📊 Probando tracking de analytics...', 'info');
+                
+                // Simular evento de generación musical
+                const event = new CustomEvent('realMusicGenerated', {
+                    detail: currentTrack
+                });
+                document.dispatchEvent(event);
+                
+                analyticsLog('✅ Evento de generación musical enviado', 'success');
+                
+                // Simular interacciones
+                const interactions = [
+                    { action: 'click', element: 'button#testButton' },
+                    { action: 'keydown', element: 'input#testInput', value: 'Enter' },
+                    { action: 'page_view', element: 'body' }
+                ];
+                
+                for (const interaction of interactions) {
+                    if (window.analyticsClient) {
+                        await window.analyticsClient.track_interaction(
+                            window.analyticsClient.sessionId,
+                            window.analyticsClient.userId,
+                            interaction.action,
+                            interaction.element,
+                            interaction.value
+                        );
+                    }
+                }
+                
+                analyticsLog('✅ Interacciones simuladas enviadas', 'success');
+                
+            } catch (error) {
+                analyticsLog(`❌ Error en tracking: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAnalyticsDashboard() {
+            try {
+                analyticsLog('📈 Abriendo dashboard de analytics...', 'info');
+                
+                if (window.analyticsDashboard) {
+                    window.analyticsDashboard.show();
+                    analyticsLog('✅ Dashboard mostrado', 'success');
+                } else {
+                    analyticsLog('❌ Dashboard no disponible', 'error');
+                }
+                
+            } catch (error) {
+                analyticsLog(`❌ Error abriendo dashboard: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAnalyticsData() {
+            try {
+                analyticsLog('📊 Obteniendo datos de analytics...', 'info');
+                
+                if (window.analyticsClient) {
+                    const data = await window.analyticsClient.getAnalytics(7);
+                    
+                    if (data) {
+                        analyticsLog('✅ Datos obtenidos:', 'success');
+                        analyticsLog(`   - Generaciones: ${data.music_metrics.total_generations}`, 'info');
+                        analyticsLog(`   - Exitosas: ${data.music_metrics.successful_generations}`, 'info');
+                        analyticsLog(`   - Sesiones: ${data.session_metrics.total_sessions}`, 'info');
+                        analyticsLog(`   - Usuarios: ${data.session_metrics.unique_users}`, 'info');
+                        analyticsLog(`   - Estilos: ${data.popular_styles.length}`, 'info');
+                        analyticsLog(`   - Prompts: ${data.popular_prompts.length}`, 'info');
+                    } else {
+                        analyticsLog('❌ No se pudieron obtener datos', 'error');
+                    }
+                } else {
+                    analyticsLog('❌ Analytics Client no disponible', 'error');
+                }
+                
+            } catch (error) {
+                analyticsLog(`❌ Error obteniendo datos: ${error.message}`, 'error');
+            }
+        }
+        
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Sistema de prueba iniciado');
+            analyticsLog('Analytics de prueba iniciado');
+            updateSystemStatus();
+            updateAnalyticsStatus();
+            updateButtons();
+            
+            // Verificar estado cada 2 segundos
+            setInterval(() => {
+                updateSystemStatus();
+                updateAnalyticsStatus();
+                updateButtons();
+            }, 2000);
+            
+            // Escuchar eventos de música generada
+            document.addEventListener('realMusicGenerated', function(event) {
+                log('🎵 Evento de música generada recibido', 'success');
+                currentTrack = event.detail.track;
+                updateSystemStatus();
+                updateButtons();
+            });
+        });
+    </script>
+</body>
+</html>

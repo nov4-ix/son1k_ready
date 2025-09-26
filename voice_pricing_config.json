@@ -1,0 +1,185 @@
+{
+  "voice_providers": {
+    "huggingface": {
+      "name": "Hugging Face",
+      "models": {
+        "so-vits-svc-4.0": {
+          "name": "so-VITS-SVC 4.0",
+          "quality": 8,
+          "cost_per_minute": 0.00,
+          "max_duration": 30,
+          "tier": "free",
+          "description": "Modelo gratuito de alta calidad"
+        },
+        "bark": {
+          "name": "Bark Voice Cloning",
+          "quality": 8.5,
+          "cost_per_minute": 0.00,
+          "max_duration": 60,
+          "tier": "free",
+          "description": "Bark - Text-to-Speech con clonación de voz"
+        }
+      }
+    },
+    "elevenlabs": {
+      "name": "ElevenLabs",
+      "models": {
+        "eleven_multilingual_v2": {
+          "name": "ElevenLabs Voice Cloning",
+          "quality": 9.5,
+          "cost_per_minute": 0.07,
+          "max_duration": 300,
+          "tier": "pro",
+          "description": "Calidad profesional indistinguible"
+        },
+        "eleven_turbo": {
+          "name": "ElevenLabs Turbo",
+          "quality": 9.0,
+          "cost_per_minute": 0.05,
+          "max_duration": 300,
+          "tier": "pro",
+          "description": "Rápido y de alta calidad"
+        }
+      }
+    },
+    "azure": {
+      "name": "Azure Cognitive Services",
+      "models": {
+        "neural_voice": {
+          "name": "Custom Neural Voice",
+          "quality": 9.0,
+          "cost_per_minute": 0.25,
+          "max_duration": 600,
+          "tier": "enterprise",
+          "description": "Voz personalizada empresarial"
+        }
+      }
+    },
+    "resemble": {
+      "name": "Resemble.ai",
+      "models": {
+        "custom_voice": {
+          "name": "Custom Voice Model",
+          "quality": 9.0,
+          "cost_per_minute": 0.25,
+          "max_duration": 600,
+          "tier": "enterprise",
+          "description": "Modelo personalizado entrenado"
+        }
+      }
+    }
+  },
+  "tier_configs": {
+    "free": {
+      "monthly_minutes": 30,
+      "max_duration": 30,
+      "quality": "high",
+      "providers": ["huggingface"],
+      "cost": 0,
+      "features": [
+        "Clonación de voz básica",
+        "30 minutos/mes",
+        "Calidad 8/10",
+        "Soporte comunitario"
+      ]
+    },
+    "pro": {
+      "monthly_minutes": 300,
+      "max_duration": 120,
+      "quality": "premium",
+      "providers": ["huggingface", "elevenlabs"],
+      "cost": 29,
+      "features": [
+        "Clonación de voz profesional",
+        "300 minutos/mes",
+        "Calidad 9.5/10",
+        "Múltiples modelos",
+        "Soporte prioritario",
+        "API access"
+      ]
+    },
+    "enterprise": {
+      "monthly_minutes": 1800,
+      "max_duration": 600,
+      "quality": "studio",
+      "providers": ["huggingface", "elevenlabs", "azure", "resemble"],
+      "cost": 149,
+      "features": [
+        "Clonación de voz de estudio",
+        "1800 minutos/mes",
+        "Calidad 10/10",
+        "Modelos personalizados",
+        "Entrenamiento de voz",
+        "Soporte 24/7",
+        "SLA garantizado",
+        "White-label"
+      ]
+    }
+  },
+  "pricing_strategy": {
+    "free_tier": {
+      "description": "Para usuarios casuales y demos",
+      "provider": "huggingface",
+      "model": "so-vits-svc-4.0",
+      "cost_per_minute": 0.00,
+      "quality": 8,
+      "max_duration": 30
+    },
+    "pro_tier": {
+      "description": "Para profesionales y contenido comercial",
+      "provider": "elevenlabs",
+      "model": "eleven_multilingual_v2",
+      "cost_per_minute": 0.07,
+      "quality": 9.5,
+      "max_duration": 300
+    },
+    "enterprise_tier": {
+      "description": "Para estudios y uso intensivo",
+      "provider": "elevenlabs",
+      "model": "eleven_multilingual_v2",
+      "cost_per_minute": 0.07,
+      "quality": 10,
+      "max_duration": 600
+    }
+  },
+  "cost_optimization": {
+    "auto_fallback": true,
+    "quality_thresholds": {
+      "free": 8,
+      "pro": 9.5,
+      "enterprise": 10
+    },
+    "duration_limits": {
+      "free": 30,
+      "pro": 120,
+      "enterprise": 600
+    },
+    "provider_priority": {
+      "free": ["huggingface"],
+      "pro": ["elevenlabs", "huggingface"],
+      "enterprise": ["elevenlabs", "azure", "resemble", "huggingface"]
+    }
+  },
+  "api_keys": {
+    "huggingface": {
+      "required": true,
+      "cost": 0,
+      "setup": "https://huggingface.co/settings/tokens"
+    },
+    "elevenlabs": {
+      "required": true,
+      "cost": 22,
+      "setup": "https://elevenlabs.io/app/settings/api-keys"
+    },
+    "azure": {
+      "required": false,
+      "cost": 50,
+      "setup": "https://portal.azure.com"
+    },
+    "resemble": {
+      "required": false,
+      "cost": 100,
+      "setup": "https://app.resemble.ai"
+    }
+  }
+}
